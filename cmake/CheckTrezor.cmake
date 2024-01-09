@@ -83,8 +83,8 @@ if (USE_DEVICE_TREZOR)
     _trezor_protobuf_fix_vars()
 
     # Early fail for optional Trezor support
-    if(${Protobuf_VERSION} GREATER 21)
-        trezor_fatal_msg("Trezor: Unsupported Protobuf version ${Protobuf_VERSION}. Please, use Protobuf v21.")
+    if(${Protobuf_VERSION_MAJOR} GREATER 21)
+    trezor_fatal_msg("Trezor: Unsupported Protobuf version ${Protobuf_VERSION}. Please use Protobuf v21 or lower.")
     elseif(NOT Protobuf_FOUND AND NOT Protobuf_LIBRARY AND NOT Protobuf_PROTOC_EXECUTABLE AND NOT Protobuf_INCLUDE_DIR)
         trezor_fatal_msg("Trezor: Could not find Protobuf")
     elseif(NOT Protobuf_LIBRARY OR NOT EXISTS "${Protobuf_LIBRARY}")
