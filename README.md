@@ -16,7 +16,7 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
   - [Contributing](#contributing)
   - [Scheduled software upgrades](#scheduled-software-upgrades)
   - [Release staging schedule and protocol](#release-staging-schedule-and-protocol)
-  - [Compiling Monero from source](#compiling-monero-from-source)
+  - [Compiling lunexa from source](#compiling-lunexa-from-source)
     - [Dependencies](#dependencies)
     - [Gitian builds](#gitian-builds)
   - [Internationalization](#Internationalization)
@@ -28,8 +28,7 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
 ## Development resources
 
 - Web: [Lunexa.co](https://Lunexa.co)
-- Mail: [dev@getmonero.org](mailto:dev@getmonero.org)
-- GitHub: [https://github.com/monero-project/monero](https://github.com/lunexa-project/lunexacore)
+- GitHub: [https://github.com/lunexa-project/lunexa](https://github.com/lunexa-project/lunexacore)
 - Discord: [Lunexa on Discord](https://discord.gg/KUMuN6Gvq2)
 
 
@@ -38,8 +37,7 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
 
 ## Vulnerability response
 
-- Our [Vulnerability Response Process](https://github.com/monero-project/meta/blob/master/VULNERABILITY_RESPONSE_PROCESS.md) encourages responsible disclosure
-- We are also available via [HackerOne](https://hackerone.com/monero)
+Please report any vulnerabilitiy to the Discord
 
 ## Research
 
