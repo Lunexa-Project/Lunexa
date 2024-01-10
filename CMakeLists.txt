@@ -647,8 +647,8 @@ function (lunexa_add_library)
     set(objlib obj_${LUNEXA_ADD_LIBRARY_NAME})
     set(targetlib ${LUNEXA_ADD_LIBRARY_NAME}_target)
 
-    add_library(${objlib} OBJECT ${LUNEXA_ADD_LIBRARY_SOURCES})
-    add_library(${targetlib} $<TARGET_OBJECTS:${objlib}>)  # Use generator expression here
+    lunexa_add_library(${objlib} OBJECT ${LUNEXA_ADD_LIBRARY_SOURCES})
+    lunexa_add_library(${targetlib} $<TARGET_OBJECTS:${objlib}>)  # Use generator expression here
     lunexa_set_target_no_relink(${targetlib})
     lunexa_set_target_strip(${targetlib})
     
