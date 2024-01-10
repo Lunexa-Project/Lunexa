@@ -643,11 +643,10 @@ function (lunexa_add_library_with_deps)
     cmake_parse_arguments(lunexa_ADD_LIBRARY "" "NAME" "DEPENDS;SOURCES" ${ARGN})
     source_group("${LUNEXA_ADD_LIBRARY_NAME}" FILES ${LUNEXA_ADD_LIBRARY_SOURCES})
 
-    # Define a ("virtual") object library and an actual library that links those
-    # objects together.
+    # Define a unique object library and an actual library that links those objects together.
     set(objlib obj_${LUNEXA_ADD_LIBRARY_NAME})
     add_library(${objlib} OBJECT ${LUNEXA_ADD_LIBRARY_SOURCES})
-    add_library(${LUNEXA_ADD_LIBRARY_NAME} ${objlib})
+    add_library(${LUNEXA_ADD_LIBRARY_NAME} $<TARGET_OBJECTS:${objlib}>)
     lunexa_set_target_no_relink(${LUNEXA_ADD_LIBRARY_NAME})
     lunexa_set_target_strip(${LUNEXA_ADD_LIBRARY_NAME})
     if (LUNEXA_ADD_LIBRARY_DEPENDS)
