@@ -230,7 +230,7 @@ namespace config
       0xA1, 0x42, 0x61, 0x15, 0x31, 0x05, 0x22, 0x00, 0x41, 0x10, 0x51, 0xF7, 0x59, 0x25, 0xA1, 0x89
     } }; // Bender's nightmare
   std::string const GENESIS_TX = "013c01ff0001ffffffffffff0302BAxepF8U14PC2x98WiaKWuHdnj2dGEQHjYcsPMzRJohS8Yxt8cJtr8aG38A41k8M3ydKBRyc9fkkBHSoG5vW4hhLHGaaheP21017767aafcde9be00dcfd098715ebcf7f410daebc582fda69d24a28e9d0bc890d1";
-  uint32_t const GENESIS_NONCE = 10000;
+  uint32_t const GENESIS_NONCE = 1;
 
   // Hash domain separators
   const char HASH_KEY_BULLETPROOF_EXPONENT[] = "bulletproof";

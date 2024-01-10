@@ -134,6 +134,18 @@ void t_daemon::init_options(boost::program_options::options_description & option
   t_rpc::init_options(option_spec);
 }
 
+void print_genesis_tx_hex() {
+  Logging::ConsoleLogger logger;
+  CryptoNote::Transaction tx = CryptoNote::CurrencyBuilder(logger).generateGenesisTransaction();
+  CryptoNote::BinaryArray txb = CryptoNote::toBinaryArray(tx);
+  std::string tx_hex = Common::toHex(txb);
+
+  std::cout << "Insert this line into your coin configuration file as is: " << std::endl;
+  std::cout << "const char GENESIS_COINBASE_TX_HEX[] = \"" << tx_hex << "\";" << std::endl;
+
+  return;
+}
+
 t_daemon::t_daemon(
     boost::program_options::variables_map const & vm,
     uint16_t public_rpc_port
