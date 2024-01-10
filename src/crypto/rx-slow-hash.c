@@ -103,7 +103,7 @@ static inline int disabled_flags(void) {
     return flags;
   }
 
-  const char *env = getenv("MONERO_RANDOMX_UMASK");
+  const char *env = getenv("LUNEXA_RANDOMX_UMASK");
   if (!env) {
     flags = 0;
   }
@@ -199,12 +199,12 @@ static void rx_alloc_dataset(randomx_flags flags, randomx_dataset** dataset, int
     static int shown = 0;
     if (!shown) {
       shown = 1;
-      minfo(RX_LOGCAT, "RandomX dataset is disabled by MONERO_RANDOMX_UMASK environment variable.");
+      minfo(RX_LOGCAT, "RandomX dataset is disabled by LUNEXA_RANDOMX_UMASK environment variable.");
     }
     return;
   }
 
-  if (!ignore_env && !getenv("MONERO_RANDOMX_FULL_MEM")) {
+  if (!ignore_env && !getenv("LUNEXA_RANDOMX_FULL_MEM")) {
     static int shown = 0;
     if (!shown) {
       shown = 1;
