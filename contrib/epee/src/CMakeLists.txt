@@ -26,37 +26,18 @@
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+# Set source file properties
 set_property(SOURCE memwipe.c PROPERTY C_STANDARD 11)
 
-# Define the epee library using add_library
-    add_library(epee
-        byte_slice.cpp
-        byte_stream.cpp
-        hex.cpp
-        abstract_http_client.cpp
-        http_auth.cpp
-        mlog.cpp
-        net_helper.cpp
-        net_utils_base.cpp
-        string_tools.cpp
-        parserse_base_utils.cpp
-        wipeable_string.cpp
-        levin_base.cpp
-        memwipe.c
-        connection_basic.cpp
-        network_throttle.cpp
-        network_throttle-detail.cpp
-        mlocker.cpp
-        buffer.cpp
-        net_ssl.cpp
-        int-util.cpp
-        portable_storage.cpp
-        misc_language.cpp
-        file_io_utils.cpp
-        net_parse_helpers.cpp
-        ${EPEE_HEADERS_PUBLIC}
-    DEPENDS
-        # ... (Other dependencies)
+# Add the epee library
+add_library(epee
+    byte_slice.cpp byte_stream.cpp hex.cpp abstract_http_client.cpp http_auth.cpp mlog.cpp net_helper.cpp net_utils_base.cpp string_tools.cpp parserse_base_utils.cpp
+    wipeable_string.cpp levin_base.cpp memwipe.c connection_basic.cpp network_throttle.cpp network_throttle-detail.cpp mlocker.cpp buffer.cpp net_ssl.cpp
+    int-util.cpp portable_storage.cpp
+    misc_language.cpp
+    file_io_utils.cpp
+    net_parse_helpers.cpp
+    ${EPEE_HEADERS_PUBLIC}
 )
 
 # Check and add epee_readline library
