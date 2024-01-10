@@ -26,8 +26,10 @@
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Set source file properties
-set_property(SOURCE memwipe.c PROPERTY C_STANDARD 11)
+set(EPEE_INCLUDE_DIR_BASE "${CMAKE_CURRENT_SOURCE_DIR}/../include")
+
+# Add headers to the file list, to be able to search for them and autosave in IDEs.
+lunexa_find_all_headers(EPEE_HEADERS_PUBLIC "${EPEE_INCLUDE_DIR_BASE}")
 
 # Add the epee library
 lunexa_add_library(epee
@@ -41,8 +43,10 @@ lunexa_add_library(epee
 )
 
 if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
-    lunexa_add_library(epee epee_readline readline_buffer.cpp)
+    lunexa_add_library(epee_readline readline_buffer.cpp)
 endif()
+
+set_property(SOURCE memwipe.c PROPERTY C_STANDARD 11)
 
 # Build and install libepee if we're building for GUI
 if (BUILD_GUI_DEPS)
