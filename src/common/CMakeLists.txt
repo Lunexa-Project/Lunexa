@@ -26,61 +26,63 @@
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-include_directories(SYSTEM ${OPENSSL_INCLUDE_DIR})
+set(EPEE_INCLUDE_DIR_BASE "${CMAKE_CURRENT_SOURCE_DIR}/../include")
 
-set(common_sources
-  base58.cpp
-  command_line.cpp
-  dns_utils.cpp
-  download.cpp
-  error.cpp
-  expect.cpp
-  util.cpp
-  i18n.cpp
-  notify.cpp
-  password.cpp
-  perf_timer.cpp
-  pruning.cpp
-  spawn.cpp
-  threadpool.cpp
-  updates.cpp
-  aligned.c
-  timings.cc
-  combinator.cpp)
+# Add headers to the file list, to be able to search for them and autosave in IDEs.
+lunexa_find_all_headers(EPEE_HEADERS_PUBLIC "${EPEE_INCLUDE_DIR_BASE}")
 
-if (STACK_TRACE)
-  list(APPEND common_sources stack_trace.cpp)
+lunexa_add_library(epee byte_slice.cpp byte_stream.cpp hex.cpp abstract_http_client.cpp http_auth.cpp mlog.cpp net_helper.cpp net_utils_base.cpp string_tools.cpp parserse_base_utils.cpp
+    wipeable_string.cpp levin_base.cpp memwipe.c connection_basic.cpp network_throttle.cpp network_throttle-detail.cpp mlocker.cpp buffer.cpp net_ssl.cpp
+    int-util.cpp portable_storage.cpp
+    misc_language.cpp
+    file_io_utils.cpp
+    net_parse_helpers.cpp
+    ${EPEE_HEADERS_PUBLIC}
+    )
+
+if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
+  lunexa_add_library(epee_readline readline_buffer.cpp)
 endif()
 
-if (BACKCOMPAT)
-  list(APPEND common_sources compat/glibc_compat.cpp)
+set_property(SOURCE memwipe.c PROPERTY C_STANDARD 11)
+
+# Build and install libepee if we're building for GUI
+if (BUILD_GUI_DEPS)
+    if(IOS)
+        set(lib_folder lib-${ARCH})
+    else()
+        set(lib_folder lib)
+    endif()
+    install(TARGETS epee
+        ARCHIVE DESTINATION ${lib_folder})
+    if (USE_READLINE AND GNU_READLINE_FOUND)
+      install(TARGETS epee_readline
+          ARCHIVE DESTINATION ${lib_folder})
+    endif()
 endif()
 
-set(common_headers)
-
-lunexa_find_all_headers(common_private_headers "${CMAKE_CURRENT_SOURCE_DIR}")
-
-lunexa_private_headers(common
-  ${common_private_headers})
-lunexa_add_library(common
-  ${common_sources}
-  ${common_headers}
-  ${common_private_headers}
-  DEPENDS generate_translations_header)
-target_link_libraries(common
+target_link_libraries(epee
   PUBLIC
-    cncrypto
-    ${UNBOUND_LIBRARIES}
-    ${LIBUNWIND_LIBRARIES}
-    ${Boost_DATE_TIME_LIBRARY}
+    easylogging
+    ${Boost_CHRONO_LIBRARY}
     ${Boost_FILESYSTEM_LIBRARY}
-    ${Boost_SYSTEM_LIBRARY}
     ${Boost_THREAD_LIBRARY}
     ${Boost_REGEX_LIBRARY}
-    ${Boost_CHRONO_LIBRARY}
-  PRIVATE
+    ${Boost_SYSTEM_LIBRARY}
     ${OPENSSL_LIBRARIES}
-    ${EXTRA_LIBRARIES})
-target_include_directories(common
   PRIVATE
-    ${Boost_INCLUDE_DIRS})
+    ${EXTRA_LIBRARIES})
+
+if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
+  target_link_libraries(epee_readline
+    PUBLIC
+      easylogging
+      ${Boost_SYSTEM_LIBRARY}
+    PRIVATE
+    ${GNU_READLINE_LIBRARY})
+endif()
+
+target_include_directories(epee
+  PUBLIC
+    "${EPEE_INCLUDE_DIR_BASE}"
+    "${OPENSSL_INCLUDE_DIR}")
