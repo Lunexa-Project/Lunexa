@@ -62,7 +62,9 @@ lunexa_add_library_with_deps(epee
 
 # Check and add epee_readline library
 if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
-    lunexa_add_library(epee_readline readline_buffer.cpp)
+    add_library(epee_readline OBJECT
+        readline_buffer.cpp
+    )
 endif()
 
 # Build and install libepee if we're building for GUI
@@ -115,3 +117,4 @@ target_include_directories(epee
     PUBLIC
         "${EPEE_INCLUDE_DIR_BASE}"
         "${OPENSSL_INCLUDE_DIR}"
+)
