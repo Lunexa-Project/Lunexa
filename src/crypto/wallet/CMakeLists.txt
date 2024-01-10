@@ -50,13 +50,20 @@ endif ()
 # Configure library target "wallet-crypto" - clients will use this as a
 # library dependency which in turn will depend on the crypto library selected.
 #
-if (${LUNEXA_WALLET_CRYPTO_LIBRARY} STREQUAL "cn")
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/empty.h.in ${LUNEXA_GENERATED_HEADERS_DIR}/crypto/wallet/ops.h)
-  add_library(wallet-crypto ALIAS cncrypto)
+iif (${LUNEXA_WALLET_CRYPTO_LIBRARY} STREQUAL "cn")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/empty.h.in ${LUNEXA_GENERATED_HEADERS_DIR}/crypto/wallet/ops.h)
+add_library(wallet-crypto ALIAS cncrypto)
 else ()
+# Check if the LUNEXA_CRYPTO_VALID variable is defined
+if (DEFINED LUNEXA_CRYPTO_VALID)
+  # If defined, use the provided validation function
+  lunexa_crypto_generate_header(${LUNEXA_WALLET_CRYPTO_LIBRARY} "${LUNEXA_GENERATED_HEADERS_DIR}/crypto/wallet/ops.h" VALID ${LUNEXA_CRYPTO_VALID})
+else ()
+  # If not defined, use the default validation function
   lunexa_crypto_generate_header(${LUNEXA_WALLET_CRYPTO_LIBRARY} "${LUNEXA_GENERATED_HEADERS_DIR}/crypto/wallet/ops.h")
-  lunexa_crypto_get_target(${LUNEXA_WALLET_CRYPTO_LIBRARY} CRYPTO_TARGET)
-  add_library(wallet-crypto $<TARGET_OBJECTS:${CRYPTO_TARGET}>)
-  target_link_libraries(wallet-crypto cncrypto)
+endif ()
+lunexa_crypto_get_target(${LUNEXA_WALLET_CRYPTO_LIBRARY} CRYPTO_TARGET)
+add_library(wallet-crypto $<TARGET_OBJECTS:${CRYPTO_TARGET}>)
+target_link_libraries(wallet-crypto cncrypto)
 endif ()
 
