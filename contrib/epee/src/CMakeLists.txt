@@ -41,7 +41,7 @@ lunexa_add_library(epee
 )
 
 if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
-    lunexa_add_library(epee_readline readline_buffer.cpp)
+    lunexa_add_library(epee epee_readline readline_buffer.cpp)
 endif()
 
 # Build and install libepee if we're building for GUI

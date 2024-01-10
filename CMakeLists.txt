@@ -639,7 +639,7 @@ function (lunexa_add_library name)
     lunexa_add_library_with_deps(NAME ${name} SOURCES ${ARGN})
 endfunction()
 
-function (lunexa_add_library_with_deps)
+function (lunexa_add_library)
     cmake_parse_arguments(lunexa_ADD_LIBRARY "" "NAME" "DEPENDS;SOURCES" ${ARGN})
     source_group("${LUNEXA_ADD_LIBRARY_NAME}" FILES ${LUNEXA_ADD_LIBRARY_SOURCES})
 
