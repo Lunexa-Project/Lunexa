@@ -60,4 +60,3 @@ else ()
   target_link_libraries(wallet-crypto cncrypto)
 endif ()
 
-
