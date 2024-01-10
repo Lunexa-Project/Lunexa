@@ -120,10 +120,10 @@ ge_comments = textwrap.dedent("""\
     */
     """)
 
-xmr_comments = textwrap.dedent("""\
+lxa_comments = textwrap.dedent("""\
     /*
      *
-     * xmr specific code
+     * lxa specific code
      *
      *
     This code is from the original CryptoNote.
@@ -171,7 +171,7 @@ if a == "m":
         os.system("cp "+g+" "+g.replace("fe", "fe.lunexa."))
     qhasmToC("fe_pow22523.c", "pow22523.h", "fe.lunexa._pow22523.c")
     qhasmToC("fe_invert.c", "pow225521.h", "fe.lunexa._invert.c")
-    os.system("rm fe.lunexa._isnonzero.c") #since it's modified, it's in xmrSpecificOld
+    os.system("rm fe.lunexa._isnonzero.c") #since it's modified, it's in lxaSpecificOld
     os.system("cat fe.lunexa.*.c | grep -v '^#include' > fe.lunexa.c")
 
     #sc things
@@ -180,7 +180,7 @@ if a == "m":
     #so you don't get multiple "loads"
     os.system("tail -n +24 sc_reduce.c > sc.lunexa._reduce.c") #also good on linux
     os.system("tail -n +24 sc_muladd.c > sc.lunexa._muladd.c")
-    os.system("tail -n +31 sc_sub.xmr.c > sc.lunexa._sub.xmr.c") #careful with the tails if you change these files!
+    os.system("tail -n +31 sc_sub.lxa.c > sc.lunexa._sub.lxa.c") #careful with the tails if you change these files!
     os.system("cat sc.lunexa.*.c | grep -v '^#include' > sc.lunexa.c")
 
     #ge stuff
@@ -223,9 +223,9 @@ if a == "m":
             text_file.write(ge_comments)
     with open("sc.lunexa.comments", "w") as text_file:
             text_file.write(sc_comments)
-    with open("xmr.lunexa.comments", "w") as text_file:
-            text_file.write(xmr_comments)
-    with open("xmr.lunexa.predeclarations", "w") as text_file:
+    with open("lxa.lunexa.comments", "w") as text_file:
+            text_file.write(lxa_comments)
+    with open("lxa.lunexa.predeclarations", "w") as text_file:
             text_file.write(predeclarations)
 
 
@@ -238,7 +238,7 @@ if a == "m":
         text_file.write(crypto_ops_includes)
 
     #note you may have duplicates of load_3, load_4 and possibly some other functions ... 
-    os.system("cat lunexa.license crypto-ops.lunexa.includes xmr.lunexa.predeclarations fe.lunexa.comments fe.lunexa.c sc.lunexa.comments sc.lunexa.c ge.lunexa.comments ge.lunexa.c xmr.lunexa.comments xmrSpecificOld.c > crypto-ops.c")
+    os.system("cat lunexa.license crypto-ops.lunexa.includes lxa.lunexa.predeclarations fe.lunexa.comments fe.lunexa.c sc.lunexa.comments sc.lunexa.c ge.lunexa.comments ge.lunexa.c lxa.lunexa.comments lxaSpecificOld.c > crypto-ops.c")
 
     #monero specific header files
     #print("making crypto-ops-tmp.h")
