@@ -30,7 +30,7 @@
 set_property(SOURCE memwipe.c PROPERTY C_STANDARD 11)
 
 # Add the epee library
-add_library(epee
+lunexa_add_library(epee
     byte_slice.cpp byte_stream.cpp hex.cpp abstract_http_client.cpp http_auth.cpp mlog.cpp net_helper.cpp net_utils_base.cpp string_tools.cpp parserse_base_utils.cpp
     wipeable_string.cpp levin_base.cpp memwipe.c connection_basic.cpp network_throttle.cpp network_throttle-detail.cpp mlocker.cpp buffer.cpp net_ssl.cpp
     int-util.cpp portable_storage.cpp
