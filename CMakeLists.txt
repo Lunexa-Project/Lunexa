@@ -645,16 +645,20 @@ function (lunexa_add_library_with_deps)
 
     # Define a unique object library and an actual library that links those objects together.
     set(objlib obj_${LUNEXA_ADD_LIBRARY_NAME})
+    set(targetlib ${LUNEXA_ADD_LIBRARY_NAME}_target)
+
     add_library(${objlib} OBJECT ${LUNEXA_ADD_LIBRARY_SOURCES})
-    add_library(${LUNEXA_ADD_LIBRARY_NAME} $<TARGET_OBJECTS:${objlib}>)
-    lunexa_set_target_no_relink(${LUNEXA_ADD_LIBRARY_NAME})
-    lunexa_set_target_strip(${LUNEXA_ADD_LIBRARY_NAME})
+    add_library(${targetlib} $<TARGET_OBJECTS:${objlib}>)  # Use generator expression here
+    lunexa_set_target_no_relink(${targetlib})
+    lunexa_set_target_strip(${targetlib})
+    
     if (LUNEXA_ADD_LIBRARY_DEPENDS)
         add_dependencies(${objlib} ${LUNEXA_ADD_LIBRARY_DEPENDS})
     endif()
-    set_property(TARGET ${LUNEXA_ADD_LIBRARY_NAME} PROPERTY FOLDER "libs")
+    
+    set_property(TARGET ${targetlib} PROPERTY FOLDER "libs")
     target_compile_definitions(${objlib}
-        PRIVATE $<TARGET_PROPERTY:${LUNEXA_ADD_LIBRARY_NAME},INTERFACE_COMPILE_DEFINITIONS>)
+        PRIVATE $<TARGET_PROPERTY:${targetlib},INTERFACE_COMPILE_DEFINITIONS>)
 endfunction()
 
 # Generate header for embedded translations
