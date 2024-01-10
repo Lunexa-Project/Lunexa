@@ -36,6 +36,7 @@
 #include <boost/preprocessor/seq/seq.hpp>
 #include <boost/preprocessor/seq.hpp>
 #include <boost/preprocessor/stringize.hpp>
+#include <boost/preprocessor/seq/enum.hpp>
 #include <boost/spirit/include/karma_char.hpp>
 #include <boost/spirit/include/karma_format.hpp>
 #include <boost/spirit/include/karma_repeat.hpp>
