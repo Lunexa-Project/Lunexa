@@ -40,11 +40,8 @@ lunexa_add_library(epee
     ${EPEE_HEADERS_PUBLIC}
 )
 
-# Check and add epee_readline library
 if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
-    add_library(epee_readline
-        readline_buffer.cpp
-    )
+    lunexa_add_library(epee_readline readline_buffer.cpp)
 endif()
 
 # Build and install libepee if we're building for GUI
@@ -81,7 +78,6 @@ target_link_libraries(epee
         ${EXTRA_LIBRARIES}
 )
 
-# Link libraries to 'epee_readline'
 if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
     target_link_libraries(epee_readline
         PUBLIC
@@ -92,7 +88,6 @@ if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
     )
 endif()
 
-# Include directories for 'epee'
 target_include_directories(epee
     PUBLIC
         "${EPEE_INCLUDE_DIR_BASE}"
