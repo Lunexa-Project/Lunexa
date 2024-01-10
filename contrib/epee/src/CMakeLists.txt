@@ -79,7 +79,7 @@ target_link_libraries(epee
 )
 
 if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
-    target_link_libraries(epee epee_readline
+    target_link_libraries(epee_readline
         PUBLIC
             easylogging
             ${Boost_SYSTEM_LIBRARY}
