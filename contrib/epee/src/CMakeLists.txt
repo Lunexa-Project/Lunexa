@@ -28,9 +28,8 @@
 
 set_property(SOURCE memwipe.c PROPERTY C_STANDARD 11)
 
-# Define the epee library using lunexa_add_library_with_deps
-lunexa_add_library_with_deps(epee
-    SOURCES
+# Define the epee library using add_library
+    add_library(epee
         byte_slice.cpp
         byte_stream.cpp
         hex.cpp
@@ -62,7 +61,7 @@ lunexa_add_library_with_deps(epee
 
 # Check and add epee_readline library
 if (USE_READLINE AND (GNU_READLINE_FOUND OR (DEPENDS AND NOT MINGW)))
-    add_library(epee_readline OBJECT
+    add_library(epee_readline
         readline_buffer.cpp
     )
 endif()
