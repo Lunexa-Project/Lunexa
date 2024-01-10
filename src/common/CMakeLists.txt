@@ -63,7 +63,7 @@ lunexa_find_all_headers(common_private_headers "${CMAKE_CURRENT_SOURCE_DIR}")
 lunexa_private_headers(common
   ${common_private_headers})
 
-add_library(common
+lunexa_add_library(common
   ${common_sources}
   ${common_headers}
   ${common_private_headers}
