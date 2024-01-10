@@ -640,25 +640,23 @@ function (lunexa_add_library name)
 endfunction()
 
 function (lunexa_add_library_with_deps)
-  cmake_parse_arguments(lunexa_ADD_LIBRARY "" "NAME" "DEPENDS;SOURCES" ${ARGN})
-  source_group("${LUNEXA_ADD_LIBRARY_NAME}" FILES ${LUNEXA_ADD_LIBRARY_SOURCES})
+    cmake_parse_arguments(lunexa_ADD_LIBRARY "" "NAME" "DEPENDS;SOURCES" ${ARGN})
+    source_group("${LUNEXA_ADD_LIBRARY_NAME}" FILES ${LUNEXA_ADD_LIBRARY_SOURCES})
 
-  # Define a ("virtual") object library and an actual library that links those
-  # objects together. The virtual libraries can be arbitrarily combined to link
-  # any subset of objects into one library archive. This is used for releasing
-  # libwallet, which combines multiple components.
-  set(objlib obj_${LUNEXA_ADD_LIBRARY_NAME})
-  add_library(${objlib} OBJECT ${LUNEXA_ADD_LIBRARY_SOURCES})
-  add_library(${LUNEXA_ADD_LIBRARY_NAME} $<TARGET_OBJECTS:${objlib}>)
-  lunexa_set_target_no_relink(${LUNEXA_ADD_LIBRARY_NAME})
-  lunexa_set_target_strip(${LUNEXA_ADD_LIBRARY_NAME})
-  if (LUNEXA_ADD_LIBRARY_DEPENDS)
-    add_dependencies(${objlib} ${LUNEXA_ADD_LIBRARY_DEPENDS})
-  endif()
-  set_property(TARGET ${LUNEXA_ADD_LIBRARY_NAME} PROPERTY FOLDER "libs")
-  target_compile_definitions(${objlib}
-    PRIVATE $<TARGET_PROPERTY:${LUNEXA_ADD_LIBRARY_NAME},INTERFACE_COMPILE_DEFINITIONS>)
-endfunction ()
+    # Define a ("virtual") object library and an actual library that links those
+    # objects together.
+    set(objlib obj_${LUNEXA_ADD_LIBRARY_NAME})
+    add_library(${objlib} OBJECT ${LUNEXA_ADD_LIBRARY_SOURCES})
+    add_library(${LUNEXA_ADD_LIBRARY_NAME} $<TARGET_OBJECTS:${objlib}>)
+    lunexa_set_target_no_relink(${LUNEXA_ADD_LIBRARY_NAME})
+    lunexa_set_target_strip(${LUNEXA_ADD_LIBRARY_NAME})
+    if (LUNEXA_ADD_LIBRARY_DEPENDS)
+        add_dependencies(${objlib} ${LUNEXA_ADD_LIBRARY_DEPENDS})
+    endif()
+    set_property(TARGET ${LUNEXA_ADD_LIBRARY_NAME} PROPERTY FOLDER "libs")
+    target_compile_definitions(${objlib}
+        PRIVATE $<TARGET_PROPERTY:${LUNEXA_ADD_LIBRARY_NAME},INTERFACE_COMPILE_DEFINITIONS>)
+endfunction()
 
 # Generate header for embedded translations
 # Generate header for embedded translations, use target toolchain if depends, otherwise use the
