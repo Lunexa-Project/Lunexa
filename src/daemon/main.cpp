@@ -196,7 +196,7 @@ int main(int argc, char const * argv[])
       return 0;
     }
 
-    // LUNEXA Version
+    // Monero Version
     if (command_line::get_arg(vm, command_line::arg_version))
     {
       std::cout << "Lunexa '" << LUNEXA_RELEASE_NAME << "' (v" << LUNEXA_VERSION_FULL << ")" << ENDL;
@@ -248,7 +248,7 @@ int main(int argc, char const * argv[])
     }
 
     // data_dir
-    //   default: e.g. ~/.lunexa/ or ~/.lunexa/testnet
+    //   default: e.g. ~/.bitmonero/ or ~/.bitmonero/testnet
     //   if data-dir argument given:
     //     absolute path
     //     relative path: relative to cwd
