@@ -10,7 +10,4 @@
 [submodule "external/randomx"]
 	path = external/randomx
 	url = https://github.com/tevador/RandomX
-[submodule "external/supercop"]
-	path = external/supercop
-	url = https://github.com/Lunexa-Project/supercop
-	branch = main
+
