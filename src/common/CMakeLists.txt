@@ -60,21 +60,21 @@ set(common_headers)
 
 lunexa_find_all_headers(common_private_headers "${CMAKE_CURRENT_SOURCE_DIR}")
 
-lunexa_private_headers(common
+lunexa_private_headers(lunexa_common
   ${common_private_headers})
 
-lunexa_add_library(common
+add_library(lunexa_common
   ${common_sources}
   ${common_headers}
   ${common_private_headers}
   DEPENDS generate_translations_header)
 
-target_link_libraries(common
+target_link_libraries(lunexa_common
   PRIVATE
     # Add any necessary libraries here
 )
 
-target_include_directories(common
+target_include_directories(lunexa_common
   PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
