@@ -129,11 +129,11 @@ int main(int argc, char* argv[])
   mlog_configure("", true);
   mlog_set_categories("+" LUNEXA_DEFAULT_LOG_CATEGORY ":INFO");
 
-  lookup(LOOKUP_A, {"seeds.moneroseeds.se", "seeds.moneroseeds.ae.org", "seeds.moneroseeds.ch", "seeds.moneroseeds.li"});
+  lookup(LOOKUP_A, {"seeds1.lunexa.co", "seeds2.lunexa.co", "seeds3.lunexa.co", "seeds4.lunexa.co"});
 
-  lookup(LOOKUP_TXT, {"updates.moneropulse.org", "updates.moneropulse.net", "updates.moneropulse.co", "updates.moneropulse.se", "updates.moneropulse.fr", "updates.moneropulse.de", "updates.moneropulse.no", "updates.moneropulse.ch"});
+  lookup(LOOKUP_TXT, {"updates1.lunexa.co", "updates2.lunexa.co", "updates3.lunexa.co", "updates4.lunexa.co"});
 
-  lookup(LOOKUP_TXT, {"checkpoints.moneropulse.org", "checkpoints.moneropulse.net", "checkpoints.moneropulse.co", "checkpoints.moneropulse.se"});
+  lookup(LOOKUP_TXT, {"checkpoints1.lunexa.co", "checkpoints2.lunexa.co", "checkpoints3.lunexa.co", "checkpoints4.lunexa.co"});
 
   // those are in the code, but don't seem to actually exist
 #if 0
