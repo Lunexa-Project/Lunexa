@@ -712,7 +712,7 @@ namespace nodetool
     }
     else
     {
-      full_addrs.insert("127.0.0.1:18080");
+      full_addrs.insert("127.0.0.1:9028");
     }
     return full_addrs;
   }

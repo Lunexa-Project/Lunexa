@@ -868,7 +868,7 @@ namespace
 TEST(get_network_address_host_and_port, ipv4)
 {
     na_host_and_port_test("9.9.9.9", "9.9.9.9", "xxxxx");
-    na_host_and_port_test("9.9.9.9:18081", "9.9.9.9", "18081");
+    na_host_and_port_test("9.9.9.9:9028", "9.9.9.9", "9082");
 }
 
 TEST(get_network_address_host_and_port, ipv6)
