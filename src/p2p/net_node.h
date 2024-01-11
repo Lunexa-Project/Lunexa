@@ -301,7 +301,9 @@ namespace nodetool
     //Seed Nodes
   private:
     const std::vector<std::string> m_seed_nodes_list =
-    { "127.0.0.1"
+    { "node1.lunexa.co"
+    , "node2.lunexa.co"
+    , "node3.lunexa.co"
     };
 
     bool islimitup=false;
