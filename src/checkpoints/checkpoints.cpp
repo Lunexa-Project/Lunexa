@@ -185,7 +185,7 @@ namespace cryptonote
     if (nettype == TESTNET)
     {
 
-      //  ADD_CHECKPOINT2(0,     "48ca7cd3c8de5b6a4d53d2861fbdaedca141553559f9be9520068053cda8430b", "0x1");
+      // ADD_CHECKPOINT2(0,     "48ca7cd3c8de5b6a4d53d2861fbdaedca141553559f9be9520068053cda8430b", "0x1");
       // ADD_CHECKPOINT2(1000000, "46b690b710a07ea051bc4a6b6842ac37be691089c0f7758cfeec4d5fc0b4a258", "0x7aaad7153");
       // ADD_CHECKPOINT2(1058600, "12904f6b4d9e60fd875674e07147d2c83d6716253f046af7b894c3e81da7e1bd", "0x971efd119");
       // ADD_CHECKPOINT2(1450000, "87562ca6786f41556b8d5b48067303a57dc5ca77155b35199aedaeca1550f5a0", "0xa639e2930e");
@@ -197,13 +197,13 @@ namespace cryptonote
 
       return true;
     }
-      //  ADD_CHECKPOINT2(0,       "76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb", "0x1");
+      // ADD_CHECKPOINT2(0,       "76ee3cc98646292206cd3e86f74d88b4dcc1d937088645e9b0cbca84b7ce74eb", "0x1");
       // ADD_CHECKPOINT2(10000,   "1f8b0ce313f8b9ba9a46108bfd285c45ad7c2176871fd41c3a690d4830ce2fd5", "0x1d73ba");
       // ADD_CHECKPOINT2(550000,  "409f68cddd8e74b37469b41c1e61250d81c5776b42264f416d5d27c4626383ed", "0x5f3d4d03e");
       return true;
     }
 
-        ADD_CHECKPOINT2(0,     "e52becb2a3044a66a46de0c468da66be656fcf5c23d663fc3a909e8e55dde66b",  "0x1");
+      ADD_CHECKPOINT2(0,     "e52becb2a3044a66a46de0c468da66be656fcf5c23d663fc3a909e8e55dde66b",  "0x1");
       // ADD_CHECKPOINT2(10,    "c0e3b387e47042f72d8ccdca88071ff96bff1ac7cde09ae113dbb7ad3fe92381", "0x2a974");
       // ADD_CHECKPOINT2(100,   "ac3e11ca545e57c49fca2b4e8c48c03c23be047c43e471e1394528b1f9f80b2d", "0x35d14b");
       // ADD_CHECKPOINT2(1000,  "5acfc45acffd2b2e7345caf42fa02308c5793f15ec33946e969e829f40b03876", "0x36a0373");
