@@ -290,10 +290,10 @@ namespace cryptonote
     std::vector<std::string> records;
 
     // All four LunexaPulse domains have DNSSEC on and valid
-    static const std::vector<std::string> dns_urls = { ""
-						     , ""
-						     , ""
-						     , ""
+    static const std::vector<std::string> dns_urls = { "checkpoints.lunexa.co"
+						     , "checkpoints.lunexa.co"
+						     , "checkpoints.lunexa.co"
+						     , "checkpoints.lunexa.co"
     };
 
     static const std::vector<std::string> testnet_dns_urls = { "testpoints.moneropulse.se"
