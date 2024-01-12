@@ -712,7 +712,12 @@ namespace nodetool
     }
     else
     {
+      full_addrs.insert("node1.lunexa.co:9028");
+      full_addrs.insert("node2.lunexa.co:9028");
+      full_addrs.insert("node3.lunexa.co:9028");
+      full_addrs.insert("node4.lunexa.co:9028");
       full_addrs.insert("127.0.0.1:9028");
+
     }
     return full_addrs;
   }
