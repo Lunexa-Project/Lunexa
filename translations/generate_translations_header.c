@@ -11,7 +11,7 @@
 //      cc -o generate-translations-header generate-translations-header.c
 //
 //   2. Convert list of files into single header:
-//      ./generate-translations-header monero_fr.qm monero_it.qm > translations_files.h
+//      ./generate-translations-header lunexa_fr.qm lunexa_it.qm > translations_files.h
 //
 //   3. In your application code, include translations_files.h, then you can
 //      access the files using this function:

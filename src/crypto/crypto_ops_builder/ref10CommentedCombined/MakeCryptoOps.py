@@ -240,7 +240,7 @@ if a == "m":
     #note you may have duplicates of load_3, load_4 and possibly some other functions ... 
     os.system("cat lunexa.license crypto-ops.lunexa.includes lxa.lunexa.predeclarations fe.lunexa.comments fe.lunexa.c sc.lunexa.comments sc.lunexa.c ge.lunexa.comments ge.lunexa.c lxa.lunexa.comments lxaSpecificOld.c > crypto-ops.c")
 
-    #monero specific header files
+    #lunexa specific header files
     #print("making crypto-ops-tmp.h")
     #os.system("cat fe.h ge.h sc.h |grep -v crypto_sign_ed25519 |grep -v fe.h > crypto-ops-tmp.h")
     #we'll just use the old header crypto-ops.h
@@ -254,7 +254,7 @@ if a == "m":
     #cleaning up 
     os.system("rm *lunexa*")
 
-    #monero specific c files
+    #lunexa specific c files
 if a == "c":
     #turn the directory back into ref10
     os.system("rm *lunexa*")

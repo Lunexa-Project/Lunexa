@@ -114,7 +114,7 @@ namespace
         return std::memcmp(std::addressof(lhs), std::addressof(rhs), sizeof(T)) == 0;
     }
 
-    //! Benchmark default monero crypto library - a re-arranged ref10 implementation.
+    //! Benchmark default lunexa crypto library - a re-arranged ref10 implementation.
     struct cn
     {
         static constexpr const char* name() noexcept { return "cn"; }
@@ -176,7 +176,7 @@ namespace
         cryptonote::keypair two;
     };
 
-    /*! Tests the ECDH step used for monero txes where the tx-pub is always
+    /*! Tests the ECDH step used for lunexa txes where the tx-pub is always
         de-compressed into a table every time. */
     struct tx_pub_standard
     {
@@ -226,7 +226,7 @@ namespace
         }
     };
 
-    /*! Tests the shared-secret to output-key step used for monero txes where
+    /*! Tests the shared-secret to output-key step used for lunexa txes where
         the users spend-public is always de-compressed. */
     struct output_pub_standard
     {

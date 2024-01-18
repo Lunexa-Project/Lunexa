@@ -3684,7 +3684,7 @@ Input %llu/%llu (%s): amount=%s</source>
     </message>
     <message>
         <location filename="../src/simplewallet/simplewallet.cpp" line="2294"/>
-        <source>Welcome to Lunexa and financial privacy. For more information see https://GetMonero.org</source>
+        <source>Welcome to Lunexa and financial privacy. For more information see https://GetLunexa.org</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

@@ -208,7 +208,7 @@ static void rx_alloc_dataset(randomx_flags flags, randomx_dataset** dataset, int
     static int shown = 0;
     if (!shown) {
       shown = 1;
-      minfo(RX_LOGCAT, "RandomX dataset is not enabled by default. Use MONERO_RANDOMX_FULL_MEM environment variable to enable it.");
+      minfo(RX_LOGCAT, "RandomX dataset is not enabled by default. Use LUNEXA_RANDOMX_FULL_MEM environment variable to enable it.");
     }
     return;
   }

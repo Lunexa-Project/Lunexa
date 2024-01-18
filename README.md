@@ -223,7 +223,7 @@ invokes cmake commands as needed.
 
 * The resulting executables can be found in `build/release/bin`
 
-* Add `PATH="$PATH:$HOME/monero/build/release/bin"` to `.profile`
+* Add `PATH="$PATH:$HOME/lunexa/build/release/bin"` to `.profile`
 
 * Run Lunexa with `lunexad --detach`
 

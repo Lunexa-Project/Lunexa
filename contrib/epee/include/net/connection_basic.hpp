@@ -1,5 +1,5 @@
 /// @file
-/// @author rfree (current maintainer in monero.cc project)
+/// @author rfree (current maintainer in lunexa.cc project)
 /// @brief base for connection, contains e.g. the ratelimit hooks
 
 // ! This file might contain variable names same as in template class connection<> 
