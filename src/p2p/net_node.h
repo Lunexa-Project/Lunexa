@@ -304,6 +304,7 @@ namespace nodetool
     { "node1.lunexa.co"
     , "node2.lunexa.co"
     , "node3.lunexa.co"
+    , "node4.lunexa.co"
     };
 
     bool islimitup=false;

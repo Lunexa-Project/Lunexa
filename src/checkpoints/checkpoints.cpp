@@ -252,16 +252,16 @@ namespace cryptonote
 						     , "checkpoints.lunexa.co"
     };
 
-    static const std::vector<std::string> testnet_dns_urls = { "testpoints.moneropulse.se"
-							     , "testpoints.moneropulse.org"
-							     , "testpoints.moneropulse.net"
-							     , "testpoints.moneropulse.co"
+    static const std::vector<std::string> testnet_dns_urls = { "testpoints.lunexa.co"
+							     , "testpoints.lunexa.co"
+							     , "testpoints.lunexa.co"
+							     , "testpoints.lunexa.co"
     };
 
-    static const std::vector<std::string> stagenet_dns_urls = { "stagenetpoints.moneropulse.se"
-                   , "stagenetpoints.moneropulse.org"
-                   , "stagenetpoints.moneropulse.net"
-                   , "stagenetpoints.moneropulse.co"
+    static const std::vector<std::string> stagenet_dns_urls = { "stagenetpoints.lunexa.co"
+                   , "stagenetpoints.lunexa.co"
+                   , "stagenetpoints.lunexa.co"
+                   , "stagenetpoints.lunexa.co"
     };
 
     if (!tools::dns_utils::load_txt_records_from_dns(records, nettype == TESTNET ? testnet_dns_urls : nettype == STAGENET ? stagenet_dns_urls : dns_urls))
