@@ -12,3 +12,6 @@
 	path = external/miniupnp
 	url = https://github.com/lunexa-project/miniupnp
 
+[submodule "external/RandomX"]
+	path = external/RandomX
+	url = https://github.com/Lunexa-Project/RandomX
