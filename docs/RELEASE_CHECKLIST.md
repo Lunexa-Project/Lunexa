@@ -1,4 +1,4 @@
-# Lunexa hard-fork release check-list
+# Monero hard-fork release check-list
 
 - [ ] Security audit
 - [ ] Code audit
