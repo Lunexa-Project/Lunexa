@@ -36,8 +36,8 @@ const hardfork_t mainnet_hard_forks[] = {
   { 1, 1, 0, 1341378000 },
 
   // version 2 starts from block 21350 randomX intergration
-  { 2, 21350, 0, 1647324629},
-  
+  { 2, 22000, 0, 1647324629},
+
 };
 
 const size_t num_mainnet_hard_forks = sizeof(mainnet_hard_forks) / sizeof(mainnet_hard_forks[0]);
