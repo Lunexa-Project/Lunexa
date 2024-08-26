@@ -713,7 +713,7 @@ namespace nodetool
     else
     {
       full_addrs.insert("54.66.88.48:9028");
-      full_addrs.insert("node2.lunexa.co:9028");
+      full_addrs.insert("3.25.21.203:9028");
       full_addrs.insert("node3.lunexa.co:9028");
       full_addrs.insert("node4.lunexa.co:9028");
       full_addrs.insert("127.0.0.1:9028");
