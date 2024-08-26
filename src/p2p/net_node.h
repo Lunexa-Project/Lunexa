@@ -301,10 +301,10 @@ namespace nodetool
     //Seed Nodes
   private:
     const std::vector<std::string> m_seed_nodes_list =
-    { "node1.lunexa.co"
-    , "node2.lunexa.co"
-    , "node3.lunexa.co"
-    , "node4.lunexa.co"
+    { "seed1.lunexa.co"
+    , "seed2.lunexa.co"
+    , "seed3.lunexa.co"
+    , "seed4.lunexa.co"
     };
 
     bool islimitup=false;
