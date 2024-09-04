@@ -62,5 +62,5 @@ EXPOSE 18081
 USER lunexa
 
 ENTRYPOINT ["lunexad"]
-CMD ["--p2p-bind-ip=0.0.0.0", "--p2p-bind-port=18080", "--rpc-bind-ip=0.0.0.0", "--rpc-bind-port=18081", "--non-interactive", "--confirm-external-bind"]
+CMD ["--p2p-bind-ip=0.0.0.0", "--p2p-bind-port=9028", "--rpc-bind-ip=0.0.0.0", "--rpc-bind-port=9029", "--non-interactive", "--confirm-external-bind"]
 
