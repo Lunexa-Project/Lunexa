@@ -201,7 +201,6 @@ namespace cryptonote
     }
 
       ADD_CHECKPOINT2(0,     "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3",  "0x1");
-      //ADD_CHECKPOINT2(2, "")
     return true;
   }
 

@@ -105,7 +105,6 @@ get_builtin_ds(void)
   static const char * const ds[] =
   {
     ". IN DS 2371 13 2 F2E56DB52A87830D26DD4A3795E03813557D655567FE15F0C3A3F1C27CC1E5BC\n",
-    
     NULL
   };
   return ds;
