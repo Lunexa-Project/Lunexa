@@ -47,6 +47,7 @@ using namespace epee;
 
 static const char *DEFAULT_DNS_PUBLIC_ADDR[] =
 {
+  "9.9.9.9"             // Quad 9
   "194.150.168.168",    // CCC (Germany)
   "80.67.169.40",       // FDN (France)
   "89.233.43.71",       // http://censurfridns.dk (Denmark)
