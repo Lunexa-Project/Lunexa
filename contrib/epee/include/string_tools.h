@@ -31,7 +31,6 @@
 #include "mlocker.h"
 
 #include <boost/utility/string_ref.hpp>
-#include <boost/algorithm/string.hpp> 
 #include <sstream>
 #include <string>
 #include <cstdint>
@@ -70,17 +69,23 @@ namespace string_tools
 #ifdef _WIN32
    std::string get_current_module_path();
 #endif
-  void set_module_name_and_folder(const std::string& path_to_process_);
+  bool set_module_name_and_folder(const std::string& path_to_process_);
+  bool trim_left(std::string& str);
+  bool trim_right(std::string& str);
   //----------------------------------------------------------------------------
   inline std::string& trim(std::string& str)
   {
-    boost::trim(str);
+    trim_left(str);
+    trim_right(str);
     return str;
   }
   //----------------------------------------------------------------------------
-  inline std::string trim(const std::string& str)
+  inline std::string trim(const std::string& str_)
   {
-    return boost::trim_copy(str);
+    std::string str = str_;
+    trim_left(str);
+    trim_right(str);
+    return str;
   }
   std::string pad_string(std::string s, size_t n, char c = ' ', bool prepend = false);
   

@@ -29,7 +29,6 @@
 set(crypto_sources
   aesb.c
   blake256.c
-  blake2b.c
   chacha.c
   crypto-ops-data.c
   crypto-ops.c
@@ -73,7 +72,7 @@ target_link_libraries(cncrypto
     epee
     randomx
     ${Boost_SYSTEM_LIBRARY}
-    ${sodium_LIBRARIES}
+    ${SODIUM_LIBRARY}
   PRIVATE
     ${EXTRA_LIBRARIES})
 

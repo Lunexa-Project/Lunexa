@@ -1,8 +1,8 @@
 /// @file
-/// @author rfree 
+/// @author rfree (current maintainer in monero.cc project)
 /// @brief interface for throttling of connection (count and rate-limit speed etc)
 
-// Copyright (c) 2014-2024, The Monero Project
+// Copyright (c) 2014-2023, The Lunexa Project
 // 
 // All rights reserved.
 // 
@@ -160,5 +160,6 @@ class i_network_throttle {
 
 
 #endif
+
 
 

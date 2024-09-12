@@ -5750,7 +5750,7 @@ WARNING: Do not reuse your Lunexa keys on another fork, UNLESS this fork has key
     </message>
     <message>
         <location filename="../src/wallet/wallet2.cpp" line="260"/>
-        <source>Use daemon instance at port &lt;arg&gt; instead of 9029</source>
+        <source>Use daemon instance at port &lt;arg&gt; instead of 18081</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

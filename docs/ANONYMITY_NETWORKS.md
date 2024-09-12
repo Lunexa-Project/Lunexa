@@ -88,11 +88,11 @@ An anonymity network can be configured to forward incoming connections to a
 `lunexad` RPC port - which is independent from the configuration for incoming
 P2P anonymity connections. The anonymity network (Tor/I2P) is
 [configured in the same manner](#configuration), except the localhost port
-must be the RPC port (typically 9029 for mainnet) instead of the P2P port:
+must be the RPC port (typically 18081 for mainnet) instead of the P2P port:
 
 ```
 HiddenServiceDir /var/lib/tor/data/lunexa
-HiddenServicePort 9029 127.0.0.1:9029
+HiddenServicePort 18081 127.0.0.1:18081
 ```
 
 Then the wallet will be configured to use a Tor/I2P address:

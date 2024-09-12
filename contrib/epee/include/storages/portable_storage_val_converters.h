@@ -37,7 +37,6 @@
 #include "misc_log_ex.h"
 
 #include <boost/lexical_cast.hpp>
-#include <boost/numeric/conversion/bounds.hpp>
 #include <typeinfo>
 #include <iomanip>
 
@@ -141,6 +140,7 @@ POP_WARNINGS
     };
 
     // For MyMonero/OpenMonero backend compatibility
+    // Also for Lunexa's adapted Wallet
     // MyMonero backend sends amount, fees and timestamp values as strings.
     // Until MM backend is updated, this is needed for compatibility between OpenMonero and MyMonero. 
     template<>

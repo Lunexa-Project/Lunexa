@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 //
 // All rights reserved.
 //
@@ -217,13 +217,15 @@ namespace
   //// Digest Authentication
 
   template<typename Digest>
-  auto generate_a1(Digest digest, const http::login& creds, const boost::string_ref realm)
+  typename std::result_of<Digest()>::type generate_a1(
+    Digest digest, const http::login& creds, const boost::string_ref realm)
   {
     return digest(creds.username, u8":", realm, u8":", creds.password);
   }
 
   template<typename Digest>
-  auto generate_a1(Digest digest, const http::http_client_auth::session& user)
+  typename std::result_of<Digest()>::type generate_a1(
+    Digest digest, const http::http_client_auth::session& user)
   {
     return generate_a1(std::move(digest), user.credentials, user.server.realm);
   }
@@ -775,3 +777,4 @@ namespace epee
     }
   }
 }
+
