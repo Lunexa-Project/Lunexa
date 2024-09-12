@@ -1378,6 +1378,8 @@ namespace cryptonote
           add_reason(reason, "too few outputs");
         if ((res.tx_extra_too_big = tvc.m_tx_extra_too_big))
           add_reason(reason, "tx-extra too big");
+        if ((res.nonzero_unlock_time = tvc.m_nonzero_unlock_time))
+          add_reason(reason, "tx unlock time is not zero");
         const std::string punctuation = reason.empty() ? "" : ": ";
         if (tvc.m_verifivation_failed)
         {
@@ -2082,11 +2084,12 @@ namespace cryptonote
     }
 
     crypto::hash merkle_root;
-    size_t merkle_tree_depth = 0;
     std::vector<std::pair<crypto::hash, crypto::hash>> aux_pow;
     std::vector<crypto::hash> aux_pow_raw;
+    std::vector<crypto::hash> aux_pow_id_raw;
     aux_pow.reserve(req.aux_pow.size());
-    aux_pow_raw.reserve(req.aux_pow.size());
+    aux_pow_raw.resize(req.aux_pow.size());
+    aux_pow_id_raw.resize(req.aux_pow.size());
     for (const auto &s: req.aux_pow)
     {
       aux_pow.push_back({});
@@ -2102,7 +2105,6 @@ namespace cryptonote
         error_resp.message = "Invalid aux pow hash";
         return false;
       }
-      aux_pow_raw.push_back(aux_pow.back().second);
     }
 
     size_t path_domain = 1;
@@ -2111,10 +2113,13 @@ namespace cryptonote
     uint32_t nonce;
     const uint32_t max_nonce = 65535;
     bool collision = true;
+    std::vector<uint32_t> slots(aux_pow.size());
     for (nonce = 0; nonce <= max_nonce; ++nonce)
     {
-      std::vector<bool> slots(aux_pow.size(), false);
+      std::vector<bool> slot_seen(aux_pow.size(), false);
       collision = false;
+      for (size_t idx = 0; idx < aux_pow.size(); ++idx)
+        slots[idx] = 0xffffffff;
       for (size_t idx = 0; idx < aux_pow.size(); ++idx)
       {
         const uint32_t slot = cryptonote::get_aux_slot(aux_pow[idx].first, nonce, aux_pow.size());
@@ -2124,12 +2129,13 @@ namespace cryptonote
           error_resp.message = "Computed slot is out of range";
           return false;
         }
-        if (slots[slot])
+        if (slot_seen[slot])
         {
           collision = true;
           break;
         }
-        slots[slot] = true;
+        slot_seen[slot] = true;
+        slots[idx] = slot;
       }
       if (!collision)
         break;
@@ -2139,6 +2145,19 @@ namespace cryptonote
       error_resp.code = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
       error_resp.message = "Failed to find a suitable nonce";
       return false;
+    }
+
+    // set the order determined above
+    for (size_t i = 0; i < aux_pow.size(); ++i)
+    {
+      if (slots[i] >= aux_pow.size())
+      {
+        error_resp.code = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
+        error_resp.message = "Slot value out of range";
+        return false;
+      }
+      aux_pow_raw[slots[i]] = aux_pow[i].second;
+      aux_pow_id_raw[slots[i]] = aux_pow[i].first;
     }
 
     crypto::tree_hash((const char(*)[crypto::HASH_SIZE])aux_pow_raw.data(), aux_pow_raw.size(), merkle_root.data);
@@ -2167,7 +2186,7 @@ namespace cryptonote
       error_resp.message = "Error removing existing merkle root";
       return false;
     }
-    if (!add_mm_merkle_root_to_tx_extra(b.miner_tx.extra, merkle_root, merkle_tree_depth))
+    if (!add_mm_merkle_root_to_tx_extra(b.miner_tx.extra, merkle_root, res.merkle_tree_depth))
     {
       error_resp.code = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
       error_resp.message = "Error adding merkle root";
@@ -2181,7 +2200,8 @@ namespace cryptonote
 
     res.blocktemplate_blob = string_tools::buff_to_hex_nodelimer(block_blob);
     res.blockhashing_blob = string_tools::buff_to_hex_nodelimer(hashing_blob);
-    res.aux_pow = req.aux_pow;
+    for (size_t i = 0; i < aux_pow_raw.size(); ++i)
+      res.aux_pow.push_back({epee::string_tools::pod_to_hex(aux_pow_id_raw[i]), epee::string_tools::pod_to_hex(aux_pow_raw[i])});
     res.status = CORE_RPC_STATUS_OK;
     return true;
   }
@@ -3001,15 +3021,9 @@ namespace cryptonote
 
     CHECK_PAYMENT(req, res, COST_PER_FEE_ESTIMATE);
 
-    const uint8_t version = m_core.get_blockchain_storage().get_current_hard_fork_version();
-    if (version >= HF_VERSION_2021_SCALING)
     {
       m_core.get_blockchain_storage().get_dynamic_base_fee_estimate_2021_scaling(req.grace_blocks, res.fees);
       res.fee = res.fees[0];
-    }
-    else
-    {
-      res.fee = m_core.get_blockchain_storage().get_dynamic_base_fee_estimate(req.grace_blocks);
     }
     res.quantization_mask = Blockchain::get_fee_quantization_mask();
     res.status = CORE_RPC_STATUS_OK;

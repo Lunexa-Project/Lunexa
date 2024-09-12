@@ -1,5 +1,5 @@
 ---
-name: "lunexa-linux-0.18"
+name: "lunexa-linux-0.0.1.5"
 enable_cache: true
 suites:
 - "bionic"

@@ -27,7 +27,6 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-
 #pragma once
 #include <array>
 #include <atomic>
@@ -48,7 +47,6 @@
 #include "cryptonote_protocol/levin_notify.h"
 #include "warnings.h"
 #include "net/abstract_tcp_server2.h"
-#include "net/levin_protocol_handler.h"
 #include "net/levin_protocol_handler_async.h"
 #include "p2p_protocol_defs.h"
 #include "storages/levin_abstract_invoke2.h"
@@ -556,4 +554,3 @@ namespace nodetool
 }
 
 POP_WARNINGS
-

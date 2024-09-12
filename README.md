@@ -74,7 +74,7 @@ Similar to various development endeavors, our GitHub repository serves as the st
 
 ## Supporting the project
 
-Lunexa thrives through the support of our community. If you wish to contribute, one of the simplest ways is by providing financial support. You can donate using Monero or Bitcoin by visiting donate.lunexa.org through a client that supports the OpenAlias standard. Alternatively, use the donate command within the command-line wallet and follow the instructions (type help in the wallet for guidance)
+Lunexa thrives through the support of our community. If you wish to contribute, one of the simplest ways is by providing financial support. You can donate using Monero or Bitcoin by visiting donate.lunexa.co through a client that supports the OpenAlias standard. Alternatively, use the donate command within the command-line wallet and follow the instructions (type help in the wallet for guidance)
 
 Donations
 
@@ -212,7 +212,7 @@ invokes cmake commands as needed.
 
     ```bash
     cd lunexa
-    git checkout master
+    git checkout release-v0.18
     make
     ```
 
@@ -220,6 +220,12 @@ invokes cmake commands as needed.
     parallel build by running `make -j<number of threads>` instead of `make`. For
     this to be worthwhile, the machine should have one core and about 2GB of RAM
     available per thread.
+
+    *Note*: The instructions above will compile the most stable release of the
+    Lunexa software. If you would like to use and test the most recent software,
+    use `git checkout master`. The master branch may contain updates that are
+    both unstable and incompatible with release software, though testing is always
+    encouraged.
 
 * The resulting executables can be found in `build/release/bin`
 
@@ -283,9 +289,9 @@ Tested on a Raspberry Pi Zero with a clean install of minimal Raspbian Stretch (
 * Clone Lunexa and checkout the most recent release version:
 
     ```bash
-    git clone https://github.com/lunexa-project/lunexa.git
+    git clone --recursive https://github.com/lunexa-project/lunexa.git
     cd lunexa
-    git checkout master
+
     ```
 
 * Build:
@@ -341,7 +347,7 @@ If you are using the older Raspbian Jessie image, compiling Lunexa is a bit more
 
 * Wait ~4 hours
 
-* From here, follow the [general Raspberry Pi instructions](#on-the-raspberry-pi) from the "Clone Lunexa and checkout the latest" step.
+* From here, follow the [general Raspberry Pi instructions](#on-the-raspberry-pi) from the "Clone Lunexa and checkout most recent release version" step.
 
 #### On Windows:
 
@@ -404,10 +410,10 @@ application.
     cd lunexa
     ```
 
-* If you would like a specific [version/tag](https://github.com/lunexa-project//tags), do a git checkout for that version. eg. 'v0.18.1.2'. If you don't care about the version and just want binaries from master, skip this step:
+* If you would like a specific [version/tag](https://github.com/lunexa-project/lunexa/tags), do a git checkout for that version. eg. 'v0.18.1.2'. If you don't care about the version and just want binaries from master, skip this step:
 
     ```bash
-    git checkout ##version##
+    git checkout v0.18.1.2
     ```
 
 * If you are on a 64-bit system, run:
@@ -452,7 +458,7 @@ You will need to add a few packages to your system. `pkg_add cmake gmake zeromq 
 The `doxygen` and `graphviz` packages are optional and require the xbase set.
 Running the test suite also requires `py3-requests` package.
 
-Build Lunexa: `gmake`
+Build lunexa: `gmake`
 
 Note: you may encounter the following error when compiling the latest version of Lunexa as a normal user:
 
@@ -630,7 +636,7 @@ to add a rule to allow this connection too, in addition to telling torsocks to
 allow inbound connections. Full example:
 
 ```bash
-sudo iptables -I OUTPUT 2 -p tcp -d 127.0.0.1 -m tcp --dport 18081 -j ACCEPT
+sudo iptables -I OUTPUT 2 -p tcp -d 127.0.0.1 -m tcp --dport 9029 -j ACCEPT
 DNS_PUBLIC=tcp torsocks ./lunexad --p2p-bind-ip 127.0.0.1 --no-igd --rpc-bind-ip 127.0.0.1 \
     --data-dir /home/amnesia/Persistent/your/directory/to/the/blockchain
 ```
