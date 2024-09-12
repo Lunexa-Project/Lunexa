@@ -65,7 +65,7 @@ using namespace epee;
 #define CHECK_MULTISIG_ENABLED() \
   do \
   { \
-    if (m_wallet->get_multisig_status().multisig_is_active && !m_wallet->is_multisig_enabled()) \
+    if (m_wallet->multisig() && !m_wallet->is_multisig_enabled()) \
     { \
       er.code = WALLET_RPC_ERROR_CODE_DISABLED; \
       er.message = "This wallet is multisig, and multisig is disabled. Multisig is an experimental feature and may have bugs. Things that could go wrong include: funds sent to a multisig wallet can't be spent at all, can only be spent with the participation of a malicious group member, or can be stolen by a malicious group member. You can enable it by running this once in lunexa-wallet-cli: set enable-multisig-experimental 1"; \
@@ -245,7 +245,7 @@ namespace tools
         );
 
         std::string temp = "lunexa-wallet-rpc." + bind_port + ".login";
-        rpc_login_file = tools::private_file::drop_and_recreate(temp);
+        rpc_login_file = tools::private_file::create(temp);
         if (!rpc_login_file.handle())
         {
           LOG_ERROR(tr("Failed to create file ") << temp << tr(". Check permissions or remove file"));
@@ -459,7 +459,7 @@ namespace tools
     {
       res.balance = req.all_accounts ? m_wallet->balance_all(req.strict) : m_wallet->balance(req.account_index, req.strict);
       res.unlocked_balance = req.all_accounts ? m_wallet->unlocked_balance_all(req.strict, &res.blocks_to_unlock, &res.time_to_unlock) : m_wallet->unlocked_balance(req.account_index, req.strict, &res.blocks_to_unlock, &res.time_to_unlock);
-      res.multisig_import_needed = m_wallet->get_multisig_status().multisig_is_active && m_wallet->has_multisig_partial_key_images();
+      res.multisig_import_needed = m_wallet->multisig() && m_wallet->has_multisig_partial_key_images();
       std::map<uint32_t, std::map<uint32_t, uint64_t>> balance_per_subaddress_per_account;
       std::map<uint32_t, std::map<uint32_t, std::pair<uint64_t, std::pair<uint64_t, uint64_t>>>> unlocked_balance_per_subaddress_per_account;
       if (req.all_accounts)
@@ -890,7 +890,7 @@ namespace tools
           }
           if (addresses.empty())
           {
-            er.message = std::string("No Lunexa address found at ") + url;
+            er.message = std::string("No lunexa address found at ") + url;
             return {};
           }
           return addresses[0];
@@ -987,9 +987,9 @@ namespace tools
     return amount;
   }
   //------------------------------------------------------------------------------------------------------------------------------
-  template<typename Ts, typename Tu, typename Tk, typename Ta>
+  template<typename Ts, typename Tu, typename Tk>
   bool wallet_rpc_server::fill_response(std::vector<tools::wallet2::pending_tx> &ptx_vector,
-      bool get_tx_key, Ts& tx_key, Tu &amount, Ta &amounts_by_dest, Tu &fee, Tu &weight, std::string &multisig_txset, std::string &unsigned_txset, bool do_not_relay,
+      bool get_tx_key, Ts& tx_key, Tu &amount, Tu &fee, Tu &weight, std::string &multisig_txset, std::string &unsigned_txset, bool do_not_relay,
       Ts &tx_hash, bool get_tx_hex, Ts &tx_blob, bool get_tx_metadata, Ts &tx_metadata, Tk &spent_key_images, epee::json_rpc::error &er)
   {
     for (const auto & ptx : ptx_vector)
@@ -1006,12 +1006,6 @@ namespace tools
       fill(fee, ptx.fee);
       fill(weight, cryptonote::get_transaction_weight(ptx.tx));
 
-      // add amounts by destination
-      tools::wallet_rpc::amounts_list abd;
-      for (const auto& dst : ptx.dests)
-        abd.amounts.push_back(dst.amount);
-      fill(amounts_by_dest, abd);
-
       // add spent key images
       tools::wallet_rpc::key_image_list key_image_list;
       bool all_are_txin_to_key = std::all_of(ptx.tx.vin.begin(), ptx.tx.vin.end(), [&](const cryptonote::txin_v& s_e) -> bool
@@ -1024,7 +1018,7 @@ namespace tools
       fill(spent_key_images, key_image_list);
     }
 
-    if (m_wallet->get_multisig_status().multisig_is_active)
+    if (m_wallet->multisig())
     {
       multisig_txset = epee::string_tools::buff_to_hex_nodelimer(m_wallet->save_multisig_tx(ptx_vector));
       if (multisig_txset.empty())
@@ -1079,12 +1073,6 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    else if (req.unlock_time)
-    {
-      er.code = WALLET_RPC_ERROR_CODE_NONZERO_UNLOCK_TIME;
-      er.message = "Transaction cannot have non-zero unlock time";
-      return false;
-    }
 
     CHECK_MULTISIG_ENABLED();
 
@@ -1098,7 +1086,7 @@ namespace tools
     {
       uint64_t mixin = m_wallet->adjust_mixin(req.ring_size ? req.ring_size - 1 : 0);
       uint32_t priority = m_wallet->adjust_priority(req.priority);
-      std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, priority, extra, req.account_index, req.subaddr_indices, req.subtract_fee_from_outputs);
+      std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices);
 
       if (ptx_vector.empty())
       {
@@ -1115,7 +1103,7 @@ namespace tools
         return false;
       }
 
-      return fill_response(ptx_vector, req.get_tx_key, res.tx_key, res.amount, res.amounts_by_dest, res.fee, res.weight, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
+      return fill_response(ptx_vector, req.get_tx_key, res.tx_key, res.amount, res.fee, res.weight, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
           res.tx_hash, req.get_tx_hex, res.tx_blob, req.get_tx_metadata, res.tx_metadata, res.spent_key_images, er);
     }
     catch (const std::exception& e)
@@ -1139,12 +1127,6 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    else if (req.unlock_time)
-    {
-      er.code = WALLET_RPC_ERROR_CODE_NONZERO_UNLOCK_TIME;
-      er.message = "Transaction cannot have non-zero unlock time";
-      return false;
-    }
 
     CHECK_MULTISIG_ENABLED();
 
@@ -1159,7 +1141,7 @@ namespace tools
       uint64_t mixin = m_wallet->adjust_mixin(req.ring_size ? req.ring_size - 1 : 0);
       uint32_t priority = m_wallet->adjust_priority(req.priority);
       LOG_PRINT_L2("on_transfer_split calling create_transactions_2");
-      std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, priority, extra, req.account_index, req.subaddr_indices);
+      std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_2(dsts, mixin, req.unlock_time, priority, extra, req.account_index, req.subaddr_indices);
       LOG_PRINT_L2("on_transfer_split called create_transactions_2");
 
       if (ptx_vector.empty())
@@ -1169,7 +1151,7 @@ namespace tools
         return false;
       }
 
-      return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.amounts_by_dest_list, res.fee_list, res.weight_list, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
+      return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.weight_list, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
           res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, res.spent_key_images_list, er);
     }
     catch (const std::exception& e)
@@ -1558,7 +1540,7 @@ namespace tools
     {
       std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_unmixable_sweep_transactions();
 
-      return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.amounts_by_dest_list, res.fee_list, res.weight_list, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
+      return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.weight_list, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
           res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, res.spent_key_images_list, er);
     }
     catch (const std::exception& e)
@@ -1579,12 +1561,6 @@ namespace tools
     {
       er.code = WALLET_RPC_ERROR_CODE_DENIED;
       er.message = "Command unavailable in restricted mode.";
-      return false;
-    }
-    else if (req.unlock_time)
-    {
-      er.code = WALLET_RPC_ERROR_CODE_NONZERO_UNLOCK_TIME;
-      er.message = "Transaction cannot have non-zero unlock time";
       return false;
     }
 
@@ -1622,9 +1598,9 @@ namespace tools
     {
       uint64_t mixin = m_wallet->adjust_mixin(req.ring_size ? req.ring_size - 1 : 0);
       uint32_t priority = m_wallet->adjust_priority(req.priority);
-      std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_all(req.below_amount, dsts[0].addr, dsts[0].is_subaddress, req.outputs, mixin, priority, extra, req.account_index, subaddr_indices);
+      std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_all(req.below_amount, dsts[0].addr, dsts[0].is_subaddress, req.outputs, mixin, req.unlock_time, priority, extra, req.account_index, subaddr_indices);
 
-      return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.amounts_by_dest_list, res.fee_list, res.weight_list, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
+      return fill_response(ptx_vector, req.get_tx_keys, res.tx_key_list, res.amount_list, res.fee_list, res.weight_list, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
           res.tx_hash_list, req.get_tx_hex, res.tx_blob_list, req.get_tx_metadata, res.tx_metadata_list, res.spent_key_images_list, er);
     }
     catch (const std::exception& e)
@@ -1645,12 +1621,6 @@ namespace tools
     {
       er.code = WALLET_RPC_ERROR_CODE_DENIED;
       er.message = "Command unavailable in restricted mode.";
-      return false;
-    }
-    else if (req.unlock_time)
-    {
-      er.code = WALLET_RPC_ERROR_CODE_NONZERO_UNLOCK_TIME;
-      er.message = "Transaction cannot have non-zero unlock time";
       return false;
     }
 
@@ -1685,7 +1655,7 @@ namespace tools
     {
       uint64_t mixin = m_wallet->adjust_mixin(req.ring_size ? req.ring_size - 1 : 0);
       uint32_t priority = m_wallet->adjust_priority(req.priority);
-      std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_single(ki, dsts[0].addr, dsts[0].is_subaddress, req.outputs, mixin, priority, extra);
+      std::vector<wallet2::pending_tx> ptx_vector = m_wallet->create_transactions_single(ki, dsts[0].addr, dsts[0].is_subaddress, req.outputs, mixin, req.unlock_time, priority, extra);
 
       if (ptx_vector.empty())
       {
@@ -1707,7 +1677,7 @@ namespace tools
         return false;
       }
 
-      return fill_response(ptx_vector, req.get_tx_key, res.tx_key, res.amount, res.amounts_by_dest, res.fee, res.weight, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
+      return fill_response(ptx_vector, req.get_tx_key, res.tx_key, res.amount, res.fee, res.weight, res.multisig_txset, res.unsigned_txset, req.do_not_relay,
           res.tx_hash, req.get_tx_hex, res.tx_blob, req.get_tx_metadata, res.tx_metadata, res.spent_key_images, er);
     }
     catch (const std::exception& e)
@@ -2090,11 +2060,10 @@ namespace tools
       if (req.key_type.compare("mnemonic") == 0)
       {
         epee::wipeable_string seed;
-        const multisig::multisig_account_status ms_status{m_wallet->get_multisig_status()};
-
-        if (ms_status.multisig_is_active)
+        bool ready;
+        if (m_wallet->multisig(&ready))
         {
-          if (!ms_status.is_ready)
+          if (!ready)
           {
             er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
             er.message = "This wallet is multisig, but not yet finalized";
@@ -4004,14 +3973,7 @@ namespace tools
   bool wallet_rpc_server::on_is_multisig(const wallet_rpc::COMMAND_RPC_IS_MULTISIG::request& req, wallet_rpc::COMMAND_RPC_IS_MULTISIG::response& res, epee::json_rpc::error& er, const connection_context *ctx)
   {
     if (!m_wallet) return not_open(er);
-    const multisig::multisig_account_status ms_status{m_wallet->get_multisig_status()};
-
-    res.multisig = ms_status.multisig_is_active;
-    res.kex_is_done = ms_status.kex_is_done;
-    res.ready = ms_status.is_ready;
-    res.threshold = ms_status.threshold;
-    res.total = ms_status.total;
-
+    res.multisig = m_wallet->multisig(&res.ready, &res.threshold, &res.total);
     return true;
   }
   //------------------------------------------------------------------------------------------------------------------------------
@@ -4024,7 +3986,7 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    if (m_wallet->get_multisig_status().multisig_is_active)
+    if (m_wallet->multisig())
     {
       er.code = WALLET_RPC_ERROR_CODE_ALREADY_MULTISIG;
       er.message = "This wallet is already multisig";
@@ -4053,7 +4015,7 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    if (m_wallet->get_multisig_status().multisig_is_active)
+    if (m_wallet->multisig())
     {
       er.code = WALLET_RPC_ERROR_CODE_ALREADY_MULTISIG;
       er.message = "This wallet is already multisig";
@@ -4091,15 +4053,14 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    const multisig::multisig_account_status ms_status{m_wallet->get_multisig_status()};
-
-    if (!ms_status.multisig_is_active)
+    bool ready;
+    if (!m_wallet->multisig(&ready))
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is not multisig";
       return false;
     }
-    if (!ms_status.is_ready)
+    if (!ready)
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is multisig, but not yet finalized";
@@ -4133,15 +4094,15 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    const multisig::multisig_account_status ms_status{m_wallet->get_multisig_status()};
-
-    if (!ms_status.multisig_is_active)
+    bool ready;
+    uint32_t threshold, total;
+    if (!m_wallet->multisig(&ready, &threshold, &total))
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is not multisig";
       return false;
     }
-    if (!ms_status.is_ready)
+    if (!ready)
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is multisig, but not yet finalized";
@@ -4149,7 +4110,7 @@ namespace tools
     }
     CHECK_MULTISIG_ENABLED();
 
-    if (req.info.size() + 1 < ms_status.threshold)
+    if (req.info.size() < threshold - 1)
     {
       er.code = WALLET_RPC_ERROR_CODE_THRESHOLD_NOT_REACHED;
       er.message = "Needs multisig export info from more participants";
@@ -4213,9 +4174,9 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    multisig::multisig_account_status ms_status{m_wallet->get_multisig_status()};
-
-    if (!ms_status.multisig_is_active)
+    bool ready;
+    uint32_t threshold, total;
+    if (!m_wallet->multisig(&ready, &threshold, &total))
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is not multisig";
@@ -4223,7 +4184,7 @@ namespace tools
     }
     CHECK_MULTISIG_ENABLED();
 
-    if (req.multisig_info.size() + 1 < ms_status.total)
+    if (req.multisig_info.size() + 1 < total)
     {
       er.code = WALLET_RPC_ERROR_CODE_THRESHOLD_NOT_REACHED;
       er.message = "Needs multisig info from more participants";
@@ -4233,8 +4194,8 @@ namespace tools
     try
     {
       res.multisig_info = m_wallet->exchange_multisig_keys(req.password, req.multisig_info, req.force_update_use_with_caution);
-      ms_status = m_wallet->get_multisig_status();
-      if (ms_status.is_ready)
+      m_wallet->multisig(&ready);
+      if (ready)
       {
         res.address = m_wallet->get_account().get_public_address_str(m_wallet->nettype());
       }
@@ -4257,15 +4218,15 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    const multisig::multisig_account_status ms_status{m_wallet->get_multisig_status()};
-
-    if (!ms_status.multisig_is_active)
+    bool ready;
+    uint32_t threshold, total;
+    if (!m_wallet->multisig(&ready, &threshold, &total))
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is not multisig";
       return false;
     }
-    if (!ms_status.is_ready)
+    if (!ready)
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is multisig, but not yet finalized";
@@ -4327,15 +4288,15 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-    const multisig::multisig_account_status ms_status{m_wallet->get_multisig_status()};
-
-    if (!ms_status.multisig_is_active)
+    bool ready;
+    uint32_t threshold, total;
+    if (!m_wallet->multisig(&ready, &threshold, &total))
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is not multisig";
       return false;
     }
-    if (!ms_status.is_ready)
+    if (!ready)
     {
       er.code = WALLET_RPC_ERROR_CODE_NOT_MULTISIG;
       er.message = "This wallet is multisig, but not yet finalized";
@@ -4360,7 +4321,7 @@ namespace tools
       return false;
     }
 
-    if (txs.m_signers.size() < ms_status.threshold)
+    if (txs.m_signers.size() < threshold)
     {
       er.code = WALLET_RPC_ERROR_CODE_THRESHOLD_NOT_REACHED;
       er.message = "Not enough signers signed this transaction.";
@@ -4445,13 +4406,6 @@ namespace tools
       er.message = "Command unavailable in restricted mode.";
       return false;
     }
-
-    if (m_wallet->has_proxy_option() && !req.proxy.empty())
-    {
-      er.code = WALLET_RPC_ERROR_CODE_PROXY_ALREADY_DEFINED;
-      er.message = "It is not possible to set daemon specific proxy when --proxy is defined.";
-      return false;
-    }
    
     std::vector<std::vector<uint8_t>> ssl_allowed_fingerprints;
     ssl_allowed_fingerprints.reserve(req.ssl_allowed_fingerprints.size());
@@ -4495,7 +4449,7 @@ namespace tools
     if (!req.username.empty() || !req.password.empty())
       daemon_login.emplace(req.username, req.password);
 
-    if (!m_wallet->set_daemon(req.address, daemon_login, req.trusted, std::move(ssl_options), req.proxy))
+    if (!m_wallet->set_daemon(req.address, daemon_login, req.trusted, std::move(ssl_options)))
     {
       er.code = WALLET_RPC_ERROR_CODE_NO_DAEMON_CONNECTION;
       er.message = std::string("Unable to set daemon");
