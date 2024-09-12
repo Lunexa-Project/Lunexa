@@ -19,5 +19,3 @@ darwin_debug_CFLAGS=-O1
 darwin_debug_CXXFLAGS=$(darwin_debug_CFLAGS)
 
 darwin_native_toolchain=native_cctools darwin_sdk
-
-darwin_cmake_system=Darwin

@@ -1,5 +1,5 @@
 /// @file
-/// @author rfree 
+/// @author rfree (current maintainer in lunexa.cc project)
 /// @brief implementaion for throttling of connection (count and rate-limit speed etc)
 
 // Copyright (c) 2014-2023, The Monero Project

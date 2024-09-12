@@ -1,5 +1,5 @@
 /// @file
-/// @author rfree 
+/// @author rfree (current maintainer in monero.cc project)
 /// @brief base for connection, contains e.g. the ratelimit hooks
 
 // Copyright (c) 2014-2023, The Monero Project

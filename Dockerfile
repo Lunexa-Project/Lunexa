@@ -55,8 +55,8 @@ VOLUME /home/lunexa/.lunexa
 # lunexa-wallet-cli
 VOLUME /wallet
 
-EXPOSE 9028
-EXPOSE 9029
+EXPOSE 18080
+EXPOSE 18081
 
 # switch to user lunexa
 USER lunexa

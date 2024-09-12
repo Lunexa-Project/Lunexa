@@ -18,9 +18,9 @@ For example:
 make HOST=x86_64-w64-mingw32 -j4
 ```
 
-A toolchain will be generated that's suitable for plugging into lunexa's
+A toolchain will be generated that's suitable for plugging into Lunexa's
 cmake. In the above example, a dir named x86_64-w64-mingw32 will be
-created. To use it for lunexa, from the top of the lunexa source tree:
+created. To use it for Lunexa, from the top of the Lunexa source tree:
 
 ```bash
 mkdir build
@@ -73,3 +73,4 @@ update-alternatives --set x86_64-w64-mingw32-gcc x86_64-w64-mingw32-gcc-posix
 
 - [description.md](description.md): General description of the depends system
 - [packages.md](packages.md): Steps for adding packages
+

@@ -2206,7 +2206,6 @@ bool gen_trezor_wallet_passphrase::generate(std::vector<test_event_entry>& event
 
   const auto wallet_path = (m_wallet_dir / "alice2").string();
   const epee::wipeable_string& password = epee::wipeable_string("test-pass");
-  wallet_accessor_test::set_password(m_wl_alice2.get(), password);
   m_wl_alice2->store_to(wallet_path, password);
 
   // Positive load
@@ -2366,3 +2365,4 @@ Lunexa::optional<std::string> wallet_api_tests::onDevicePassphraseRequest(bool &
   on_device = false;
   return Lunexa::optional<std::string>(m_trezor_passphrase);
 }
+

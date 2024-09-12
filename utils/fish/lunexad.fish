@@ -82,7 +82,7 @@ complete -c lunexad -l limit-rate-down -r -d "Set limit-rate-down [kB/s]. Defaul
 complete -c lunexad -l limit-rate -r -d "Set limit-rate [kB/s]. Default: -1"
 complete -c lunexad -l pad-transactions -d "Pad relayed transactions to help defend against traffic volume analysis"
 complete -c lunexad -l max-connections-per-ip -r -d "Maximum number of connections allowed from the same IP address. Default: 1"
-complete -c lunexad -l rpc-bind-port -r -d "Port for RPC server. Default: 9029, 28081 if 'testnet', 38081 if 'stagenet'"
+complete -c lunexad -l rpc-bind-port -r -d "Port for RPC server. Default: 18081, 28081 if 'testnet', 38081 if 'stagenet'"
 complete -c lunexad -l rpc-restricted-bind-port -r -d "Port for restricted RPC server"
 complete -c lunexad -l restricted-rpc -d "Restrict RPC to view only commands and do not return privacy sensitive data in RPC calls"
 complete -c lunexad -l bootstrap-daemon-address -r -d "URL of a 'bootstrap' remote daemon that the connected wallets can use while this daemon is still not fully synced. Use 'auto' to enable automatic public nodes discovering and bootstrap daemon switching"

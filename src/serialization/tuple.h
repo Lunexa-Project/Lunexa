@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -29,7 +29,7 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
 #pragma once
-#include <tuple>
+#include <memory>
 #include "serialization.h"
 
 namespace serialization
@@ -39,7 +39,7 @@ namespace serialization
     template <typename Archive, class T>
     bool serialize_tuple_element(Archive& ar, T& e)
     {
-      return do_serialize(ar, e);
+      return ::do_serialize(ar, e);
     }
 
     template <typename Archive>
@@ -51,71 +51,119 @@ namespace serialization
   }
 }
 
-template <size_t I, bool BackwardsCompat, bool W, template <bool> class Archive, typename... Ts>
-bool do_serialize_tuple_nth(Archive<W>& ar, std::tuple<Ts...>& v)
+template <template <bool> class Archive, class E0, class E1, class E2>
+inline bool do_serialize(Archive<false>& ar, std::tuple<E0,E1,E2>& p)
 {
-  static constexpr const size_t tuple_size = std::tuple_size<std::tuple<Ts...>>();
-  static_assert(I <= tuple_size, "bad call");
+  size_t cnt;
+  ar.begin_array(cnt);
+  if (!ar.good())
+    return false;
+  if (cnt != 3)
+    return false;
 
-  if constexpr (I == 0)
-  {
-    // If BackwardsCompat is true, we serialize the size of 3-tuples and 4-tuples
-    if constexpr (BackwardsCompat && (tuple_size == 3 || tuple_size == 4))
-    {
-      size_t cnt = tuple_size;
-      ar.begin_array(cnt);
-      if (cnt != tuple_size)
-        return false;
-    }
-    else
-    {
-      ar.begin_array();
-    }
-  }
-  else if constexpr (I < tuple_size)
-  {
-    ar.delimit_array();
-  }
+  if (!::serialization::detail::serialize_tuple_element(ar, std::get<0>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if (!::serialization::detail::serialize_tuple_element(ar, std::get<1>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if (!::serialization::detail::serialize_tuple_element(ar, std::get<2>(p)))
+    return false;
+  if (!ar.good())
+    return false;
 
-  if constexpr (I == tuple_size)
-  {
-    ar.end_array();
-    return ar.good();
-  }
-  else
-  {
-    if (!::serialization::detail::serialize_tuple_element(ar, std::get<I>(v))
-        || !ar.good())
-      return false;
-
-    return do_serialize_tuple_nth<I + 1, BackwardsCompat>(ar, v);
-  }
+  ar.end_array();
+  return true;
 }
 
-template <bool BackwardsCompat, bool W, template <bool> class Archive, typename... Ts>
-bool do_serialize_tuple(Archive<W>& ar, std::tuple<Ts...>& v)
+template <template <bool> class Archive, class E0, class E1, class E2>
+inline bool do_serialize(Archive<true>& ar, std::tuple<E0,E1,E2>& p)
 {
-  return do_serialize_tuple_nth<0, BackwardsCompat>(ar, v);
+  ar.begin_array(3);
+  if (!ar.good())
+    return false;
+  if(!::serialization::detail::serialize_tuple_element(ar, std::get<0>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if(!::serialization::detail::serialize_tuple_element(ar, std::get<1>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if(!::serialization::detail::serialize_tuple_element(ar, std::get<2>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.end_array();
+  return true;
 }
 
-template <bool W, template <bool> class Archive, typename... Ts>
-bool do_serialize(Archive<W>& ar, std::tuple<Ts...>& v)
+template <template <bool> class Archive, class E0, class E1, class E2, class E3>
+inline bool do_serialize(Archive<false>& ar, std::tuple<E0,E1,E2,E3>& p)
 {
-  return do_serialize_tuple<true>(ar, v);
+  size_t cnt;
+  ar.begin_array(cnt);
+  if (!ar.good())
+    return false;
+  if (cnt != 4)
+    return false;
+
+  if (!::serialization::detail::serialize_tuple_element(ar, std::get<0>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if (!::serialization::detail::serialize_tuple_element(ar, std::get<1>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if (!::serialization::detail::serialize_tuple_element(ar, std::get<2>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if (!::serialization::detail::serialize_tuple_element(ar, std::get<3>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+
+  ar.end_array();
+  return true;
 }
 
-#define TUPLE_COMPACT_FIELDS(v)                          \
-  do {                                                   \
-    if (!do_serialize_tuple<false>(ar, v) || !ar.good()) \
-      return false;                                      \
-  } while (0);
+template <template <bool> class Archive, class E0, class E1, class E2, class E3>
+inline bool do_serialize(Archive<true>& ar, std::tuple<E0,E1,E2,E3>& p)
+{
+  ar.begin_array(4);
+  if (!ar.good())
+    return false;
+  if(!::serialization::detail::serialize_tuple_element(ar, std::get<0>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if(!::serialization::detail::serialize_tuple_element(ar, std::get<1>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if(!::serialization::detail::serialize_tuple_element(ar, std::get<2>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.delimit_array();
+  if(!::serialization::detail::serialize_tuple_element(ar, std::get<3>(p)))
+    return false;
+  if (!ar.good())
+    return false;
+  ar.end_array();
+  return true;
+}
 
-#define TUPLE_COMPACT_FIELD_N(t, v) \
-  do {                              \
-    ar.tag(t);                      \
-    TUPLE_COMPACT_FIELDS(v);        \
-  } while (0);
-
-#define TUPLE_COMPACT_FIELD(f) TUPLE_COMPACT_FIELD_N(#f, f)
-
-#define TUPLE_COMPACT_FIELD_F(f) TUPLE_COMPACT_FIELD_N(#f, v.f)

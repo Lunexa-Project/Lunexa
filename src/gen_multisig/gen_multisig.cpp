@@ -121,15 +121,16 @@ static bool generate_multisig(uint32_t threshold, uint32_t total, const std::str
     }
 
     // exchange keys until the wallets are done
-    multisig::multisig_account_status ms_status{wallets[0]->get_multisig_status()};
-    while (!ms_status.is_ready)
+    bool ready{false};
+    wallets[0]->multisig(&ready);
+    while (!ready)
     {
       for (size_t n = 0; n < total; ++n)
       {
           kex_msgs_intermediate[n] = wallets[n]->exchange_multisig_keys(pwd_container->password(), kex_msgs_intermediate);
       }
 
-      ms_status = wallets[0]->get_multisig_status();
+      wallets[0]->multisig(&ready);
     }
 
     std::string address = wallets[0]->get_account().get_public_address_str(wallets[0]->nettype());

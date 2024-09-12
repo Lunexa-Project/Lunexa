@@ -92,7 +92,7 @@ if(DEVICE_TREZOR_READY)
             ringct_basic
             cryptonote_core
             common
-            ${sodium_LIBRARIES}
+            ${SODIUM_LIBRARY}
             ${Boost_CHRONO_LIBRARY}
             ${Protobuf_LIBRARY}
             ${TREZOR_LIBUSB_LIBRARIES}

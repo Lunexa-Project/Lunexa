@@ -67,9 +67,9 @@ fi
 echo "Starting lunexad..."
 HOSTNAME=$(cat "$HOSTNAMEFILE")
 "$lunexad" \
-  --anonymous-inbound "$HOSTNAME":9030,127.0.0.1:9030,25 --tx-proxy tor,127.0.0.1:9050,10 \
-  --add-priority-node zbjkbsxc5munw3qusl7j2hpcmikhqocdf4pqhnhtpzw5nt5jrmofptid.onion:9030 \
-  --add-priority-node 2xmrnode5itf65lz.onion:9030 \
+  --anonymous-inbound "$HOSTNAME":18083,127.0.0.1:18083,25 --tx-proxy tor,127.0.0.1:9050,10 \
+  --add-priority-node zbjkbsxc5munw3qusl7j2hpcmikhqocdf4pqhnhtpzw5nt5jrmofptid.onion:18083 \
+  --add-priority-node 2xmrnode5itf65lz.onion:18083 \
   --detach
 ready=0
 for i in `seq 10`

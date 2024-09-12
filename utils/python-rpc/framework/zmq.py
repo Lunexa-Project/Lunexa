@@ -38,7 +38,7 @@ class Zmq(object):
         self.host = host
         self.port = port
         self.socket = zmq.Context().socket(zmq.SUB)
-        self.socket.connect('{protocol}://{host}:{port}'.format(protocol=protocol, host=host, port=port if port else 19029+idx))
+        self.socket.connect('{protocol}://{host}:{port}'.format(protocol=protocol, host=host, port=port if port else 18480+idx))
 
     def sub(self, topic):
         self.socket.setsockopt_string(zmq.SUBSCRIBE, topic)
