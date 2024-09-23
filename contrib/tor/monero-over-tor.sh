@@ -42,7 +42,7 @@ CookieAuthentication 1
 CookieAuthFile $TORDIR/control.authcookie
 CookieAuthFileGroupReadable 1
 HiddenServiceDir $TORDIR
-HiddenServicePort 18083 127.0.0.1:18083
+HiddenServicePort 19023 127.0.0.1:19023
 EOF
 
 echo "Starting Tor..."
@@ -67,9 +67,8 @@ fi
 echo "Starting lunexad..."
 HOSTNAME=$(cat "$HOSTNAMEFILE")
 "$lunexad" \
-  --anonymous-inbound "$HOSTNAME":18083,127.0.0.1:18083,25 --tx-proxy tor,127.0.0.1:9050,10 \
-  --add-priority-node zbjkbsxc5munw3qusl7j2hpcmikhqocdf4pqhnhtpzw5nt5jrmofptid.onion:18083 \
-  --add-priority-node 2xmrnode5itf65lz.onion:18083 \
+  --anonymous-inbound "$HOSTNAME":19023,127.0.0.1:19023,25 --tx-proxy tor,127.0.0.1:9050,10 \
+
   --detach
 ready=0
 for i in `seq 10`

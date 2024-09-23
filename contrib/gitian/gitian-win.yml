@@ -1,5 +1,5 @@
 ---
-name: "lunexa-win-0.18"
+name: "lunexa-win-0.1.6"
 enable_cache: true
 suites:
 - "bionic"
@@ -133,4 +133,3 @@ script: |
     find ${DISTNAME}/ | sort | zip -X@ ${OUTDIR}/${DISTNAME}.zip
     cd .. && rm -rf build
   done
-

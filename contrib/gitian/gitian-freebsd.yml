@@ -1,5 +1,5 @@
 ---
-name: "lunexa-freebsd-0.18"
+name: "lunexa-freebsd-0.1.6"
 enable_cache: true
 suites:
 - "bionic"
@@ -125,4 +125,3 @@ script: |
     cd ..
     rm -rf build
   done
-
