@@ -302,7 +302,7 @@ case "$HOST" in
 esac
 
 export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
-export USE_DEVICE_TREZOR_MANDATORY=1
+export USE_DEVICE_TREZOR_MANDATORY=0
 
 # Make $HOST-specific native binaries from depends available in $PATH
 export PATH="${BASEPREFIX}/${HOST}/native/bin:${PATH}"
