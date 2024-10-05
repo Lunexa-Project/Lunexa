@@ -1,6 +1,6 @@
 /**
 @file
-@author rfree (current maintainer in monero.cc project)
+@author rfree (current maintainer in lunexa.cc project)
 @brief interface for throttling of connection (count and rate-limit speed etc) 
 @details <PRE>
 
@@ -103,6 +103,7 @@ network_throttle_bw::network_throttle_bw(const std::string &name1)
 
 } // namespace 
 } // namespace 
+
 
 
 

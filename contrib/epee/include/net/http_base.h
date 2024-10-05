@@ -34,7 +34,6 @@
 #include <string>
 #include <utility>
 #include <list>
-#include <stdint.h>
 
 #undef LUNEXA_DEFAULT_LOG_CATEGORY
 #define LUNEXA_DEFAULT_LOG_CATEGORY "net.http"
