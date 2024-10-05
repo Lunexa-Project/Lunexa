@@ -59,8 +59,8 @@
 // TODO:
 #include "net/network_throttle-detail.hpp"
 
-#undef LUNEXA_DEFAULT_LOG_CATEGORY
-#define LUNEXA_DEFAULT_LOG_CATEGORY "net.throttle"
+#undef MONERO_DEFAULT_LOG_CATEGORY
+#define MONERO_DEFAULT_LOG_CATEGORY "net.throttle"
 
 // ################################################################################################
 // ################################################################################################
@@ -363,4 +363,3 @@ void network_throttle::get_stats(uint64_t &total_packets, uint64_t &total_bytes)
 
 } // namespace
 } // namespace
-
