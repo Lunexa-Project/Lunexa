@@ -48,7 +48,6 @@ using namespace epee;
 
 static const char *DEFAULT_DNS_PUBLIC_ADDR[] =
 {
-  "9.9.9.9"             // Quad 9
   "194.150.168.168",    // CCC (Germany)
   "80.67.169.40",       // FDN (France)
   "89.233.43.71",       // http://censurfridns.dk (Denmark)
@@ -197,36 +196,7 @@ boost::optional<std::string> tlsa_to_string(const char* src, size_t len)
     return boost::none;
   return std::string(src, len);
 }
-
-// custom smart pointer.
-// TODO: see if std::auto_ptr and the like support custom destructors
-template<typename type, void (*freefunc)(type*)>
-class scoped_ptr
-{
-public:
-  scoped_ptr():
-    ptr(nullptr)
-  {
-  }
-  scoped_ptr(type *p):
-    ptr(p)
-  {
-  }
-  ~scoped_ptr()
-  {
-    freefunc(ptr);
-  }
-  operator type *() { return ptr; }
-  type **operator &() { return &ptr; }
-  type *operator->() { return ptr; }
-  operator const type*() const { return &ptr; }
-
-private:
-  type* ptr;
-};
-
-typedef class scoped_ptr<ub_result,ub_resolve_free> ub_result_ptr;
-
+  
 struct DNSResolverData
 {
   ub_ctx* m_ub_context;
@@ -296,7 +266,7 @@ DNSResolver::DNSResolver() : m_data(new DNSResolverData())
     // should be a valid DNSSEC record, and switch to known good
     // DNSSEC resolvers if verification fails
     bool available, valid;
-    static const char *probe_hostname = "node1.lunexa.co";
+    static const char *probe_hostname = "updates.lunexa.co";
     auto records = get_txt_record(probe_hostname, available, valid);
     if (!valid)
     {
@@ -329,7 +299,7 @@ std::vector<std::string> DNSResolver::get_record(const std::string& url, int rec
   std::vector<std::string> addresses;
   dnssec_available = false;
   dnssec_valid = false;
-
+  
   ub_result *result;
   // Make sure we are cleaning after result.
   epee::misc_utils::auto_scope_leave_caller scope_exit_handler =
