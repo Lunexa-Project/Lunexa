@@ -28,7 +28,6 @@
 
 #include "common/dns_utils.h"
 // check local first (in the event of static or in-source compilation of libunbound)
-#include "misc_language.h"
 #include "unbound.h"
 
 #include <deque>
@@ -330,13 +329,9 @@ std::vector<std::string> DNSResolver::get_record(const std::string& url, int rec
   dnssec_available = false;
   dnssec_valid = false;
 
-  ub_result *result;
-  // Make sure we are cleaning after result.
-  epee::misc_utils::auto_scope_leave_caller scope_exit_handler =
-    epee::misc_utils::create_scope_leave_handler([&](){
-    ub_resolve_free(result);
-  });
-  
+  // destructor takes care of cleanup
+  ub_result_ptr result;
+
   MDEBUG("Performing DNSSEC " << get_record_name(record_type) << " record query for " << url);
 
   // call DNS resolver, blocking.  if return value not zero, something went wrong
