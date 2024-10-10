@@ -1,5 +1,5 @@
-# Copyright (c) 2014-2024, The Monero Project
-#
+# Copyright (c) 2014-2023, The Monero Project
+# Copyright (c) 2024, Lunexa Project
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are
@@ -28,9 +28,6 @@
 #
 # Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-cmake_minimum_required(VERSION 3.5)
-message(STATUS "CMake version ${CMAKE_VERSION}")
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -48,6 +45,9 @@ include(FindPythonInterp)
 if (IOS)
     INCLUDE(CmakeLists_IOS.txt)
 endif()
+
+cmake_minimum_required(VERSION 3.5)
+message(STATUS "CMake version ${CMAKE_VERSION}")
 
 project(lunexa)
 
@@ -1093,6 +1093,7 @@ add_definitions(-DBOOST_ASIO_ENABLE_SEQUENTIAL_STRAND_ALLOCATION)
 add_definitions(-DBOOST_NO_AUTO_PTR)
 add_definitions(-DBOOST_UUID_DISABLE_ALIGNMENT) # This restores UUID's std::has_unique_object_representations property
 
+
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
 if(NOT Boost_FOUND)
   die("Could not find Boost libraries, please make sure you have installed Boost or libboost-all-dev (>=1.58) or the equivalent")
@@ -1187,17 +1188,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "Clang" AND ARCH_WIDTH EQUAL "32" AND NOT IOS AND
   endif()
 endif()
 
-if(STATIC)
-  set(sodium_USE_STATIC_LIBS ON)
-endif()
-find_package(Sodium REQUIRED)
-
 find_path(ZMQ_INCLUDE_PATH zmq.h)
 find_library(ZMQ_LIB zmq)
 find_library(PGM_LIBRARY pgm)
 find_library(NORM_LIBRARY norm)
 find_library(GSSAPI_LIBRARY gssapi_krb5)
 find_library(PROTOLIB_LIBRARY protolib)
+find_library(SODIUM_LIBRARY sodium)
 find_library(BSD_LIBRARY bsd)
 find_library(MD_LIBRARY md)
 find_library(PROTOKIT_LIBRARY protokit)
@@ -1220,8 +1217,8 @@ endif()
 if(PROTOLIB_LIBRARY)
   set(ZMQ_LIB "${ZMQ_LIB};${PROTOLIB_LIBRARY}")
 endif()
-if(Sodium_FOUND)
-  set(ZMQ_LIB "${ZMQ_LIB};${sodium_LIBRARIES}")
+if(SODIUM_LIBRARY)
+  set(ZMQ_LIB "${ZMQ_LIB};${SODIUM_LIBRARY}")
 endif()
 if(BSD_LIBRARY)
   set(ZMQ_LIB "${ZMQ_LIB};${BSD_LIBRARY}")

@@ -10,7 +10,6 @@ linux_debug_CXXFLAGS=$(linux_debug_CFLAGS)
 
 linux_debug_CPPFLAGS=-D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC
 
-ifeq ($(GUIX_ENVIRONMENT),)
 ifeq (86,$(findstring 86,$(build_arch)))
 i686_linux_CC=gcc -m32
 i686_linux_CXX=g++ -m32
