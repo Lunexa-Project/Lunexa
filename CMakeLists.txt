@@ -28,6 +28,9 @@
 #
 # Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
+cmake_minimum_required(VERSION 3.5)
+message(STATUS "CMake version ${CMAKE_VERSION}")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -45,9 +48,6 @@ include(FindPythonInterp)
 if (IOS)
     INCLUDE(CmakeLists_IOS.txt)
 endif()
-
-cmake_minimum_required(VERSION 3.5)
-message(STATUS "CMake version ${CMAKE_VERSION}")
 
 project(lunexa)
 
@@ -336,11 +336,6 @@ endif()
 if(ARCH_ID STREQUAL "riscv32")
 set(RISCV   1)
 set(RISCV32 1)
-endif()
-
-if(ARCH_ID STREQUAL "loongarch64")
-set(LOONGARCH   1)
-set(LOONGARCH64 1)
 endif()
 
 if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
@@ -752,7 +747,7 @@ else()
     message(STATUS "AES support explicitly disabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DNO_AES")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNO_AES")
-  elseif(NOT ARM AND NOT PPC64LE AND NOT PPC64 AND NOT PPC AND NOT S390X AND NOT RISCV AND NOT LOONGARCH)
+  elseif(NOT ARM AND NOT PPC64LE AND NOT PPC64 AND NOT PPC AND NOT S390X AND NOT RISCV)
     message(STATUS "AES support enabled")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -maes")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -maes")
@@ -762,8 +757,6 @@ else()
     message(STATUS "AES support not available on s390x")
   elseif(RISCV)
     message(STATUS "AES support not available on RISC-V")
-  elseif(LOONGARCH)
-    message(STATUS "AES support not available on LOONGARCH")
   elseif(ARM6)
     message(STATUS "AES support not available on ARMv6")
   elseif(ARM7)
@@ -1091,8 +1084,6 @@ endif()
 find_package(Boost 1.58 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
 add_definitions(-DBOOST_ASIO_ENABLE_SEQUENTIAL_STRAND_ALLOCATION)
 add_definitions(-DBOOST_NO_AUTO_PTR)
-add_definitions(-DBOOST_UUID_DISABLE_ALIGNMENT) # This restores UUID's std::has_unique_object_representations property
-
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
 if(NOT Boost_FOUND)
@@ -1122,7 +1113,7 @@ if(MINGW)
 elseif(APPLE OR OPENBSD OR ANDROID)
   set(EXTRA_LIBRARIES "")
 elseif(FREEBSD)
-  set(EXTRA_LIBRARIES execinfo)
+  set(EXTRA_LIBRARIES execinfo elf)
 elseif(DRAGONFLY)
   find_library(COMPAT compat)
   set(EXTRA_LIBRARIES execinfo ${COMPAT})
