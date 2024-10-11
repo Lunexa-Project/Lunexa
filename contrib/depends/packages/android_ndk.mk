@@ -26,4 +26,3 @@ define $(package)_stage_cmds
     --install-dir $(build_prefix) --stl=libc++ $($(package)_config_opts) &&\
   mv $(build_prefix) $($(package)_staging_dir)/$(host_prefix)
 endef
-

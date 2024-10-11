@@ -4,7 +4,7 @@ Copyright (c) 2014-2023, The Monero Project
 Portions Copyright (c) 2012-2013 The Cryptonote developers.
 
 ## Table of Contents
-  - [Important Update on the Lunexa Project](#Important-Update-on-the-Lunexa-Project)
+
   - [Development resources](#development-resources)
   - [Vulnerability response](#vulnerability-response)
   - [Research](#research)
@@ -25,27 +25,14 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
   - [Debugging](#Debugging)
   - [Known issues](#known-issues)
 
-
-## Important Update on the Lunexa Project
-
-Hello everyone,
-
-I want to take a moment to update you on the current status of the Lunexa Project. We are back in development mode, focusing on enhancing the stability and performance of Lunexa. As many of you know, the last release (Alpha v0.1.4) encountered significant issues, including an improper seed node setup that affected syncing, along with problems related to the algorithm.
-
-I sincerely apologize for how I managed the situation and deeply appreciate the support we received during the initial release. It’s clear that we fell short, and I take full responsibility for that. 
-
-To create a better experience for everyone, I have decided to reset the blockchain. Due to the previous syncing and algorthim issues, there were significant inconsistencies and problems within the entire system. My goal is to ensure Lunexa is truly decentralized, which was compromised because it couldn’t sync properly with the seed nodes. This fresh start will allow us to address these issues and the algorithm inconsistencies we faced.
-
-Thank you for your understanding and continued support as we work to improve Lunexa. I’m committed to making this project a success for all involved.
-
-and for those that want to make this project better please message me and there will definetly be rewards for bug hunting and improvements to lunexa
-
-
 ## Development resources
 
-- Web: [Lunexa.co](https://Lunexa.co) currently down to focus on developement
+- Web: [Lunexa.co](https://Lunexa.co)
 - GitHub: [https://github.com/lunexa-project/lunexa](https://github.com/lunexa-project/lunexacore)
 - Discord: [Lunexa on Discord](https://discord.gg/KUMuN6Gvq2)
+
+
+
 
 
 ## Vulnerability response
@@ -54,7 +41,7 @@ Please report any vulnerabilitiy to the Discord
 
 ## Research
 
-Lunexa is currently an independent project, establishing its own unique ecosystem while drawing inspiration from Monero's cryptography, protocols, fungibility, analysis, and more. Our community is dedicated to coordinating research, fostering collaboration, and inviting contributions from researchers and enthusiasts worldwide. While our roots lie in Monero, Lunexa stands as a separate entity, developing its innovative solutions and advancing the field.
+Lunexa is an independent project, establishing its own unique ecosystem while drawing inspiration from Monero's cryptography, protocols, fungibility, analysis, and more. Our community is dedicated to coordinating research, fostering collaboration, and inviting contributions from researchers and enthusiasts worldwide. While our roots lie in Monero, Lunexa stands as a separate entity, developing its innovative solutions and advancing the field.
 
 As the Lunexa community explores various aspects of cryptography, protocols, and analysis, we encourage engagement and interaction with researchers outside our ecosystem. Collaboration is key to our progress. We invite those interested to connect with us, whether for inquiries, collaborative opportunities, or seeking guidance to avoid redundant efforts.
 
@@ -91,7 +78,8 @@ Lunexa thrives through the support of our community. If you wish to contribute, 
 
 Donations
 
-(Currently Dont Have any links or donation links as i want to improve and make lunexa stable Continuing)
+Ethereum Donations: 
+
 
 ## License
 

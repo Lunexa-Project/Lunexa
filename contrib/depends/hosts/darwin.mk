@@ -6,7 +6,7 @@ LD64_VERSION=609
 
 OSX_SDK=$(host_prefix)/native/SDK
 
-darwin_native_toolchain=darwin_sdk native_cctools
+darwin_native_toolchain=darwin_sdk native_cctools native_clang
 
 clang_prog=$(shell $(SHELL) $(.SHELLFLAGS) "command -v clang")
 clangxx_prog=$(shell $(SHELL) $(.SHELLFLAGS) "command -v clang++")
@@ -56,7 +56,7 @@ darwin_CFLAGS=-pipe
 darwin_CXXFLAGS=$(darwin_CFLAGS)
 darwin_ARFLAGS=cr
 
-darwin_release_CFLAGS=-O2
+darwin_release_CFLAGS=-O1
 darwin_release_CXXFLAGS=$(darwin_release_CFLAGS)
 
 darwin_debug_CFLAGS=-O1

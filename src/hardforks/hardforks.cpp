@@ -35,14 +35,14 @@ const hardfork_t mainnet_hard_forks[] = {
   // version 1 from the start of the blockchain
   { 1, 1, 0, 1341378000 },
 
-  // version 2 starts from block 10 randomX intergration
-  { 2, 10, 0, 1647324629},
-
+  // version 2 starts from block 1000 randomX intergration
+  { 2, 900, 0, 1647324629},
+  
 
 };
 
 const size_t num_mainnet_hard_forks = sizeof(mainnet_hard_forks) / sizeof(mainnet_hard_forks[0]);
-const uint64_t mainnet_hard_fork_version_1_till = 10;
+const uint64_t mainnet_hard_fork_version_1_till = 900;
 
 
 const hardfork_t testnet_hard_forks[] = {
