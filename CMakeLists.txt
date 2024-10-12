@@ -28,6 +28,9 @@
 #
 # Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
+cmake_minimum_required(VERSION 3.5)
+message(STATUS "CMake version ${CMAKE_VERSION}")
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -37,14 +40,14 @@ include(CheckCXXCompilerFlag)
 include(CheckLinkerFlag)
 include(CheckLibraryExists)
 include(CheckFunctionExists)
+if (POLICY CMP0148)
+    cmake_policy(SET CMP0148 OLD) # https://cmake.org/cmake/help/latest/policy/CMP0148.html
+endif()
 include(FindPythonInterp)
 
 if (IOS)
     INCLUDE(CmakeLists_IOS.txt)
 endif()
-
-cmake_minimum_required(VERSION 3.5)
-message(STATUS "CMake version ${CMAKE_VERSION}")
 
 project(lunexa)
 
@@ -219,7 +222,7 @@ function(forbid_undefined_symbols)
     file(MAKE_DIRECTORY "${TEST_PROJECT}")
     file(WRITE "${TEST_PROJECT}/CMakeLists.txt"
       [=[
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(test)
 option(EXPECT_SUCCESS "" ON)
 file(WRITE "${CMAKE_SOURCE_DIR}/incorrect_source.cpp" "void undefined_symbol(); void symbol() { undefined_symbol(); }")
@@ -517,7 +520,7 @@ if(SANITIZE)
 endif()
 
 # Set default blockchain storage location:
-# memory was the default in Cryptonote before lunexa implemented LMDB, it still works but is unnecessary.
+# memory was the default in Cryptonote before Lunexa implemented LMDB, it still works but is unnecessary.
 # set(DATABASE memory)
 set(DATABASE lmdb)
 message(STATUS "Using LMDB as default DB type")
@@ -1110,7 +1113,7 @@ if(MINGW)
 elseif(APPLE OR OPENBSD OR ANDROID)
   set(EXTRA_LIBRARIES "")
 elseif(FREEBSD)
-  set(EXTRA_LIBRARIES execinfo)
+  set(EXTRA_LIBRARIES execinfo elf)
 elseif(DRAGONFLY)
   find_library(COMPAT compat)
   set(EXTRA_LIBRARIES execinfo ${COMPAT})
