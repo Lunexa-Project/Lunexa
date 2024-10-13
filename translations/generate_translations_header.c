@@ -17,7 +17,7 @@
 //      access the files using this function:
 //      static bool find_embedded_file(const std::string &file_name, std::string &data);
 //      std::string data;
-//      find_embedded_file("monero_fr.qm", data);
+//      find_embedded_file("lunexa_fr.qm", data);
 
 #include <stdio.h>
 #include <stdlib.h>

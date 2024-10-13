@@ -42,5 +42,5 @@ The memcheck output is just a readable text file with a summary at the end.
 
 # Footer
 
-Responsible: mj-xmr
+Responsible: mj-lxa
 

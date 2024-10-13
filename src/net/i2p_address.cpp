@@ -105,7 +105,7 @@ namespace net
     expect<i2p_address> i2p_address::make(const boost::string_ref address)
     {
         boost::string_ref host = address.substr(0, address.rfind(':'));
-        MONERO_CHECK(host_check(host));
+        LUNEXA_CHECK(host_check(host));
 
         static_assert(b32_length + sizeof(tld) == sizeof(i2p_address::host_), "bad internal host size");
         return i2p_address{host};
