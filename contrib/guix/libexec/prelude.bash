@@ -70,8 +70,8 @@ fi
 # - Check how the update affects our build graph and which packages have been updated.
 time-machine() {
     # shellcheck disable=SC2086
-    guix time-machine --url=https://github.com/lunexa-project/guix.git \
-                      --commit=53396a22afc04536ddf75d8f82ad2eafa5082725 \
+    guix time-machine --url=https://github.com/monero-project/guix.git \
+                      --commit=7bf1d7aeaffba15c4f680f93ae88fbef25427252 \
                       --cores="$JOBS" \
                       --keep-failed \
                       --fallback \
