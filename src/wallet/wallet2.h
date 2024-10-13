@@ -57,6 +57,7 @@
 #include "common/util.h"
 #include "crypto/chacha.h"
 #include "crypto/hash.h"
+#include "multisig/multisig_account.h"
 #include "ringct/rctTypes.h"
 #include "ringct/rctOps.h"
 #include "checkpoints/checkpoints.h"
@@ -590,7 +591,8 @@ private:
     };
 
     typedef std::vector<transfer_details> transfer_container;
-    typedef serializable_unordered_multimap<crypto::hash, payment_details> payment_container;
+    typedef std::unordered_multimap<crypto::hash, payment_details> payment_container;
+    typedef std::set<uint32_t> unique_index_container;
 
     struct multisig_sig
     {
@@ -701,7 +703,7 @@ private:
     {
       std::vector<pending_tx> ptx;
       std::vector<crypto::key_image> key_images;
-      serializable_unordered_map<crypto::public_key, crypto::key_image> tx_key_images;
+      std::unordered_map<crypto::public_key, crypto::key_image> tx_key_images;
 
       BEGIN_SERIALIZE_OBJECT()
         VERSION_FIELD(0)
@@ -963,6 +965,12 @@ private:
     std::string path() const;
 
     /*!
+     * \brief has_proxy_option      Check the global proxy (--proxy) has been defined or not.
+     * \return                      returns bool representing the global proxy (--proxy).
+     */
+    bool has_proxy_option() const;
+
+    /*!
      * \brief verifies given password is correct for default wallet keys file
      */
     bool verify_password(const epee::wipeable_string& password);
@@ -984,15 +992,16 @@ private:
     uint64_t max_reorg_depth() const {return m_max_reorg_depth;}
 
     bool deinit();
-    bool init(std::string daemon_address = "http://localhost:8080",
+    bool init(std::string daemon_address,
       boost::optional<epee::net_utils::http::login> daemon_login = boost::none,
       const std::string &proxy = "",
       uint64_t upper_transaction_weight_limit = 0,
       bool trusted_daemon = true,
       epee::net_utils::ssl_options_t ssl_options = epee::net_utils::ssl_support_t::e_ssl_support_autodetect);
-    bool set_daemon(std::string daemon_address = "http://localhost:8080",
+    bool set_daemon(std::string daemon_address,
       boost::optional<epee::net_utils::http::login> daemon_login = boost::none, bool trusted_daemon = true,
-      epee::net_utils::ssl_options_t ssl_options = epee::net_utils::ssl_support_t::e_ssl_support_autodetect);
+      epee::net_utils::ssl_options_t ssl_options = epee::net_utils::ssl_support_t::e_ssl_support_autodetect,
+      const std::string &proxy = "");
     bool set_proxy(const std::string &address);
 
     void stop() { m_run.store(false, std::memory_order_relaxed); m_message_store.stop(); }
@@ -1051,7 +1060,7 @@ private:
 
     cryptonote::network_type nettype() const { return m_nettype; }
     bool watch_only() const { return m_watch_only; }
-    bool multisig(bool *ready = NULL, uint32_t *threshold = NULL, uint32_t *total = NULL) const;
+    multisig::multisig_account_status get_multisig_status() const;
     bool has_multisig_partial_key_images() const;
     bool has_unknown_key_images() const;
     bool get_multisig_seed(epee::wipeable_string& seed, const epee::wipeable_string &passphrase = std::string()) const;
@@ -1071,10 +1080,10 @@ private:
     template<typename T>
     void transfer_selected(const std::vector<cryptonote::tx_destination_entry>& dsts, const std::vector<size_t>& selected_transfers, size_t fake_outputs_count,
       std::vector<std::vector<tools::wallet2::get_outs_entry>> &outs, std::unordered_set<crypto::public_key> &valid_public_keys_cache,
-      uint64_t unlock_time, uint64_t fee, const std::vector<uint8_t>& extra, T destination_split_strategy, const tx_dust_policy& dust_policy, cryptonote::transaction& tx, pending_tx &ptx, const bool use_view_tags);
+      uint64_t fee, const std::vector<uint8_t>& extra, T destination_split_strategy, const tx_dust_policy& dust_policy, cryptonote::transaction& tx, pending_tx &ptx, const bool use_view_tags);
     void transfer_selected_rct(std::vector<cryptonote::tx_destination_entry> dsts, const std::vector<size_t>& selected_transfers, size_t fake_outputs_count,
       std::vector<std::vector<tools::wallet2::get_outs_entry>> &outs, std::unordered_set<crypto::public_key> &valid_public_keys_cache,
-      uint64_t unlock_time, uint64_t fee, const std::vector<uint8_t>& extra, cryptonote::transaction& tx, pending_tx &ptx, const rct::RCTConfig &rct_config, const bool use_view_tags);
+      uint64_t fee, const std::vector<uint8_t>& extra, cryptonote::transaction& tx, pending_tx &ptx, const rct::RCTConfig &rct_config, const bool use_view_tags);
 
     void commit_tx(pending_tx& ptx_vector);
     void commit_tx(std::vector<pending_tx>& ptx_vector);
@@ -1096,11 +1105,11 @@ private:
     bool parse_unsigned_tx_from_str(const std::string &unsigned_tx_st, unsigned_tx_set &exported_txs) const;
     bool load_tx(const std::string &signed_filename, std::vector<tools::wallet2::pending_tx> &ptx, std::function<bool(const signed_tx_set&)> accept_func = NULL);
     bool parse_tx_from_str(const std::string &signed_tx_st, std::vector<tools::wallet2::pending_tx> &ptx, std::function<bool(const signed_tx_set &)> accept_func);
-    std::vector<wallet2::pending_tx> create_transactions_2(std::vector<cryptonote::tx_destination_entry> dsts, const size_t fake_outs_count, const uint64_t unlock_time, uint32_t priority, const std::vector<uint8_t>& extra, uint32_t subaddr_account, std::set<uint32_t> subaddr_indices);     // pass subaddr_indices by value on purpose
-    std::vector<wallet2::pending_tx> create_transactions_all(uint64_t below, const cryptonote::account_public_address &address, bool is_subaddress, const size_t outputs, const size_t fake_outs_count, const uint64_t unlock_time, uint32_t priority, const std::vector<uint8_t>& extra, uint32_t subaddr_account, std::set<uint32_t> subaddr_indices);
-    std::vector<wallet2::pending_tx> create_transactions_single(const crypto::key_image &ki, const cryptonote::account_public_address &address, bool is_subaddress, const size_t outputs, const size_t fake_outs_count, const uint64_t unlock_time, uint32_t priority, const std::vector<uint8_t>& extra);
-    std::vector<wallet2::pending_tx> create_transactions_from(const cryptonote::account_public_address &address, bool is_subaddress, const size_t outputs, std::vector<size_t> unused_transfers_indices, std::vector<size_t> unused_dust_indices, const size_t fake_outs_count, const uint64_t unlock_time, uint32_t priority, const std::vector<uint8_t>& extra);
-    bool sanity_check(const std::vector<wallet2::pending_tx> &ptx_vector, std::vector<cryptonote::tx_destination_entry> dsts) const;
+    std::vector<wallet2::pending_tx> create_transactions_2(std::vector<cryptonote::tx_destination_entry> dsts, const size_t fake_outs_count, uint32_t priority, const std::vector<uint8_t>& extra, uint32_t subaddr_account, std::set<uint32_t> subaddr_indices, const unique_index_container& subtract_fee_from_outputs = {});     // pass subaddr_indices by value on purpose
+    std::vector<wallet2::pending_tx> create_transactions_all(uint64_t below, const cryptonote::account_public_address &address, bool is_subaddress, const size_t outputs, const size_t fake_outs_count, uint32_t priority, const std::vector<uint8_t>& extra, uint32_t subaddr_account, std::set<uint32_t> subaddr_indices);
+    std::vector<wallet2::pending_tx> create_transactions_single(const crypto::key_image &ki, const cryptonote::account_public_address &address, bool is_subaddress, const size_t outputs, const size_t fake_outs_count, uint32_t priority, const std::vector<uint8_t>& extra);
+    std::vector<wallet2::pending_tx> create_transactions_from(const cryptonote::account_public_address &address, bool is_subaddress, const size_t outputs, std::vector<size_t> unused_transfers_indices, std::vector<size_t> unused_dust_indices, const size_t fake_outs_count, uint32_t priority, const std::vector<uint8_t>& extra);
+    bool sanity_check(const std::vector<wallet2::pending_tx> &ptx_vector, const std::vector<cryptonote::tx_destination_entry>& dsts, const unique_index_container& subtract_fee_from_outputs = {}) const;
     void cold_tx_aux_import(const std::vector<pending_tx>& ptx, const std::vector<std::string>& tx_device_aux);
     void cold_sign_tx(const std::vector<pending_tx>& ptx_vector, signed_tx_set &exported_txs, std::vector<cryptonote::address_parse_info> &dsts_info, std::vector<std::string> & tx_device_aux);
     uint64_t cold_key_image_sync(uint64_t &spent, uint64_t &unspent);
@@ -1157,25 +1166,25 @@ private:
       }
       a & m_transfers;
       a & m_account_public_address;
-      a & m_key_images.parent();
+      a & m_key_images;
       if(ver < 6)
         return;
-      a & m_unconfirmed_txs.parent();
+      a & m_unconfirmed_txs;
       if(ver < 7)
         return;
-      a & m_payments.parent();
+      a & m_payments;
       if(ver < 8)
         return;
-      a & m_tx_keys.parent();
+      a & m_tx_keys;
       if(ver < 9)
         return;
-      a & m_confirmed_txs.parent();
+      a & m_confirmed_txs;
       if(ver < 11)
         return;
       a & dummy_refresh_height;
       if(ver < 12)
         return;
-      a & m_tx_notes.parent();
+      a & m_tx_notes;
       if(ver < 13)
         return;
       if (ver < 17)
@@ -1200,7 +1209,7 @@ private:
         }
         return;
       }
-      a & m_pub_keys.parent();
+      a & m_pub_keys;
       if(ver < 16)
         return;
       a & m_address_book;
@@ -1221,17 +1230,17 @@ private:
       a & m_scanned_pool_txs[1];
       if (ver < 20)
         return;
-      a & m_subaddresses.parent();
+      a & m_subaddresses;
       std::unordered_map<cryptonote::subaddress_index, crypto::public_key> dummy_subaddresses_inv;
       a & dummy_subaddresses_inv;
       a & m_subaddress_labels;
-      a & m_additional_tx_keys.parent();
+      a & m_additional_tx_keys;
       if(ver < 21)
         return;
-      a & m_attributes.parent();
+      a & m_attributes;
       if(ver < 22)
         return;
-      a & m_unconfirmed_payments.parent();
+      a & m_unconfirmed_payments;
       if(ver < 23)
         return;
       a & (std::pair<std::map<std::string, std::string>, std::vector<std::string>>&)m_account_tags;
@@ -1243,13 +1252,13 @@ private:
       a & m_last_block_reward;
       if(ver < 26)
         return;
-      a & m_tx_device.parent();
+      a & m_tx_device;
       if(ver < 27)
         return;
       a & m_device_last_key_image_sync;
       if(ver < 28)
         return;
-      a & m_cold_key_images.parent();
+      a & m_cold_key_images;
       if(ver < 29)
         return;
       crypto::secret_key dummy_rpc_client_secret_key; // Compatibility for old RPC payment system
@@ -1464,7 +1473,7 @@ private:
      * \brief  Get the list of registered account tags. 
      * \return first.Key=(tag's name), first.Value=(tag's label), second[i]=(i-th account's tag)
      */
-    const std::pair<serializable_map<std::string, std::string>, std::vector<std::string>>& get_account_tags();
+    const std::pair<std::map<std::string, std::string>, std::vector<std::string>>& get_account_tags();
     /*!
      * \brief  Set a tag to the given accounts.
      * \param  account_indices  Indices of accounts.
@@ -1771,33 +1780,34 @@ private:
     cryptonote::account_base m_account;
     boost::optional<epee::net_utils::http::login> m_daemon_login;
     std::string m_daemon_address;
+    std::string m_proxy;
     std::string m_wallet_file;
     std::string m_keys_file;
     std::string m_mms_file;
     const std::unique_ptr<epee::net_utils::http::abstract_http_client> m_http_client;
     hashchain m_blockchain;
-    serializable_unordered_map<crypto::hash, unconfirmed_transfer_details> m_unconfirmed_txs;
-    serializable_unordered_map<crypto::hash, confirmed_transfer_details> m_confirmed_txs;
-    serializable_unordered_multimap<crypto::hash, pool_payment_details> m_unconfirmed_payments;
-    serializable_unordered_map<crypto::hash, crypto::secret_key> m_tx_keys;
+    std::unordered_map<crypto::hash, unconfirmed_transfer_details> m_unconfirmed_txs;
+    std::unordered_map<crypto::hash, confirmed_transfer_details> m_confirmed_txs;
+    std::unordered_multimap<crypto::hash, pool_payment_details> m_unconfirmed_payments;
+    std::unordered_map<crypto::hash, crypto::secret_key> m_tx_keys;
     cryptonote::checkpoints m_checkpoints;
-    serializable_unordered_map<crypto::hash, std::vector<crypto::secret_key>> m_additional_tx_keys;
+    std::unordered_map<crypto::hash, std::vector<crypto::secret_key>> m_additional_tx_keys;
 
     transfer_container m_transfers;
     payment_container m_payments;
-    serializable_unordered_map<crypto::key_image, size_t> m_key_images;
-    serializable_unordered_map<crypto::public_key, size_t> m_pub_keys;
+    std::unordered_map<crypto::key_image, size_t> m_key_images;
+    std::unordered_map<crypto::public_key, size_t> m_pub_keys;
     cryptonote::account_public_address m_account_public_address;
-    serializable_unordered_map<crypto::public_key, cryptonote::subaddress_index> m_subaddresses;
+    std::unordered_map<crypto::public_key, cryptonote::subaddress_index> m_subaddresses;
     std::vector<std::vector<std::string>> m_subaddress_labels;
-    serializable_unordered_map<crypto::hash, std::string> m_tx_notes;
-    serializable_unordered_map<std::string, std::string> m_attributes;
+    std::unordered_map<crypto::hash, std::string> m_tx_notes;
+    std::unordered_map<std::string, std::string> m_attributes;
     std::vector<tools::wallet2::address_book_row> m_address_book;
-    std::pair<serializable_map<std::string, std::string>, std::vector<std::string>> m_account_tags;
+    std::pair<std::map<std::string, std::string>, std::vector<std::string>> m_account_tags;
     uint64_t m_upper_transaction_weight_limit; //TODO: auto-calc this value or request from daemon, now use some fixed value
     const std::vector<std::vector<tools::wallet2::multisig_info>> *m_multisig_rescan_info;
     const std::vector<std::vector<rct::key>> *m_multisig_rescan_k;
-    serializable_unordered_map<crypto::public_key, crypto::key_image> m_cold_key_images;
+    std::unordered_map<crypto::public_key, crypto::key_image> m_cold_key_images;
 
     std::atomic<bool> m_run;
 
@@ -1868,7 +1878,7 @@ private:
     bool m_allow_mismatched_daemon_version;
 
     // Aux transaction data from device
-    serializable_unordered_map<crypto::hash, std::string> m_tx_device;
+    std::unordered_map<crypto::hash, std::string> m_tx_device;
 
     std::string m_ring_database;
     bool m_ring_history_saved;
@@ -2313,7 +2323,7 @@ namespace boost
       a & x.key_images;
       if (ver < 1)
         return;
-      a & x.tx_key_images.parent();
+      a & x.tx_key_images;
     }
 
     template <class Archive>

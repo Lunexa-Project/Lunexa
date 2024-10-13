@@ -27,8 +27,8 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef LUNEXA_DEVICE_TREZOR_BASE_H
-#define LUNEXA_DEVICE_TREZOR_BASE_H
+#ifndef MONERO_DEVICE_TREZOR_BASE_H
+#define MONERO_DEVICE_TREZOR_BASE_H
 
 
 #include <cstddef>
@@ -226,9 +226,9 @@ namespace trezor {
         }
 
         if (network_type){
-          msg->set_network_type(static_cast<messages::lunexa::LunexaNetworkType>(network_type.get()));
+          msg->set_network_type(static_cast<messages::monero::MoneroNetworkType>(network_type.get()));
         } else {
-          msg->set_network_type(static_cast<messages::lunexa::LunexaNetworkType>(this->m_network_type));
+          msg->set_network_type(static_cast<messages::monero::MoneroNetworkType>(this->m_network_type));
         }
       }
 
@@ -244,7 +244,7 @@ namespace trezor {
 
     bool reset();
 
-    // Default derivation path for Lunexa
+    // Default derivation path for Monero
     static const uint32_t DEFAULT_BIP44_PATH[2];
 
     std::shared_ptr<Transport> get_transport(){
@@ -340,4 +340,4 @@ namespace trezor {
 
 }
 }
-#endif //LUNEXA_DEVICE_TREZOR_BASE_H
+#endif //MONERO_DEVICE_TREZOR_BASE_H

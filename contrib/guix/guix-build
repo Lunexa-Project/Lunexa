@@ -355,15 +355,9 @@ EOF
                                  --container \
                                  --pure \
                                  --no-cwd \
-                                 --cores="$JOBS" \
-                                 --keep-failed \
-                                 --fallback \
                                  ${SUBSTITUTE_URLS:+--substitute-urls="$SUBSTITUTE_URLS"} \
-                                 ${ADDITIONAL_GUIX_COMMON_FLAGS} ${ADDITIONAL_GUIX_ENVIRONMENT_FLAGS} \
                                  -- echo "$HOST"
 
-        # Useful for CI environments where you only want to build Guix packages so they
-        # can be cached. Currently unused.
         if [[ -v DRY_RUN ]]; then
             echo "Dry run, exiting.."
             exit 0

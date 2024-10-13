@@ -19,3 +19,4 @@ when we being using newer versions of glibc.
 +
  libtype.o := lib%.a
  object-suffixes += .o
+ ifeq (yes,$(build-shared))

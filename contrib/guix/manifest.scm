@@ -165,8 +165,6 @@ chain for " target " development."))
             (list "--enable-initfini-array=yes",
                   "--enable-default-ssp=yes",
                   "--enable-default-pie=yes",
-                  "--enable-standard-branch-protection=yes",
-                  "--enable-cet=yes",
                   building-on)))
         ((#:phases phases)
           `(modify-phases ,phases
@@ -216,81 +214,55 @@ chain for " target " development."))
                    (("^\\$\\(inst_sysconfdir\\)/rpc(.*)$" _ suffix)
                     (string-append out "/etc/rpc" suffix "\n"))
                    (("^install-others =.*$")
-                    (string-append "install-others = " out "/etc/rpc\n"))))))))))
-    (native-inputs
-      (modify-inputs (package-native-inputs glibc-2.31)
-        (delete "make")
-        (append gnu-make-4.2))))) ;; make >= 4.4 causes an infinite loop (stdio-common)
-
-
-; This list declares which packages are included in the container environment. It
-; should reflect the minimal set of packages we need to build and debug the build
-; process. Guix will also include the run-time dependencies for each package.
-;
-; If a package is target-specific, place it in the corresponding list at the end.
-; Be mindful when adding new packages here. Some packages take a very long time
-; to bootstrap. Prefer -minimal versions of packages, unless there is a good
-; reason not to.
-;
-; To show run-time dependencies, run:
-; $ guix time-machine --commit=<pinned commit> -- graph --type=references <package> | xdot -
-;
-; To show build-time dependencies (excluding bootstrap), run:
-; $ guix time-machine --commit=<pinned commit> -- graph <package> | xdot -
+                    (string-append "install-others = " out "/etc/rpc\n"))))))))))))
 
 (packages->manifest
  (append
   (list ;; The Basics
         bash
-        ; the build graph for bash-minimal is slightly smaller.
-        ; however, it does not include readline support which
-        ; makes debugging inside the guix container inconvenient
-        coreutils-minimal
-        ; includes basic shell utilities: cat, cp, echo, mkdir, etc
         which
-
+        coreutils-minimal
+        util-linux
         ;; File(system) inspection
         file
         grep
-        diffutils ; provides diff
-        findutils ; provides find and xargs
-
+        diffutils
+        findutils
         ;; File transformation
         patch
         gawk
         sed
-        moreutils ; sponge is used to construct the SHA256SUMS.part file in libexec/build.sh
-        patchelf  ; unused, occassionally useful for debugging
-
+        moreutils
+        patchelf
         ;; Compression and archiving
         tar
-        bzip2 ; used to create release archives (non-windows)
-        gzip  ; used to unpack most packages in depends
-        xz    ; used to unpack freebsd_base
+        bzip2
+        gzip
+        xz
         p7zip
-        zip   ; used to create release archives (windows)
-        unzip ; used to unpack android_ndk
-
+        zip
+        unzip
         ;; Build tools
         gnu-make
         libtool
-        autoconf-2.71 ; defaults to 2.69, which does not recognize the aarch64-apple-darwin target
+        autoconf-2.71
         automake
         pkg-config
-        gperf         ; required to build eudev in depends
+        gperf
+        gettext-minimal
         cmake-minimal
-
         ;; Scripting
-        perl           ; required to build openssl in depends
-        python-minimal ; required to build lunexa (cmake/CheckTrezor.cmake) and in android_ndk
-
+        perl
+        python-minimal
         ;; Git
-        git-minimal ; used to create the release source archive
+        git-minimal
     )
   (let ((target (getenv "HOST")))
     (cond ((string-suffix? "-mingw32" target)
+           ;; Windows
            (list
              gcc-toolchain-12
+             (list gcc-toolchain-12 "static")
              (make-mingw-pthreads-cross-toolchain target)))
           ((string-contains target "-linux-gnu")
            (list
@@ -309,6 +281,7 @@ chain for " target " development."))
           ((string-contains target "darwin")
            (list
              gcc-toolchain-10
+             (list gcc-toolchain-10 "static")
              clang-toolchain-11
              binutils))
           (else '())))))

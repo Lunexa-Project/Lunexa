@@ -10,9 +10,6 @@ define $(package)_extract_cmds
   tar xf $($(1)_source_dir)/$($(package)_file_name) ./lib/ ./usr/lib/ ./usr/include/
 endef
 
-# Prevent clang from including OpenSSL headers from the system base. We
-# statically link our own version of OpenSSL.
-
 define $(package)_stage_cmds
   mkdir $($(package)_staging_dir)/$(host_prefix)/native &&\
   rm -rf usr/include/openssl &&\

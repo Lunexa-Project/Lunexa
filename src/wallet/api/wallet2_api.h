@@ -322,9 +322,10 @@ struct SubaddressAccount
 };
 
 struct MultisigState {
-    MultisigState() : isMultisig(false), isReady(false), threshold(0), total(0) {}
+    MultisigState() : isMultisig(false), kexIsDone(false), isReady(false), threshold(0), total(0) {}
 
     bool isMultisig;
+    bool kexIsDone;
     bool isReady;
     uint32_t threshold;
     uint32_t total;
@@ -1334,7 +1335,7 @@ struct WalletManager
     //! stops mining
     virtual bool stopMining() = 0;
 
-    //! resolves an OpenAlias address to a Lunexa address
+    //! resolves an OpenAlias address to a lunexa address
     virtual std::string resolveOpenAlias(const std::string &address, bool &dnssec_valid) const = 0;
 
     //! checks for an update and returns version, hash and url
