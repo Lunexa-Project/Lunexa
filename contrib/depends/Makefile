@@ -193,4 +193,8 @@ download: download-osx download-linux download-win download-freebsd download-and
  $(foreach package,$(all_packages),$(eval $(call ext_add_stages,$(package))))
 
 .PHONY: install cached download-one download-osx download-linux download-win download-freebsd download-android download check-packages check-sources
+<<<<<<< HEAD
 .PHONY: FORCE
+=======
+.PHONY: FORCE
+>>>>>>> main

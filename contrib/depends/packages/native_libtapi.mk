@@ -16,4 +16,8 @@ endef
 
 define $(package)_stage_cmds
   ./install.sh
+<<<<<<< HEAD
 endef
+=======
+endef
+>>>>>>> main

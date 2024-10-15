@@ -18,4 +18,9 @@ when we being using newer versions of glibc.
 +CFLAGS-.o += `find /gnu/store -maxdepth 1 -mindepth 1 -type d -exec echo -n " -ffile-prefix-map={}=/usr" \;`
 +
  libtype.o := lib%.a
+<<<<<<< HEAD
  object-suffixes += .o
+ ifeq (yes,$(build-shared))
+=======
+ object-suffixes += .o
+>>>>>>> main

@@ -58,7 +58,11 @@ worktree to save disk space:
 
 Much like how Gitian build outputs are attested to in a `gitian.sigs`
 repository, Guix build outputs are attested to in the [`guix.sigs`
+<<<<<<< HEAD
+repository](https://github.com/lunexa-project/guix.sigs).
+=======
 repository](https://github.com/Lunexa-project/guix.sigs).
+>>>>>>> main
 
 After you've cloned the `guix.sigs` repository, to attest to the current
 worktree's commit/tag:
@@ -342,4 +346,8 @@ supply this flag.
 
 [b17e]: https://bootstrappable.org/
 [r12e/source-date-epoch]: https://reproducible-builds.org/docs/source-date-epoch/
+<<<<<<< HEAD
 [env-vars-list]: #recognized-environment-variables
+=======
+[env-vars-list]: #recognized-environment-variables
+>>>>>>> main

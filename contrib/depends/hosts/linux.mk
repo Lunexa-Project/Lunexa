@@ -33,4 +33,8 @@ x86_64_linux_CXX=$(default_host_CXX) -m64
 endif
 endif
 
+<<<<<<< HEAD
 linux_cmake_system=Linux
+=======
+linux_cmake_system=Linux
+>>>>>>> main

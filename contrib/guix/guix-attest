@@ -260,4 +260,8 @@ mkdir -p "$outsigdir"
         echo "Not signing SHA256SUMS as \$NO_SIGN is not empty"
     fi
     echo ""
+<<<<<<< HEAD
 )
+=======
+)
+>>>>>>> main

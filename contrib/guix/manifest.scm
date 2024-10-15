@@ -284,4 +284,8 @@ chain for " target " development."))
              (list gcc-toolchain-10 "static")
              clang-toolchain-11
              binutils))
+<<<<<<< HEAD
           (else '())))))
+=======
+          (else '())))))
+>>>>>>> main

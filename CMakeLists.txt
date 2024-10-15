@@ -1,5 +1,10 @@
+<<<<<<< HEAD
+# Copyright (c) 2014-2023, The Lunexa Project
+#
+=======
 # Copyright (c) 2014-2023, The Monero Project
 # Copyright (c) 2024, Lunexa Project
+>>>>>>> main
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are
@@ -379,7 +384,7 @@ set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 
 # set this to 0 if per-block checkpoint needs to be disabled
-set(PER_BLOCK_CHECKPOINT 0)
+set(PER_BLOCK_CHECKPOINT 1)
 
 if(PER_BLOCK_CHECKPOINT)
   add_definitions("-DPER_BLOCK_CHECKPOINT")
@@ -1179,13 +1184,17 @@ if(CMAKE_C_COMPILER_ID STREQUAL "Clang" AND ARCH_WIDTH EQUAL "32" AND NOT IOS AN
   endif()
 endif()
 
+if(STATIC)
+  set(sodium_USE_STATIC_LIBS ON)
+endif()
+find_package(Sodium REQUIRED)
+
 find_path(ZMQ_INCLUDE_PATH zmq.h)
 find_library(ZMQ_LIB zmq)
 find_library(PGM_LIBRARY pgm)
 find_library(NORM_LIBRARY norm)
 find_library(GSSAPI_LIBRARY gssapi_krb5)
 find_library(PROTOLIB_LIBRARY protolib)
-find_library(SODIUM_LIBRARY sodium)
 find_library(BSD_LIBRARY bsd)
 find_library(MD_LIBRARY md)
 find_library(PROTOKIT_LIBRARY protokit)
@@ -1208,8 +1217,8 @@ endif()
 if(PROTOLIB_LIBRARY)
   set(ZMQ_LIB "${ZMQ_LIB};${PROTOLIB_LIBRARY}")
 endif()
-if(SODIUM_LIBRARY)
-  set(ZMQ_LIB "${ZMQ_LIB};${SODIUM_LIBRARY}")
+if(Sodium_FOUND)
+  set(ZMQ_LIB "${ZMQ_LIB};${sodium_LIBRARIES}")
 endif()
 if(BSD_LIBRARY)
   set(ZMQ_LIB "${ZMQ_LIB};${BSD_LIBRARY}")

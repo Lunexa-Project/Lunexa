@@ -325,6 +325,10 @@ namespace rct {
         ctkeyV outPk;
         lxa_amount txnFee; // contains b
 
+        rctSigBase() :
+          type(RCTTypeNull), message{}, mixRing{}, pseudoOuts{}, ecdhInfo{}, outPk{}, txnFee(0)
+        {}
+
         template<bool W, template <bool> class Archive>
         bool serialize_rctsig_base(Archive<W> &ar, size_t inputs, size_t outputs)
         {
@@ -370,7 +374,7 @@ namespace rct {
                 memset(ecdhInfo[i].amount.bytes, 0, sizeof(ecdhInfo[i].amount.bytes));
               else // saving
                 memcpy(trunc_amount.data, ecdhInfo[i].amount.bytes, sizeof(trunc_amount));
-              FIELD(trunc_amount);
+              FIELD_N("amount", trunc_amount);
               if (!typename Archive<W>::is_saving()) // loading
                 memcpy(ecdhInfo[i].amount.bytes, trunc_amount.data, sizeof(trunc_amount));
               ar.end_object();
@@ -767,7 +771,7 @@ namespace std
 BLOB_SERIALIZER(rct::key);
 BLOB_SERIALIZER(rct::key64);
 BLOB_SERIALIZER(rct::ctkey);
-BLOB_SERIALIZER(rct::multisig_kLRki);
+BLOB_SERIALIZER_FORCED(rct::multisig_kLRki);
 BLOB_SERIALIZER(rct::boroSig);
 
 VARIANT_TAG(debug_archive, rct::key, "rct::key");

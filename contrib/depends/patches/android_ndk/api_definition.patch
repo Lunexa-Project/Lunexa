@@ -12,4 +12,8 @@ index b8172b2..1984595 100755
 +    common_flags += ' -D__ANDROID_API__={}'.format(api)
  
      # We only need mstackrealign to fix issues on 32-bit x86 pre-24. After 24,
+<<<<<<< HEAD
      # this consumes an extra register unnecessarily, which can cause issues for
+=======
+     # this consumes an extra register unnecessarily, which can cause issues for
+>>>>>>> main
