@@ -48,7 +48,6 @@ fi
 ################
 # Execute "$@" in a pinned, possibly older version of Guix, for reproducibility
 # across time.
-<<<<<<< HEAD
 #
 # For more information on guix time-machine, see:
 # https://guix.gnu.org/manual/en/html_node/Invoking-guix-time_002dmachine.html
@@ -69,8 +68,6 @@ fi
 #   $ export ADDITIONAL_GUIX_COMMON_FLAGS='--no-substitutes'
 #
 # - Check how the update affects our build graph and which packages have been updated.
-=======
->>>>>>> main
 time-machine() {
     # shellcheck disable=SC2086
     guix time-machine --url=https://github.com/monero-project/guix.git \
@@ -104,8 +101,4 @@ var_base_basename="var"
 VAR_BASE="${VAR_BASE:-${VERSION_BASE}/${var_base_basename}}"
 
 profiles_base_basename="profiles"
-<<<<<<< HEAD
 PROFILES_BASE="${PROFILES_BASE:-${VAR_BASE}/${profiles_base_basename}}"
-=======
-PROFILES_BASE="${PROFILES_BASE:-${VAR_BASE}/${profiles_base_basename}}"
->>>>>>> main

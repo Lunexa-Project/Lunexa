@@ -24,8 +24,4 @@ define $(package)_stage_cmds
   $(MAKE) DESTDIR=$($(package)_staging_dir) -C src install-nobase_includeHEADERS &&\
   $(MAKE) DESTDIR=$($(package)_staging_dir) install-pkgconfigDATA &&\
   cp src/.libs/libprotobuf.a $($(package)_staging_prefix_dir)/lib/
-<<<<<<< HEAD
 endef
-=======
-endef
->>>>>>> main

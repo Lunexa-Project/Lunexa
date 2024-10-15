@@ -80,8 +80,4 @@ for precious_dirs_file in "${found_precious_dirs_files[@]}"; do
     done < "$precious_dirs_file"
 done
 
-<<<<<<< HEAD
 git clean -xdff "${exclude_flags[@]}"
-=======
-git clean -xdff "${exclude_flags[@]}"
->>>>>>> main

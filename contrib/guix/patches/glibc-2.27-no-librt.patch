@@ -50,8 +50,4 @@ index f816973c05..11e71aa890 100644
 +  compat_symbol (librt, name, name, GLIBC_2_2);
  #endif
  
-<<<<<<< HEAD
  COMPAT_REDIRECT (clock_getres,
-=======
- COMPAT_REDIRECT (clock_getres,
->>>>>>> main

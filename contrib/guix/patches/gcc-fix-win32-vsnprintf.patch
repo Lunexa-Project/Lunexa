@@ -80,8 +80,4 @@ index bc811c0387b..ccfdcda1c2f 100644
 -
  /* printf() like function for for printing to stderr.  Uses a stack
     allocated buffer and doesn't lock stderr, so it should be safe to
-<<<<<<< HEAD
     use from within a signal handler.  */
-=======
-    use from within a signal handler.  */
->>>>>>> main

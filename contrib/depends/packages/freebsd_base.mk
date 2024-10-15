@@ -14,8 +14,4 @@ define $(package)_stage_cmds
   mkdir $($(package)_staging_dir)/$(host_prefix)/native &&\
   rm -rf usr/include/openssl &&\
   mv lib usr $($(package)_staging_dir)/$(host_prefix)/native
-<<<<<<< HEAD
 endef
-=======
-endef
->>>>>>> main

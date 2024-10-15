@@ -14,8 +14,4 @@
 +    #}
      # - GCC 4.2 and higher in Darwin does not have -Wno-long-double.
      if $(real-version) < "4.2.0"
-<<<<<<< HEAD
      {
-=======
-     {
->>>>>>> main

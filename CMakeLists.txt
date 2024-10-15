@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 # Copyright (c) 2014-2023, The Lunexa Project
 #
-=======
-# Copyright (c) 2014-2023, The Monero Project
-# Copyright (c) 2024, Lunexa Project
->>>>>>> main
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification, are
@@ -1177,7 +1172,7 @@ if(ANDROID)
   set(ATOMIC libatomic.a)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-error=user-defined-warnings")
 endif()
-if(CMAKE_C_COMPILER_ID STREQUAL "Clang" AND ARCH_WIDTH EQUAL "32" AND NOT IOS AND NOT FREEBSD)
+if(CMAKE_C_COMPILER_ID MATCHES "Clang" AND ARCH_WIDTH EQUAL "32" AND NOT IOS AND NOT FREEBSD)
   find_library(ATOMIC atomic)
   if (ATOMIC_FOUND)
     list(APPEND EXTRA_LIBRARIES ${ATOMIC})

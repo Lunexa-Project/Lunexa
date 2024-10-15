@@ -17,7 +17,4 @@ the package, map all guix store prefixes to something fixed, e.g. /usr.
  
 -- 
 2.37.0
-<<<<<<< HEAD
 
-=======
->>>>>>> main

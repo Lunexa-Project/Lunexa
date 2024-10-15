@@ -463,8 +463,4 @@ EOF
                                       bash -c "cd /lunexa && bash contrib/guix/libexec/build.sh"
     )
 
-<<<<<<< HEAD
 done
-=======
-done
->>>>>>> main
