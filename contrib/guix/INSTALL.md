@@ -396,7 +396,11 @@ in the Guix Reference Manual for more details.
 
 ## Optional setup
 
+<<<<<<< HEAD
 At this point, you are set up to [use Guix to build Lunexa](./README.md#usage). However, if you want to polish your setup a bit and
+=======
+At this point, you are set up to [use Guix to build Monero](./README.md#usage). However, if you want to polish your setup a bit and
+>>>>>>> main
 make it "what Guix intended", then read the next few subsections.
 
 ### Add an `/etc/profile.d` entry
@@ -795,4 +799,8 @@ start over.
    - `/home/*/.guix-profile/`
    - `/root/.config/guix/`
    - `/root/.cache/guix/`
+<<<<<<< HEAD
    - `/root/.guix-profile/`
+=======
+   - `/root/.guix-profile/`
+>>>>>>> main

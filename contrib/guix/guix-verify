@@ -171,4 +171,8 @@ fi
 
 if [ -n "$failure" ]; then
     exit 1
+<<<<<<< HEAD
 fi
+=======
+fi
+>>>>>>> main

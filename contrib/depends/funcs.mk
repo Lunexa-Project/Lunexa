@@ -275,4 +275,8 @@ $(foreach package,$(all_packages),$(eval $(call int_config_attach_build_config,$
 $(foreach package,$(all_packages),$(eval $(call int_add_cmds,$(package))))
 
 #special exception: if a toolchain package exists, all non-native packages depend on it
+<<<<<<< HEAD
 $(foreach package,$(packages),$(eval $($(package)_extracted): |$($($(host_arch)_$(host_os)_native_toolchain)_cached) ))
+=======
+$(foreach package,$(packages),$(eval $($(package)_extracted): |$($($(host_arch)_$(host_os)_native_toolchain)_cached) ))
+>>>>>>> main

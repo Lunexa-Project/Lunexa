@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2023, The Lunexa Project
 // 
 // All rights reserved.
 // 

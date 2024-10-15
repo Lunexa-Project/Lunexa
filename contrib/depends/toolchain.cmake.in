@@ -155,6 +155,11 @@ if(ARCHITECTURE STREQUAL "riscv64")
   set(ARCH "rv64gc")
 endif()
 
+if(ARCHITECTURE STREQUAL "loongarch64")
+    set(ARCH_ID "loongarch64")
+    set(ARCH "loongarch")
+endif()
+
 if(ARCHITECTURE STREQUAL "i686")
   SET(ARCH_ID "i386")
   if(CMAKE_SYSTEM_NAME STREQUAL "Linux")

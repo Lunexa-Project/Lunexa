@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # Copyright (c) 2019-2021 The Bitcoin Core developers
+<<<<<<< HEAD
 # Copyright (c) 2022-2024 The Monero Project
+=======
+# Copyright (c) 2019-2024 Monero Project
+
+>>>>>>> main
 # Distributed under the MIT software license, see the accompanying
 # file ../LICENSE.txt or http://www.opensource.org/licenses/mit-license.php.
 export LC_ALL=C
@@ -375,4 +380,8 @@ mv --no-target-directory "$OUTDIR" "$ACTUAL_OUTDIR" \
       | xargs sha256sum \
       | sort -k2 \
       | sponge "$LOGDIR"/SHA256SUMS.part
+<<<<<<< HEAD
 )
+=======
+)
+>>>>>>> main

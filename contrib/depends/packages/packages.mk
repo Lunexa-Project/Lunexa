@@ -25,4 +25,8 @@ mingw32_native_packages = $(hardware_native_packages)
 
 ifneq ($(build_os),darwin)
 darwin_native_packages += darwin_sdk native_cctools native_libtapi
+<<<<<<< HEAD
 endif
+=======
+endif
+>>>>>>> main

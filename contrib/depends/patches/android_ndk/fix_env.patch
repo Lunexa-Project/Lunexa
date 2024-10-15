@@ -27,4 +27,8 @@ index b8172b2..19c0ad6 100755
 +                env -u C_INCLUDE_PATH -u CPLUS_INCLUDE_PATH -u OBJC_INCLUDE_PATH -u OBJCPLUS_INCLUDE_PATH -u CPATH -u LIBRARY_PATH `dirname $0`/clang{version}++ "$@"
              fi
          """.format(version=version_number, flags=unix_flags)))
+<<<<<<< HEAD
  
+=======
+ 
+>>>>>>> main
