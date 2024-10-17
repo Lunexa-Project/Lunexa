@@ -59,8 +59,8 @@
 // TODO:
 #include "net/network_throttle-detail.hpp"
 
-#undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "net.throttle"
+#undef LUNEXA_DEFAULT_LOG_CATEGORY
+#define LUNEXA_DEFAULT_LOG_CATEGORY "net.throttle"
 
 // ################################################################################################
 // ################################################################################################

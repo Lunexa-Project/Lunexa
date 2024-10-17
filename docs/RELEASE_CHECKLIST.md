@@ -1,25 +1,25 @@
-# Monero hard-fork release check-list
+# Lunexa hard-fork release check-list
 
 - [ ] Security audit
 - [ ] Code audit
 - [ ] Ledger integration
   - [ ] Ledger notified
-  - [ ] Pull request made against Monero codebase (if needed)
-  - [ ] Pull request merged into Monero codebase (if needed)
+  - [ ] Pull request made against Lunexa codebase (if needed)
+  - [ ] Pull request merged into Lunexa codebase (if needed)
   - [ ] Ledger app integration coded
-  - [ ] Ledger Monero app update available
+  - [ ] Ledger Lunexa app update available
 - [ ] Trezor integration
   - [ ] Trezor notified
-  - [ ] Pull request made against Monero codebase (if needed)
-  - [ ] Pull request merged into Monero codebase (if needed)
+  - [ ] Pull request made against Lunexa codebase (if needed)
+  - [ ] Pull request merged into Lunexa codebase (if needed)
   - [ ] Trezor firmware update coded
   - [ ] Trezor firmware update available
 - [ ] Fork height set
   - [ ] Twitter announcement
   - [ ] Reddit announcement
-  - [ ] Getmonero.org announcement
+  - [ ] Getlunexa.org announcement
 - [ ] Notify wallets
-  - [ ] MyMonero
+  - [ ] MyLunexa
   - [ ] Coinomi
   - [ ] Exa Wallet
   - [ ] Wookey Wallet
@@ -33,19 +33,19 @@
   - [ ] XMRWallet
   - [ ] Feather Wallet
 - [ ] Notify exchanges
-  - [ ] https://www.getmonero.org/community/merchants/#exchanges
+  - [ ] https://www.getlunexa.org/community/merchants/#exchanges
 - [ ] Notify 3rd party payment processors
-  - [ ] https://www.getmonero.org/community/merchants/#payment-gateways
+  - [ ] https://www.getlunexa.org/community/merchants/#payment-gateways
   - [ ] BTCPayServer
 - [ ] Notify mining pools
-  - [ ] https://miningpoolstats.stream/monero
+  - [ ] https://miningpoolstats.stream/lunexa
 - [ ] Release branch created
   - [ ] Update src/version.cpp.in with new version AND new name (if necessary)
   - [ ] Update Gitian YML files in contrib/gitian/ to the new version number
-  - [ ] Update README.md with new fork table entry (or at least update the Recommended Monero version)
+  - [ ] Update README.md with new fork table entry (or at least update the Recommended Lunexa version)
   - [ ] Update contrib/gitian/README.md so that the instructions reflect the current version
   - [ ] Update src/checkpoints/checkpoints.cpp with a recent hardcoded checkpoint
-  - [ ] Update src/blocks/checkpoints.dat with ./monero-blockchain-export --output-file checkpoints.dat --block-stop <recent block height> --blocksdat
+  - [ ] Update src/blocks/checkpoints.dat with ./lunexa-blockchain-export --output-file checkpoints.dat --block-stop <recent block height> --blocksdat
   - [ ] Update expected_block_hashes_hash in src/cryptonote_core/blockchain.cpp with checkpoints.dat sha256 hash
 - [ ] Testnet forked
 - [ ] Testnet testing/verification
@@ -60,21 +60,21 @@
   - [ ] Release-specific testing
 - [ ] CLI reproducible builds validated
 - [ ] CLI released
-  - [ ] https://www.getmonero.org/downloads/ updated
+  - [ ] https://www.getlunexa.org/downloads/ updated
   - [ ] Update hashes.txt on website
   - [ ] Update downloads.yml on website
   - [ ] Update auto-update DNS records
   - [ ] Update redirects on downloads box
   - [ ] Update seed nodes
 - [ ] GUI released
-  - [ ] https://www.getmonero.org/downloads/ updated
+  - [ ] https://www.getlunexa.org/downloads/ updated
   - [ ] Update hashes.txt on website
   - [ ] Update hashes.txt.sig on website
   - [ ] Update downloads.yml on website
   - [ ] Update auto-update DNS records
   - [ ] Update redirects on downloads box
 - [ ] Release Announcements
-  - [ ] Monero-announce mailer notice
+  - [ ] Lunexa-announce mailer notice
   - [ ] Twitter announcement
   - [ ] Reddit announcement
-  - [ ] Getmonero.org announcement
+  - [ ] Getlunexa.org announcement

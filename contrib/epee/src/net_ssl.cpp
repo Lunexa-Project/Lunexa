@@ -43,8 +43,8 @@
 #include "net/net_utils_base.h"
 #include "file_io_utils.h" // to validate .crt and .key paths
 
-#undef MONERO_DEFAULT_LOG_CATEGORY
-#define MONERO_DEFAULT_LOG_CATEGORY "net.ssl"
+#undef LUNEXA_DEFAULT_LOG_CATEGORY
+#define LUNEXA_DEFAULT_LOG_CATEGORY "net.ssl"
 
 // openssl genrsa -out /tmp/KEY 4096
 // openssl req -new -key /tmp/KEY -out /tmp/REQ
