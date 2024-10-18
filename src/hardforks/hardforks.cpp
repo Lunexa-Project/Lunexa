@@ -35,8 +35,8 @@ const hardfork_t mainnet_hard_forks[] = {
   // version 1 from the start of the blockchain 17 October 2024 01:00:00 GMT
   { 1, 1, 0, 1729126800 },
 
-  // version 2 starts from block 500 RandomX intergration time stamp put as this as placeholder until it reaches the day it needs to be changed
-  { 2, 500, 0, 1729126800},
+  // version 2 starts from block 2 RandomX intergration time stamp put as this as placeholder until it reaches the day it needs to be changed
+  { 2, 3, 0, 1729126800},
   
 
 };
