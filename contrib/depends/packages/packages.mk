@@ -1,4 +1,4 @@
-packages:=boost openssl zeromq libiconv expat unbound
+packages:=boost openssl zeromq expat unbound sodium
 
 # ccache is useless in gitian builds
 ifneq ($(GITIAN),1)
@@ -25,11 +25,6 @@ ifeq ($(build_tests),ON)
 packages += gtest
 endif
 
-ifneq ($(host_arch),riscv64)
-linux_packages += unwind
-endif
-
-mingw32_packages = sodium $(hardware_packages)
 mingw32_native_packages = $(hardware_native_packages)
 
 ifneq ($(build_os),darwin)
