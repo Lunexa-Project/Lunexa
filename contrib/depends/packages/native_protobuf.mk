@@ -1,4 +1,4 @@
-package=native_protobuf
+package=protobuf3
 $(package)_version=21.12
 $(package)_version_protobuf_cpp=3.21.12
 $(package)_download_path=https://github.com/protocolbuffers/protobuf/releases/download/v$($(package)_version)/
@@ -16,13 +16,13 @@ define $(package)_config_cmds
 endef
 
 define $(package)_build_cmds
-  $(MAKE) -C src protoc
+  $(MAKE) -C src
 endef
 
 define $(package)_stage_cmds
-  $(MAKE) DESTDIR=$($(package)_staging_dir) -C src install-binPROGRAMS install-nobase_dist_protoDATA
+  $(MAKE) DESTDIR=$($(package)_staging_dir) -C src install
 endef
 
 define $(package)_postprocess_cmds
-  rm -rf lib/
+  rm lib/libprotoc.a
 endef
