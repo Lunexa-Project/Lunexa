@@ -75,13 +75,7 @@ if (USE_DEVICE_TREZOR)
     # Protobuf is required to build protobuf messages for Trezor
     include(FindProtobuf OPTIONAL)
 
-    # PkgConfig works better with new Protobuf
-    find_package(PkgConfig QUIET)
-    pkg_check_modules(PROTOBUF protobuf)
-
-    if (NOT Protobuf_FOUND)
-        FIND_PACKAGE(Protobuf CONFIG)
-    endif()
+    FIND_PACKAGE(Protobuf CONFIG)
     if (NOT Protobuf_FOUND)
         FIND_PACKAGE(Protobuf)
     endif()
@@ -89,11 +83,11 @@ if (USE_DEVICE_TREZOR)
     _trezor_protobuf_fix_vars()
 
     # Early fail for optional Trezor support
-    if(NOT Protobuf_FOUND AND NOT Protobuf_LIBRARY AND NOT Protobuf_PROTOC_EXECUTABLE AND NOT Protobuf_INCLUDE_DIR)
+    if(${Protobuf_VERSION} GREATER 21)
+        trezor_fatal_msg("Trezor: Unsupported Protobuf version ${Protobuf_VERSION}. Please, use Protobuf v21.")
+    elseif(NOT Protobuf_FOUND AND NOT Protobuf_LIBRARY AND NOT Protobuf_PROTOC_EXECUTABLE AND NOT Protobuf_INCLUDE_DIR)
         trezor_fatal_msg("Trezor: Could not find Protobuf")
-    elseif(${CMAKE_CXX_STANDARD} LESS 17 AND ${Protobuf_VERSION} GREATER 21)
-        trezor_fatal_msg("Trezor: Unsupported Protobuf version ${Protobuf_VERSION} with C++ ${CMAKE_CXX_STANDARD}. Please, use Protobuf v21.")
-    elseif(NOT Protobuf_LIBRARY)
+    elseif(NOT Protobuf_LIBRARY OR NOT EXISTS "${Protobuf_LIBRARY}")
         trezor_fatal_msg("Trezor: Protobuf library not found: ${Protobuf_LIBRARY}")
         unset(Protobuf_FOUND)
     elseif(NOT Protobuf_PROTOC_EXECUTABLE OR NOT EXISTS "${Protobuf_PROTOC_EXECUTABLE}")
@@ -156,10 +150,9 @@ if(Protobuf_FOUND AND USE_DEVICE_TREZOR AND TREZOR_PYTHON)
     endif()
 
     if(USE_DEVICE_TREZOR_PROTOBUF_TEST)
-        if(PROTOBUF_LDFLAGS)
-            set(PROTOBUF_TRYCOMPILE_LINKER "${PROTOBUF_LDFLAGS}")
-        else()
-            set(PROTOBUF_TRYCOMPILE_LINKER "${Protobuf_LIBRARY}")
+        # For now, Protobuf v21 is the maximum supported version as v23 requires C++17. TODO: Remove once we move to C++17
+        if(${Protobuf_VERSION} GREATER 21)
+            trezor_fatal_msg("Trezor: Unsupported Protobuf version ${Protobuf_VERSION}. Please, use Protobuf v21.")
         endif()
         
         try_compile(Protobuf_COMPILE_TEST_PASSED
@@ -171,7 +164,7 @@ if(Protobuf_FOUND AND USE_DEVICE_TREZOR AND TREZOR_PYTHON)
             CMAKE_EXE_LINKER_FLAGS ${CMAKE_TRY_COMPILE_LINKER_FLAGS}
             "-DINCLUDE_DIRECTORIES=${Protobuf_INCLUDE_DIR};${CMAKE_BINARY_DIR}"
             "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
-            LINK_LIBRARIES "${PROTOBUF_TRYCOMPILE_LINKER}" ${CMAKE_TRY_COMPILE_LINK_LIBRARIES}
+            LINK_LIBRARIES ${Protobuf_LIBRARY} ${CMAKE_TRY_COMPILE_LINK_LIBRARIES}
             OUTPUT_VARIABLE OUTPUT
         )
         if(NOT Protobuf_COMPILE_TEST_PASSED)
