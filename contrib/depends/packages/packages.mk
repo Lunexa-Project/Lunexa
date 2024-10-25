@@ -13,13 +13,14 @@ darwin_packages = ncurses readline $(hardware_packages)
 freebsd_native_packages = freebsd_base $(hardware_native_packages)
 freebsd_packages = ncurses readline protobuf libusb
 
-linux_packages = eudev ncurses readline  $(hardware_packages)
+linux_packages = eudev ncurses readline $(hardware_packages)
 linux_native_packages = $(hardware_native_packages)
 
 ifeq ($(build_tests),ON)
 packages += gtest
 endif
 
+mingw32_packages = $(hardware_packages)
 mingw32_native_packages = $(hardware_native_packages)
 
 ifneq ($(build_os),darwin)
