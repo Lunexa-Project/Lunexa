@@ -25,14 +25,20 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
   - [Debugging](#Debugging)
   - [Known issues](#known-issues)
 
+## IMPORTANT!!!
+
+I wanted to update you on the development of Lunexa. We are currently working on improvements to make the platform more stable after the issues encountered during the previous launch. I acknowledge that it wasn't a great launch, and I'm dedicated to addressing the problems, including syncing and transaction issues.
+
+I'm working on Lunexa in my spare time as I manage other responsibilities in life. My goal is to ensure that version Alpha-v0.2.0 is stable and ready for the next relaunch and testing. I appreciate the ongoing support from everyone and hope you'll continue to back this project.
+
+Thank you!
+
+
 ## Development resources
 
 - Web: [Lunexa.co](https://Lunexa.co)
-- GitHub: [https://github.com/lunexa-project/lunexa](https://github.com/lunexa-project/lunexacore)
+- GitHub: [https://github.com/lunexa-project/lunexa](https://github.com/lunexa-project/lunexa)
 - Discord: [Lunexa on Discord](https://discord.gg/KUMuN6Gvq2)
-
-
-
 
 
 ## Vulnerability response
@@ -522,14 +528,16 @@ You can also cross-compile static binaries on Linux for Windows and macOS with t
 * ```make depends target=arm-linux-android``` for 32bit android binaries
 * ```make depends target=aarch64-linux-android``` for 64bit android binaries
 
-
-The required packages are the names for each toolchain on apt. Depending on your distro, they may have different names. The `depends` system has been tested on Ubuntu 18.04 and 20.04.
+The required packages are the names for each toolchain on apt. Depending on your distro, they may have different names. The `depends` system has been tested on Ubuntu 18.04, 20.04 and 22.04
 
 Using `depends` might also be easier to compile Lunexa on Windows than using MSYS. Activate Windows Subsystem for Linux (WSL) with a distro (for example Ubuntu), install the apt build-essentials and follow the `depends` steps as depicted above.
 
 The produced binaries still link libc dynamically. If the binary is compiled on a current distribution, it might not run on an older distribution with an older installation of libc. Passing `-DBACKCOMPAT=ON` to cmake will make sure that the binary will run on systems having at least libc version 2.17.
 
 ### Trezor hardware wallet support
+
+LUNEXA currently doesnt support Trezor builds so it is best to disable it for the time being 
+
 
 If you have an issue with building Lunexa with Trezor support, you can disable it by setting `USE_DEVICE_TREZOR=OFF`, e.g., 
 
@@ -539,9 +547,25 @@ USE_DEVICE_TREZOR=OFF make release
 
 For more information, please check out Trezor [src/device_trezor/README.md](src/device_trezor/README.md).
 
-### Gitian builds
+### GUIX builds
 
-See [contrib/gitian/README.md](contrib/gitian/README.md).
+Its recommended to build guix builds on **Ubuntu 22.04**, follow these steps to install GUIX and the necessary dependencies for building Lunexa:
+
+1. **Install GUIX**:
+   ```bash
+   sudo apt-get install guix make curl git 
+2. **Cloning Lunexa**
+    ```bash
+    git clone https://github.com/lunexa-project/lunexa && cd lunexa
+2. **GUIX BUILD** 
+    it is recommended to build everything other OSX builds as the time being OSX isnt been worked on 
+    ```bash
+    ./contrib/guix/guix-build
+
+
+See [contrib/guix/README.md](contrib/guix/README.md)for more info.
+
+
 
 ## Installing Lunexa from a package
 
