@@ -18,7 +18,7 @@ env:
   CCACHE_SETTINGS: |
         ccache --max-size=150M
         ccache --set-config=compression=true
-  USE_DEVICE_TREZOR_MANDATORY: ON
+  USE_DEVICE_TREZOR_MANDATORY: OFF
 
 jobs:
   build-cross:
