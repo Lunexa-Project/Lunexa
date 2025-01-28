@@ -52,8 +52,8 @@
 #include "ringct/rctTypes.h"
 #include "cryptonote_core/cryptonote_tx_utils.h"
 
-#undef LUNEXA_DEFAULT_LOG_CATEGORY
-#define LUNEXA_DEFAULT_LOG_CATEGORY "net.zmq"
+#undef MONERO_DEFAULT_LOG_CATEGORY
+#define MONERO_DEFAULT_LOG_CATEGORY "net.zmq"
 
 namespace
 {
@@ -330,7 +330,7 @@ namespace
   {
     zmq_msg_t msg;
     zmq_msg_init(std::addressof(msg));
-    LUNEXA_CHECK(net::zmq::retry_op(zmq_msg_recv, std::addressof(msg), relay, ZMQ_DONTWAIT));
+    MONERO_CHECK(net::zmq::retry_op(zmq_msg_recv, std::addressof(msg), relay, ZMQ_DONTWAIT));
 
     const boost::string_ref payload{
       reinterpret_cast<const char*>(zmq_msg_data(std::addressof(msg))),
@@ -373,9 +373,9 @@ zmq_pub::zmq_pub(void* context)
 
   relay_.reset(zmq_socket(context, ZMQ_PAIR));
   if (!relay_)
-    LUNEXA_ZMQ_THROW("Failed to create relay socket");
+    MONERO_ZMQ_THROW("Failed to create relay socket");
   if (zmq_connect(relay_.get(), relay_endpoint()) != 0)
-    LUNEXA_ZMQ_THROW("Failed to connect relay socket");
+    MONERO_ZMQ_THROW("Failed to connect relay socket");
 }
 
 zmq_pub::~zmq_pub()
