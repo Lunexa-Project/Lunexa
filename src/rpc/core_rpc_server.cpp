@@ -1,4 +1,5 @@
 // Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2025, Lunexa Project
 // 
 // All rights reserved.
 // 
@@ -702,26 +703,36 @@ namespace cryptonote
     if (get_blocks)
     {
       // quick check for noop
-      if (!req.block_ids.empty())
+      if (req.start_height > 0 || !req.block_ids.empty())
       {
         uint64_t last_block_height;
         crypto::hash last_block_hash;
         m_core.get_blockchain_top(last_block_height, last_block_hash);
-        if (last_block_hash == req.block_ids.front())
+
+        if (!req.high_height_ok && req.start_height > last_block_height)
+        {
+          res.status = "Failed";
+          return true;
+        }
+
+        if (req.start_height > last_block_height ||
+           (!req.block_ids.empty() && last_block_hash == req.block_ids.front()))
         {
           res.start_height = 0;
           res.current_height = last_block_height + 1;
+          res.top_block_hash = last_block_hash;
           res.status = CORE_RPC_STATUS_OK;
           return true;
         }
       }
 
-      size_t max_blocks = COMMAND_RPC_GET_BLOCKS_FAST_MAX_BLOCK_COUNT;
+      size_t max_blocks = req.max_block_count > 0
+        ? std::min(req.max_block_count, (uint64_t)COMMAND_RPC_GET_BLOCKS_FAST_MAX_BLOCK_COUNT)
+        : COMMAND_RPC_GET_BLOCKS_FAST_MAX_BLOCK_COUNT;
+
       if (m_rpc_payment)
       {
-        max_blocks = res.credits / COST_PER_BLOCK;
-        if (max_blocks > COMMAND_RPC_GET_BLOCKS_FAST_MAX_BLOCK_COUNT)
-          max_blocks = COMMAND_RPC_GET_BLOCKS_FAST_MAX_BLOCK_COUNT;
+        max_blocks = std::min((size_t)(res.credits / COST_PER_BLOCK), max_blocks);
         if (max_blocks == 0)
         {
           res.status = CORE_RPC_STATUS_PAYMENT_REQUIRED;
@@ -730,7 +741,7 @@ namespace cryptonote
       }
 
       std::vector<std::pair<std::pair<cryptonote::blobdata, crypto::hash>, std::vector<std::pair<crypto::hash, cryptonote::blobdata> > > > bs;
-      if(!m_core.find_blockchain_supplement(req.start_height, req.block_ids, bs, res.current_height, res.start_height, req.prune, !req.no_miner_tx, max_blocks, COMMAND_RPC_GET_BLOCKS_FAST_MAX_TX_COUNT))
+      if(!m_core.find_blockchain_supplement(req.start_height, req.block_ids, bs, res.current_height, res.top_block_hash, res.start_height, req.prune, !req.no_miner_tx, max_blocks, COMMAND_RPC_GET_BLOCKS_FAST_MAX_TX_COUNT))
       {
         res.status = "Failed";
         add_host_fail(ctx);
@@ -1490,37 +1501,31 @@ namespace cryptonote
     res.is_background_mining_enabled = lMiner.get_is_background_mining_enabled();
     store_difficulty(m_core.get_blockchain_storage().get_difficulty_for_next_block(), res.difficulty, res.wide_difficulty, res.difficulty_top64);
     
-    res.block_target = m_core.get_blockchain_storage().get_current_hard_fork_version() < 2 ? DIFFICULTY_TARGET_V1 : DIFFICULTY_TARGET_V2;
-    if ( lMiner.is_mining() ) {
-      res.speed = lMiner.get_speed();
-      res.threads_count = lMiner.get_threads_count();
-      res.block_reward = lMiner.get_block_reward();
+    // RandomX is the sole algorithm, set directly
+    res.block_target = DIFFICULTY_TARGET_V2; // Always use the V2 target for RandomX
+    res.pow_algorithm = "RandomX";
+
+    if (lMiner.is_mining()) {
+        res.speed = lMiner.get_speed();
+        res.threads_count = lMiner.get_threads_count();
+        res.block_reward = lMiner.get_block_reward();
     }
     const account_public_address& lMiningAdr = lMiner.get_mining_address();
     if (lMiner.is_mining() || lMiner.get_is_background_mining_enabled())
-      res.address = get_account_address_as_str(nettype(), false, lMiningAdr);
-    const uint8_t major_version = m_core.get_blockchain_storage().get_current_hard_fork_version();
-    const unsigned variant = major_version >= 7 ? major_version - 6 : 0;
-    switch (variant)
-    {
-      case 0: res.pow_algorithm = "RandomX"; break;
-      case 1: res.pow_algorithm = "RandomX"; break;
-      case 2: case 3: res.pow_algorithm = "RandomX"; break;
-      case 4: case 5: res.pow_algorithm = "RandomX"; break;
-      case 6: case 7: case 8: case 9: res.pow_algorithm = "RandomX"; break;
-      default: res.pow_algorithm = "RandomX"; break; // assumed
-    }
+        res.address = get_account_address_as_str(nettype(), false, lMiningAdr);
+
+    // Background mining options
     if (res.is_background_mining_enabled)
     {
-      res.bg_idle_threshold = lMiner.get_idle_threshold();
-      res.bg_min_idle_seconds = lMiner.get_min_idle_seconds();
-      res.bg_ignore_battery = lMiner.get_ignore_battery();
-      res.bg_target = lMiner.get_mining_target();
+        res.bg_idle_threshold = lMiner.get_idle_threshold();
+        res.bg_min_idle_seconds = lMiner.get_min_idle_seconds();
+        res.bg_ignore_battery = lMiner.get_ignore_battery();
+        res.bg_target = lMiner.get_mining_target();
     }
 
     res.status = CORE_RPC_STATUS_OK;
     return true;
-  }
+}
   //------------------------------------------------------------------------------------------------------------------------------
   bool core_rpc_server::on_save_bc(const COMMAND_RPC_SAVE_BC::request& req, COMMAND_RPC_SAVE_BC::response& res, const connection_context *ctx)
   {
@@ -1847,10 +1852,10 @@ namespace cryptonote
     return 0;
   }
   //------------------------------------------------------------------------------------------------------------------------------
-  bool core_rpc_server::get_block_template(const account_public_address &address, const crypto::hash *prev_block, const cryptonote::blobdata &extra_nonce, size_t &reserved_offset, cryptonote::difficulty_type  &difficulty, uint64_t &height, uint64_t &expected_reward, block &b, uint64_t &seed_height, crypto::hash &seed_hash, crypto::hash &next_seed_hash, epee::json_rpc::error &error_resp)
+  bool core_rpc_server::get_block_template(const account_public_address &address, const crypto::hash *prev_block, const cryptonote::blobdata &extra_nonce, size_t &reserved_offset, cryptonote::difficulty_type  &difficulty, uint64_t &height, uint64_t &expected_reward, uint64_t& cumulative_weight, block &b, uint64_t &seed_height, crypto::hash &seed_hash, crypto::hash &next_seed_hash, epee::json_rpc::error &error_resp)
   {
     b = boost::value_initialized<cryptonote::block>();
-    if(!m_core.get_block_template(b, prev_block, address, difficulty, height, expected_reward, extra_nonce, seed_height, seed_hash))
+    if(!m_core.get_block_template(b, prev_block, address, difficulty, height, expected_reward, cumulative_weight, extra_nonce, seed_height, seed_hash))
     {
       error_resp.code = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
       error_resp.message = "Internal error: failed to create block template";
@@ -1975,7 +1980,7 @@ namespace cryptonote
       }
     }
     crypto::hash seed_hash, next_seed_hash;
-    if (!get_block_template(info.address, req.prev_block.empty() ? NULL : &prev_block, blob_reserve, reserved_offset, wdiff, res.height, res.expected_reward, b, res.seed_height, seed_hash, next_seed_hash, error_resp))
+    if (!get_block_template(info.address, req.prev_block.empty() ? NULL : &prev_block, blob_reserve, reserved_offset, wdiff, res.height, res.expected_reward, res.cumulative_weight, b, res.seed_height, seed_hash, next_seed_hash, error_resp))
       return false;
     if (b.major_version >= RX_BLOCK_VERSION)
     {
@@ -2865,6 +2870,12 @@ namespace cryptonote
       }
       else
       {
+        if (!i->ip)
+        {
+          error_resp.code = CORE_RPC_ERROR_CODE_WRONG_PARAM;
+          error_resp.message = "No ip/host supplied";
+          return false;
+        }
         na = epee::net_utils::ipv4_network_address{i->ip, 0};
       }
       if (i->ban)
@@ -3511,9 +3522,9 @@ namespace cryptonote
     crypto::hash seed_hash, next_seed_hash;
     if (!m_rpc_payment->get_info(client, [&](const cryptonote::blobdata &extra_nonce, cryptonote::block &b, uint64_t &seed_height, crypto::hash &seed_hash)->bool{
       cryptonote::difficulty_type difficulty;
-      uint64_t height, expected_reward;
+      uint64_t height, expected_reward, cumulative_weight;
       size_t reserved_offset;
-      if (!get_block_template(m_rpc_payment->get_payment_address(), NULL, extra_nonce, reserved_offset, difficulty, height, expected_reward, b, seed_height, seed_hash, next_seed_hash, error_resp))
+      if (!get_block_template(m_rpc_payment->get_payment_address(), NULL, extra_nonce, reserved_offset, difficulty, height, expected_reward, cumulative_weight, b, seed_height, seed_hash, next_seed_hash, error_resp))
         return false;
       return true;
     }, hashing_blob, res.seed_height, seed_hash, top_hash, res.diff, res.credits_per_hash_found, res.credits, res.cookie))
