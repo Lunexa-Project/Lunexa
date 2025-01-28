@@ -2007,7 +2007,7 @@ Key Image, &quot;absolute&quot;, list of rings</source>
     </message>
     <message>
         <location filename="../src/simplewallet/simplewallet.cpp" line="3694"/>
-        <source>Lunexa, millinero, micronero, nanonero, piconero</source>
+        <source>Lunexa, milliexa, microexa, nanoexa, picoexa</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

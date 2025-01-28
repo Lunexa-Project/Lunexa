@@ -3398,8 +3398,8 @@ Key Image, &quot;absolute&quot;, list of rings</source>
     </message>
     <message>
         <location filename="../src/simplewallet/simplewallet.cpp" line="3694"/>
-        <source>lunexa, millinero, micronero, nanonero, piconero</source>
-        <translation>lunexa, millinero, micronero, nanonero, piconero</translation>
+        <source>lunexa, milliexa, microexa, nanoexa, picoexa</source>
+        <translation>lunexa, milliexa, microexa, nanoexa, picoexa</translation>
     </message>
     <message>
         <location filename="../src/simplewallet/simplewallet.cpp" line="3705"/>
