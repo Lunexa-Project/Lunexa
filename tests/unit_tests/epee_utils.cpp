@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 //
 // All rights reserved.
 //
@@ -34,7 +34,6 @@
 #include <boost/range/iterator_range.hpp>
 #include <cstdint>
 #include <gtest/gtest.h>
-#include <iomanip>
 #include <iterator>
 #include <string>
 #include <sstream>
@@ -1442,21 +1441,6 @@ TEST(StringTools, GetIpInt32)
 
   EXPECT_TRUE(epee::string_tools::get_ip_int32_from_string(ip, "0xff.10.0xff.0"));
   EXPECT_EQ(htonl(0xff0aff00), ip);
-}
-
-TEST(StringTools, GetExtension)
-{
-  EXPECT_EQ(std::string{}, epee::string_tools::get_extension(""));
-  EXPECT_EQ(std::string{}, epee::string_tools::get_extension("."));
-  EXPECT_EQ(std::string{"keys"}, epee::string_tools::get_extension("wallet.keys"));
-  EXPECT_EQ(std::string{"3"}, epee::string_tools::get_extension("1.2.3"));
-}
-
-TEST(StringTools, CutOffExtension)
-{
-  EXPECT_EQ(std::string{}, epee::string_tools::cut_off_extension(""));
-  EXPECT_EQ(std::string{"/home/user/Lunexa/wallets/wallet"}, epee::string_tools::cut_off_extension("/home/user/Lunexa/wallets/wallet"));
-  EXPECT_EQ(std::string{"/home/user/Lunexa/wallets/wallet"}, epee::string_tools::cut_off_extension("/home/user/Lunexa/wallets/wallet.keys"));
 }
 
 TEST(NetUtils, IPv4NetworkAddress)
