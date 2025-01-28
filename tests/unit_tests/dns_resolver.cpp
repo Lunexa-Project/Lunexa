@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -41,11 +41,15 @@ TEST(DNSResolver, IPv4Success)
 
   auto ips = resolver.get_ipv4("example.com", avail, valid);
 
-  ASSERT_LE(1, ips.size());
+  ASSERT_EQ(1, ips.size());
+
+  //ASSERT_STREQ("93.184.216.119", ips[0].c_str());
 
   ips = tools::DNSResolver::instance().get_ipv4("example.com", avail, valid);
 
-  ASSERT_LE(1, ips.size());
+  ASSERT_EQ(1, ips.size());
+
+  //ASSERT_STREQ("93.184.216.119", ips[0].c_str());
 }
 
 TEST(DNSResolver, IPv4Failure)
@@ -72,7 +76,9 @@ TEST(DNSResolver, DNSSECSuccess)
 
   auto ips = resolver.get_ipv4("example.com", avail, valid);
 
-  ASSERT_LE(1, ips.size());
+  ASSERT_EQ(1, ips.size());
+
+  //ASSERT_STREQ("93.184.216.119", ips[0].c_str());
 
   ASSERT_TRUE(avail);
   ASSERT_TRUE(valid);
@@ -134,22 +140,22 @@ TEST(DNSResolver, GetTXTRecord)
 {
   bool avail, valid;
 
-  std::vector<std::string> records = tools::DNSResolver::instance().get_txt_record("donate.getlunexa.org", avail, valid);
+  std::vector<std::string> records = tools::DNSResolver::instance().get_txt_record("donate.lunexa.co", avail, valid);
 
   EXPECT_NE(0, records.size());
 
   for (auto& rec : records)
   {
-    std::cout << "TXT record for donate.getlunexa.org: " << rec << std::endl;
+    std::cout << "TXT record for donate.lunexa.co: " << rec << std::endl;
   }
 
   // replace first @ with .
-  std::string addr = tools::DNSResolver::instance().get_dns_format_from_oa_address("donate@getlunexa.org");
-  EXPECT_STREQ("donate.getlunexa.org", addr.c_str());
+  std::string addr = tools::DNSResolver::instance().get_dns_format_from_oa_address("donate@lunexa.co");
+  EXPECT_STREQ("donate.lunexa.co", addr.c_str());
 
   // no change
-  addr = tools::DNSResolver::instance().get_dns_format_from_oa_address("donate.getlunexa.org");
-  EXPECT_STREQ("donate.getlunexa.org", addr.c_str());
+  addr = tools::DNSResolver::instance().get_dns_format_from_oa_address("donate.lunexa.co");
+  EXPECT_STREQ("donate.lunexa.co", addr.c_str());
 }
 
 TEST(DNSResolver, Localhost)

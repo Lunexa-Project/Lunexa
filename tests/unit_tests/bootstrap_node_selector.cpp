@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, The Monero Project
+// Copyright (c) 2020-2023, The Monero Project
 
 // 
 // All rights reserved.
@@ -45,7 +45,7 @@ protected:
       "white_node_1:18089", true
     },
     {
-      "white_node_2:18081", true
+      "white_node_2:9029", true
     }
   };
   const std::map<std::string, bool> gray_nodes = {

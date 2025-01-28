@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2024, The Monero Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -51,6 +51,7 @@ set(unit_tests_sources
   epee_serialization.cpp
   epee_utils.cpp
   expect.cpp
+  fee.cpp
   json_serialization.cpp
   get_xtype_from_string.cpp
   hashchain.cpp
@@ -131,7 +132,7 @@ target_link_libraries(unit_tests
     ${GTEST_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBRARIES}
-    PkgConfig::libzmq)
+    ${ZMQ_LIB})
 set_property(TARGET unit_tests
   PROPERTY
     FOLDER "tests")

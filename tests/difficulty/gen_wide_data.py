@@ -1,5 +1,6 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
+from __future__ import print_function
 import random
 
 DIFFICULTY_TARGET = 120

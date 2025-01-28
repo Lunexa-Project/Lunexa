@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #encoding=utf-8
 
-# Copyright (c) 2019-2024, The Monero Project
+# Copyright (c) 2019-2023, The Monero Project
 # 
 # All rights reserved.
 # 
@@ -32,8 +32,10 @@
 """Test basic wallet functionality
 """
 
+from __future__ import print_function
 import sys
-import util_resources
+import os
+import errno
 
 from framework.wallet import Wallet
 from framework.daemon import Daemon
@@ -51,6 +53,24 @@ class WalletTest():
       self.languages()
       self.change_password()
       self.store()
+
+    def remove_file(self, name):
+        WALLET_DIRECTORY = os.environ['WALLET_DIRECTORY']
+        assert WALLET_DIRECTORY != ''
+        try:
+            os.unlink(WALLET_DIRECTORY + '/' + name)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
+
+    def remove_wallet_files(self, name):
+        for suffix in ['', '.keys']:
+            self.remove_file(name + suffix)
+
+    def file_exists(self, name):
+        WALLET_DIRECTORY = os.environ['WALLET_DIRECTORY']
+        assert WALLET_DIRECTORY != ''
+        return os.path.isfile(WALLET_DIRECTORY + '/' + name)
 
     def reset(self):
         print('Resetting blockchain')
@@ -313,7 +333,7 @@ class WalletTest():
         try: wallet.close_wallet()
         except: pass
 
-        util_resources.remove_wallet_files('test1')
+        self.remove_wallet_files('test1')
 
         seed = 'velvet lymph giddy number token physics poetry unquoted nibs useful sabotage limits benches lifestyle eden nitrogen anvil fewest avoid batch vials washing fences goat unquoted'
         res = wallet.restore_deterministic_wallet(seed = seed, filename = 'test1')
@@ -339,7 +359,7 @@ class WalletTest():
 
         wallet.close_wallet()
 
-        util_resources.remove_wallet_files('test1')
+        self.remove_wallet_files('test1')
 
     def store(self):
         print('Testing store')
@@ -349,26 +369,22 @@ class WalletTest():
         try: wallet.close_wallet()
         except: pass
 
-        util_resources.remove_wallet_files('test1')
+        self.remove_wallet_files('test1')
 
         seed = 'velvet lymph giddy number token physics poetry unquoted nibs useful sabotage limits benches lifestyle eden nitrogen anvil fewest avoid batch vials washing fences goat unquoted'
         res = wallet.restore_deterministic_wallet(seed = seed, filename = 'test1')
         assert res.address == '42ey1afDFnn4886T7196doS9GPMzexD9gXpsZJDwVjeRVdFCSoHnv7KPbBeGpzJBzHRCAs9UxqeoyFQMYbqSWYTfJJQAWDm'
         assert res.seed == seed
 
-        util_resources.remove_file('test1')
-        assert util_resources.file_exists('test1.keys')
-        assert not util_resources.file_exists('test1')
+        self.remove_file('test1')
+        assert self.file_exists('test1.keys')
+        assert not self.file_exists('test1')
         wallet.store()
-        assert util_resources.file_exists('test1.keys')
-        assert util_resources.file_exists('test1')
+        assert self.file_exists('test1.keys')
+        assert self.file_exists('test1')
 
         wallet.close_wallet()
-
-        wallet.open_wallet(filename = 'test1', password = '')
-        wallet.close_wallet()
-
-        util_resources.remove_wallet_files('test1')
+        self.remove_wallet_files('test1')
 
 
 if __name__ == '__main__':

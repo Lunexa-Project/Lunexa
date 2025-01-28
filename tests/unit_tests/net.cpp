@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2024, The Monero Project
+// Copyright (c) 2018-2023, The Monero Project
 
 //
 // All rights reserved.
@@ -32,7 +32,7 @@
 #include <boost/archive/portable_binary_oarchive.hpp>
 #include <boost/archive/portable_binary_iarchive.hpp>
 #include <boost/asio/buffer.hpp>
-#include <boost/asio/io_context.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -71,7 +71,7 @@
 namespace
 {
     static constexpr const char v2_onion[] =
-        "lxato2bturnore26.onion";
+        "xmrto2bturnore26.onion";
     static constexpr const char v3_onion[] =
         "vww6ybal4bd7szmgncyruucpgfkqahzddi37ktceo3ah7ngmcopnpyyd.onion";
     static constexpr const char v3_onion_2[] =
@@ -449,7 +449,7 @@ namespace
     static constexpr const char b32_i2p[] =
         "vww6ybal4bd7szmgncyruucpgfkqahzddi37ktceo3ah7ngmcopn.b32.i2p";
     static constexpr const char b32_i2p_2[] =
-        "lxato2bturnore26lxato2bturnore26lxato2bturnore26lxa2.b32.i2p";
+        "xmrto2bturnore26xmrto2bturnore26xmrto2bturnore26xmr2.b32.i2p";
 }
 
 TEST(i2p_address, constants)
@@ -879,8 +879,7 @@ TEST(get_network_address_host_and_port, ipv6)
 TEST(get_network_address_host_and_port, hostname)
 {
     na_host_and_port_test("localhost", "localhost", "xxxxx");
-    na_host_and_port_test("bar:29080", "bar", "29080"); // Issue https://github.com/lunexa-project/lunexa/issues/8633
-    na_host_and_port_test("lxachain.net:18081", "lxachain.net", "18081");
+    na_host_and_port_test("bar:29080", "bar", "29080"); // Issue https://github.com/monero-project/monero/issues/8633
 }
 
 namespace
@@ -889,8 +888,8 @@ namespace
 
     struct io_thread
     {
-        boost::asio::io_context io_service;
-        boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work;
+        boost::asio::io_service io_service;
+        boost::asio::io_service::work work;
         stream_type::socket server;
         stream_type::acceptor acceptor;
         boost::thread io;
@@ -898,7 +897,7 @@ namespace
 
         io_thread()
           : io_service(),
-            work(io_service.get_executor()),
+            work(io_service),
             server(io_service),
             acceptor(io_service),
             io([this] () { try { this->io_service.run(); } catch (const std::exception& e) { MERROR(e.what()); }}),
@@ -938,7 +937,7 @@ namespace
 
 TEST(socks_client, unsupported_command)
 {
-    boost::asio::io_context io_service{};
+    boost::asio::io_service io_service{};
     stream_type::socket client{io_service};
 
     auto test_client = net::socks::make_connect_client(
@@ -956,7 +955,7 @@ TEST(socks_client, unsupported_command)
 
 TEST(socks_client, no_command)
 {
-    boost::asio::io_context io_service{};
+    boost::asio::io_service io_service{};
     stream_type::socket client{io_service};
 
     auto test_client = net::socks::make_connect_client(
@@ -1110,7 +1109,7 @@ TEST(socks_connector, host)
 {
     io_thread io{};
     boost::asio::steady_timer timeout{io.io_service};
-    timeout.expires_after(std::chrono::seconds{5});
+    timeout.expires_from_now(std::chrono::seconds{5});
 
     boost::unique_future<boost::asio::ip::tcp::socket> sock =
         net::socks::connector{io.acceptor.local_endpoint()}("example.com", "8080", timeout);
@@ -1137,7 +1136,7 @@ TEST(socks_connector, ipv4)
 {
     io_thread io{};
     boost::asio::steady_timer timeout{io.io_service};
-    timeout.expires_after(std::chrono::seconds{5});
+    timeout.expires_from_now(std::chrono::seconds{5});
 
     boost::unique_future<boost::asio::ip::tcp::socket> sock =
         net::socks::connector{io.acceptor.local_endpoint()}("250.88.125.99", "8080", timeout);
@@ -1163,7 +1162,7 @@ TEST(socks_connector, error)
 {
     io_thread io{};
     boost::asio::steady_timer timeout{io.io_service};
-    timeout.expires_after(std::chrono::seconds{5});
+    timeout.expires_from_now(std::chrono::seconds{5});
 
     boost::unique_future<boost::asio::ip::tcp::socket> sock =
         net::socks::connector{io.acceptor.local_endpoint()}("250.88.125.99", "8080", timeout);
@@ -1189,7 +1188,7 @@ TEST(socks_connector, timeout)
 {
     io_thread io{};
     boost::asio::steady_timer timeout{io.io_service};
-    timeout.expires_after(std::chrono::milliseconds{10});
+    timeout.expires_from_now(std::chrono::milliseconds{10});
 
     boost::unique_future<boost::asio::ip::tcp::socket> sock =
         net::socks::connector{io.acceptor.local_endpoint()}("250.88.125.99", "8080", timeout);

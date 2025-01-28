@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright (c) 2019-2024, The Monero Project
+# Copyright (c) 2019-2023, The Monero Project
 # 
 # All rights reserved.
 # 
@@ -31,6 +31,7 @@
 """Test address validation RPC calls
 """
 
+from __future__ import print_function
 from framework.wallet import Wallet
 
 class AddressValidationTest():
@@ -93,7 +94,7 @@ class AddressValidationTest():
     def check_openalias_addresses(self):
         print('Validating openalias addresses')
         addresses = [
-            ['donate@getmonero.org', '888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H']
+            ['donate@getlunexa.org', '888tNkZrPN6JsEgekjMnABU4TBzc2Dt29EPAvkRxbANsAnjyPbb3iQ1YBRk1UXcdRsiKc9dhwMVgN5S9cQUiyoogDavup3H']
         ]
         for address in addresses:
             res = self.wallet.validate_address(address[0])
