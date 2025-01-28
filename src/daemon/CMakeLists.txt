@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2024, The Monero Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -65,10 +65,10 @@ target_link_libraries(daemon
     ${Boost_REGEX_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}
     ${CMAKE_THREAD_LIBS_INIT}
-    PkgConfig::libzmq
+    ${ZMQ_LIB}
     ${GNU_READLINE_LIBRARY}
     ${EXTRA_LIBRARIES}
-    $<TARGET_NAME_IF_EXISTS:blocks>)
+    ${Blocks})
 set_property(TARGET daemon
   PROPERTY
     OUTPUT_NAME "lunexad")

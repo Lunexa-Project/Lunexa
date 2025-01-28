@@ -1097,7 +1097,7 @@ namespace Language
       "mokadi",
       "molaro",
       "momento",
-      "lunexa",
+      "monero",
       "mopso",
       "mordi",
       "moskito",

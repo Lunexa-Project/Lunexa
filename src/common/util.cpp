@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -664,7 +664,7 @@ namespace tools
     }
 
     boost::system::error_code ec;
-    const auto parsed_ip = boost::asio::ip::make_address(u_c.host, ec);
+    const auto parsed_ip = boost::asio::ip::address::from_string(u_c.host, ec);
     if (ec) {
       MDEBUG("Failed to parse '" << address << "' as IP address: " << ec.message() << ". Considering it not local");
       return false;

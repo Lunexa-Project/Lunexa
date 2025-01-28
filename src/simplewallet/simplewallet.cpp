@@ -2215,20 +2215,19 @@ bool simple_wallet::public_nodes(const std::vector<std::string> &args)
 
 bool simple_wallet::welcome(const std::vector<std::string> &args)
 {
-  message_writer() << tr("Welcome to Lunexa, the cryptocurrency designed for privacy and security.");
+  message_writer() << tr("Welcome to Lunexa, the private cryptocurrency.");
   message_writer() << "";
-  message_writer() << tr("Lunexa is a digital currency, similar to Bitcoin based off Monero, but with one key difference to Bitcoin: privacy is at its core.");
-  message_writer() << tr("By default, your Lunexa transactions and balance are shielded from public view.");
-  message_writer() << tr("If needed, you can choose to share transaction details with trusted individuals.");
+  message_writer() << tr("Lunexa, like Bitcoin, is a cryptocurrency. That is, it is digital money.");
+  message_writer() << tr("Unlike Bitcoin, your Lunexa transactions and balance stay private and are not visible to the world by default.");
+  message_writer() << tr("However, you have the option of making those available to select parties if you choose to.");
   message_writer() << "";
-  message_writer() << tr("Lunexa leverages advanced blockchain technology to protect your financial privacy.");
-  message_writer() << tr("While we are constantly improving, it’s important to remember that no privacy solution is perfect.");
-  message_writer() << tr("Lunexa cannot guard against all threats, such as malware or highly sophisticated adversaries.");
-  message_writer() << tr("Future discoveries may reveal vulnerabilities, and attackers may develop ways to challenge");
-  message_writer() << tr("the privacy features Lunexa provides. Always stay vigilant and adopt strong security practices.");
+  message_writer() << tr("Lunexa protects your privacy on the blockchain, and while Lunexa strives to improve all the time,");
+  message_writer() << tr("no privacy technology can be 100% perfect, Lunexa included.");
+  message_writer() << tr("Lunexa cannot protect you from malware, and it may not be as effective as we hope against powerful adversaries.");
+  message_writer() << tr("Flaws in Lunexa may be discovered in the future, and attacks may be developed to peek under some");
+  message_writer() << tr("of the layers of privacy Lunexa provides. Be safe and practice defense in depth.");
   message_writer() << "";
-  message_writer() << tr("Welcome to Lunexa and a new era of financial freedom. Learn more at https://github.com/lunexa-project/lunexa");
-
+  message_writer() << tr("Welcome to Lunexa and financial privacy. For more information see https://GetLunexa.org");
   return true;
 }
 

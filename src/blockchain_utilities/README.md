@@ -1,6 +1,6 @@
-# Lunexa Blockchain Utilities
+# Monero Blockchain Utilities
 
-Copyright (c) 2014-2024, The Lunexa Project
+Copyright (c) 2014-2023, The Monero Project
 
 ## Introduction
 

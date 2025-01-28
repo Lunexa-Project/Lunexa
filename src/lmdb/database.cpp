@@ -179,10 +179,9 @@ namespace lmdb
     expect<void> database::commit(write_txn txn) noexcept
     {
         LUNEXA_PRECOND(txn != nullptr);
-        const int err = mdb_txn_commit(txn.release());
+        LUNEXA_LMDB_CHECK(mdb_txn_commit(txn.get()));
+        txn.release();
         release_context(ctx);
-        if (err)
-          return {lmdb::error(err)};
         return success();
     }
 } // lmdb
