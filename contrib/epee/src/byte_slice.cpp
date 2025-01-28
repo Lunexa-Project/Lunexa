@@ -152,11 +152,7 @@ namespace epee
   {
     std::size_t space_needed = 0;
     for (const auto& source : sources)
-    {
-      if (std::numeric_limits<std::size_t>::max() - space_needed < source.size())
-        throw std::bad_alloc{};
       space_needed += source.size();
-    }
 
     if (space_needed)
     {
@@ -166,9 +162,9 @@ namespace epee
 
       for (const auto& source : sources)
       {
-        assert(source.size() <= out.size()); // see check above
         std::memcpy(out.data(), source.data(), source.size());
-        out.remove_prefix(source.size());
+        if (out.remove_prefix(source.size()) < source.size())
+          throw std::bad_alloc{}; // size_t overflow on space_needed
       }
       storage_ = std::move(storage);
     }

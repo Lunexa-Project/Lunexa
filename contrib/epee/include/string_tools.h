@@ -71,6 +71,8 @@ namespace string_tools
    std::string get_current_module_path();
 #endif
   void set_module_name_and_folder(const std::string& path_to_process_);
+  void trim_left(std::string& str);
+  void trim_right(std::string& str);
   //----------------------------------------------------------------------------
   inline std::string& trim(std::string& str)
   {
@@ -89,7 +91,6 @@ namespace string_tools
   std::string pod_to_hex(const t_pod_type& s)
   {
     static_assert(std::is_standard_layout<t_pod_type>(), "expected standard layout type");
-    static_assert(std::has_unique_object_representations_v<t_pod_type>, "type may have padding");
     return to_hex::string(as_byte_span(s));
   }
   //----------------------------------------------------------------------------
@@ -97,7 +98,6 @@ namespace string_tools
   bool hex_to_pod(const boost::string_ref hex_str, t_pod_type& s)
   {
     static_assert(std::is_standard_layout<t_pod_type>(), "expected standard layout type");
-    static_assert(std::has_unique_object_representations_v<t_pod_type>, "type may have padding");
     return from_hex::to_buffer(as_mut_byte_span(s), hex_str);
   }
   //----------------------------------------------------------------------------

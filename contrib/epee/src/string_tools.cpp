@@ -164,6 +164,19 @@ namespace string_tools
   }
 
 	//----------------------------------------------------------------------------
+  void trim_left(std::string& str)
+  {
+    boost::trim_left(str);
+    return;
+  }
+
+	//----------------------------------------------------------------------------
+  void trim_right(std::string& str)
+  {
+    boost::trim_right(str);
+    return;
+  }
+
   std::string pad_string(std::string s, size_t n, char c, bool prepend)
   {
     if (s.size() < n)
@@ -178,18 +191,13 @@ namespace string_tools
   
   std::string get_extension(const std::string& str)
   {
-    std::string ext_with_dot = boost::filesystem::path(str).extension().string();
-
-    if (ext_with_dot.empty())
-      return {};
-
-    return ext_with_dot.erase(0, 1);
+    return boost::filesystem::path(str).extension().string();
   }
 
 	//----------------------------------------------------------------------------
   std::string cut_off_extension(const std::string& str)
   {
-    return boost::filesystem::path(str).replace_extension("").string();
+    return boost::filesystem::path(str).stem().string();
   }
 
 #ifdef _WIN32
