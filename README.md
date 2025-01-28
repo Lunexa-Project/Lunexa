@@ -18,7 +18,7 @@ Portions Copyright (c) 2012-2013 The Cryptonote developers.
   - [Release staging schedule and protocol](#release-staging-schedule-and-protocol)
   - [Compiling lunexa from source](#compiling-lunexa-from-source)
     - [Dependencies](#dependencies)
-    - [GUIX builds](#guix-builds)
+    - [Gitian builds](#gitian-builds)
   - [Internationalization](#Internationalization)
   - [Using Tor](#using-tor)
   - [Pruning](#Pruning)
