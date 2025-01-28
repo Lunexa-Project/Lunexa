@@ -1432,7 +1432,7 @@ TEST(StringTools, GetIpInt32)
   The existing epee conversion function does not work with 255.255.255.255, for
   the reasons specified in the inet_addr documentation. Consider fixing in a
   future patch. This address is not likely to be used for purposes within
-  monero.
+  lunexa.
   EXPECT_TRUE(epee::string_tools::get_ip_int32_from_string(ip, "255.255.255.255"));
   EXPECT_EQ(htonl(0xffffffff), ip);
 */
@@ -1455,8 +1455,8 @@ TEST(StringTools, GetExtension)
 TEST(StringTools, CutOffExtension)
 {
   EXPECT_EQ(std::string{}, epee::string_tools::cut_off_extension(""));
-  EXPECT_EQ(std::string{"/home/user/Monero/wallets/wallet"}, epee::string_tools::cut_off_extension("/home/user/Monero/wallets/wallet"));
-  EXPECT_EQ(std::string{"/home/user/Monero/wallets/wallet"}, epee::string_tools::cut_off_extension("/home/user/Monero/wallets/wallet.keys"));
+  EXPECT_EQ(std::string{"/home/user/Lunexa/wallets/wallet"}, epee::string_tools::cut_off_extension("/home/user/Lunexa/wallets/wallet"));
+  EXPECT_EQ(std::string{"/home/user/Lunexa/wallets/wallet"}, epee::string_tools::cut_off_extension("/home/user/Lunexa/wallets/wallet.keys"));
 }
 
 TEST(NetUtils, IPv4NetworkAddress)

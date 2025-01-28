@@ -87,7 +87,7 @@ typedef struct {
   bool heavy_tests;
 } chain_file_opts_t;
 
-static const std::string CUR_CHAIN_MAGIC = "MoneroTrezorTestsEventFile";
+static const std::string CUR_CHAIN_MAGIC = "LunexaTrezorTestsEventFile";
 static const unsigned long CUR_CHAIN_VERSION = 2;
 static device_trezor_test *trezor_device = nullptr;
 static device_trezor_test *ensure_trezor_test_device();
@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
     const long mining_timeout = get_env_long("TEST_MINING_TIMEOUT", TREZOR_TEST_MINING_TIMEOUT_DEFAULT);
     const auto sync_test = get_env_long("TEST_KI_SYNC", TREZOR_TEST_KI_SYNC_DEFAULT);
     const bool env_gen_heavy = get_env_long("TEST_GEN_HEAVY", 0) > 0 || heavy_tests;
-    MINFO("Test versions " << MONERO_RELEASE_NAME << "' (v" << MONERO_VERSION_FULL << ")");
+    MINFO("Test versions " << LUNEXA_RELEASE_NAME << "' (v" << LUNEXA_VERSION_FULL << ")");
     MINFO("Testing hardforks [" << (int)initial_hf << ", " << (int)max_hf << "], sync-test: " << sync_test);
 
     cryptonote::core core_obj(nullptr);
@@ -2314,13 +2314,13 @@ bool wallet_api_tests::generate(std::vector<test_event_entry>& events)
   init();
   test_setup(events);
   const std::string wallet_path = (m_wallet_dir / "wallet").string();
-  const auto api_net_type = m_network_type == TESTNET ? Monero::TESTNET : Monero::MAINNET;
+  const auto api_net_type = m_network_type == TESTNET ? Lunexa::TESTNET : Lunexa::MAINNET;
 
-  Monero::WalletManager *wmgr = Monero::WalletManagerFactory::getWalletManager();
-  std::unique_ptr<Monero::Wallet> w{wmgr->createWalletFromDevice(wallet_path, "", api_net_type, m_trezor_path, 1, "", 1, this)};
+  Lunexa::WalletManager *wmgr = Lunexa::WalletManagerFactory::getWalletManager();
+  std::unique_ptr<Lunexa::Wallet> w{wmgr->createWalletFromDevice(wallet_path, "", api_net_type, m_trezor_path, 1, "", 1, this)};
   CHECK_AND_ASSERT_THROW_MES(w->init(daemon()->rpc_addr(), 0), "Wallet init fail");
 
-  auto walletImpl = dynamic_cast<Monero::WalletImpl *>(w.get());
+  auto walletImpl = dynamic_cast<Lunexa::WalletImpl *>(w.get());
   CHECK_AND_ASSERT_THROW_MES(walletImpl, "Dynamic wallet cast failed");
   WalletApiAccessorTest::allow_mismatched_daemon_version(walletImpl, true);
   walletImpl->setTrustedDaemon(true);
@@ -2333,19 +2333,19 @@ bool wallet_api_tests::generate(std::vector<test_event_entry>& events)
 
   uint64_t balance = w->balance(0);
   MDEBUG("Balance: " << balance);
-  CHECK_AND_ASSERT_THROW_MES(w->status() == Monero::PendingTransaction::Status_Ok, "Status nok, " << w->errorString());
+  CHECK_AND_ASSERT_THROW_MES(w->status() == Lunexa::PendingTransaction::Status_Ok, "Status nok, " << w->errorString());
 
   const uint64_t tx_amount = MK_TCOINS(0.5);
   auto addr = get_address(m_eve_account);
   auto recepient_address = cryptonote::get_account_address_as_str(m_network_type, false, addr);
-  Monero::PendingTransaction * transaction = w->createTransaction(recepient_address,
+  Lunexa::PendingTransaction * transaction = w->createTransaction(recepient_address,
                                                                   "",
                                                                   tx_amount,
                                                                   num_mixin(),
-                                                                  Monero::PendingTransaction::Priority_Medium,
+                                                                  Lunexa::PendingTransaction::Priority_Medium,
                                                                   0,
                                                                   std::set<uint32_t>{});
-  CHECK_AND_ASSERT_THROW_MES(transaction->status() == Monero::PendingTransaction::Status_Ok, "Status nok: " << transaction->status() << ", msg: " << transaction->errorString());
+  CHECK_AND_ASSERT_THROW_MES(transaction->status() == Lunexa::PendingTransaction::Status_Ok, "Status nok: " << transaction->status() << ", msg: " << transaction->errorString());
   w->refresh();
 
   CHECK_AND_ASSERT_THROW_MES(w->balance(0) == balance, "Err balance");
@@ -2359,12 +2359,12 @@ bool wallet_api_tests::generate(std::vector<test_event_entry>& events)
   return true;
 }
 
-Monero::optional<std::string> wallet_api_tests::onDevicePinRequest() {
-  return Monero::optional<std::string>(m_trezor_pin);
+Lunexa::optional<std::string> wallet_api_tests::onDevicePinRequest() {
+  return Lunexa::optional<std::string>(m_trezor_pin);
 }
 
-Monero::optional<std::string> wallet_api_tests::onDevicePassphraseRequest(bool &on_device) {
+Lunexa::optional<std::string> wallet_api_tests::onDevicePassphraseRequest(bool &on_device) {
   on_device = false;
-  return Monero::optional<std::string>(m_trezor_passphrase);
+  return Lunexa::optional<std::string>(m_trezor_passphrase);
 }
 
