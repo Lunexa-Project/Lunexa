@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2023, The Monero Project
+# Copyright (c) 2014-2024, The Monero Project
 #
 # All rights reserved.
 #
@@ -25,6 +25,7 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 include_directories(SYSTEM ${OPENSSL_INCLUDE_DIR})
 
 set(common_sources
@@ -51,17 +52,13 @@ if (STACK_TRACE)
   list(APPEND common_sources stack_trace.cpp)
 endif()
 
-if (BACKCOMPAT)
-  list(APPEND common_sources compat/glibc_compat.cpp)
-endif()
-
 set(common_headers)
 
-lunexa_find_all_headers(common_private_headers "${CMAKE_CURRENT_SOURCE_DIR}")
+monero_find_all_headers(common_private_headers "${CMAKE_CURRENT_SOURCE_DIR}")
 
-lunexa_private_headers(common
+monero_private_headers(common
   ${common_private_headers})
-lunexa_add_library(common
+monero_add_library(common
   ${common_sources}
   ${common_headers}
   ${common_private_headers}
@@ -84,5 +81,5 @@ target_include_directories(common
   PRIVATE
     ${Boost_INCLUDE_DIRS})
 
-#lunexa_install_headers(common
+#monero_install_headers(common
 #  ${common_headers})
