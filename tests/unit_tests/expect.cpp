@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2023, The Monero Project
+// Copyright (c) 2018-2024, The Monero Project
 
 //
 // All rights reserved.
@@ -819,98 +819,98 @@ TEST(Expect, EqualNoCopies)
 TEST(Expect, Macros) {
     EXPECT_TRUE(
         [] () -> ::common_error {
-            LUNEXA_PRECOND(true);
+            MONERO_PRECOND(true);
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidErrorCode
     );
     EXPECT_TRUE(
         [] () -> ::common_error {
-            LUNEXA_PRECOND(false);
+            MONERO_PRECOND(false);
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidArgument
     );
     EXPECT_TRUE(
         [] () -> std::error_code {
-            LUNEXA_PRECOND(true);
+            MONERO_PRECOND(true);
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidErrorCode
     );
     EXPECT_TRUE(
         [] () -> std::error_code {
-            LUNEXA_PRECOND(false);
+            MONERO_PRECOND(false);
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidArgument
     );
     EXPECT_TRUE(
         [] () -> expect<void> {
-            LUNEXA_PRECOND(true);
+            MONERO_PRECOND(true);
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidErrorCode
     );
     EXPECT_TRUE(
         [] () -> expect<void> {
-            LUNEXA_PRECOND(false);
+            MONERO_PRECOND(false);
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidArgument
     );
     EXPECT_TRUE(
         [] () -> expect<int> {
-            LUNEXA_PRECOND(true);
+            MONERO_PRECOND(true);
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidErrorCode
     );
     EXPECT_TRUE(
         [] () -> expect<int> {
-            LUNEXA_PRECOND(false);
+            MONERO_PRECOND(false);
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidArgument
     );
 
     EXPECT_TRUE(
         [] () -> std::error_code {
-            LUNEXA_CHECK(expect<void>{});
+            MONERO_CHECK(expect<void>{});
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidErrorCode
     );
     EXPECT_TRUE(
         [] () -> std::error_code {
-            LUNEXA_CHECK(expect<void>{common_error::kInvalidArgument});
+            MONERO_CHECK(expect<void>{common_error::kInvalidArgument});
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidArgument
     );
     EXPECT_TRUE(
         [] () -> expect<void> {
-            LUNEXA_CHECK(expect<void>{});
+            MONERO_CHECK(expect<void>{});
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidErrorCode
     );
     EXPECT_TRUE(
         [] () -> expect<void> {
-            LUNEXA_CHECK(expect<void>{common_error::kInvalidArgument});
+            MONERO_CHECK(expect<void>{common_error::kInvalidArgument});
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidArgument
     );
     EXPECT_TRUE(
         [] () -> expect<int> {
-            LUNEXA_CHECK(expect<void>{});
+            MONERO_CHECK(expect<void>{});
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidErrorCode
     );
     EXPECT_TRUE(
         [] () -> expect<int> {
-            LUNEXA_CHECK(expect<void>{common_error::kInvalidArgument});
+            MONERO_CHECK(expect<void>{common_error::kInvalidArgument});
             return {common_error::kInvalidErrorCode};
         } () == common_error::kInvalidArgument
     );
 
-    EXPECT_NO_THROW(LUNEXA_UNWRAP(success()));
-    EXPECT_NO_THROW(LUNEXA_UNWRAP(expect<void>{}));
-    EXPECT_NO_THROW(LUNEXA_UNWRAP(expect<int>{0}));
+    EXPECT_NO_THROW(MONERO_UNWRAP(success()));
+    EXPECT_NO_THROW(MONERO_UNWRAP(expect<void>{}));
+    EXPECT_NO_THROW(MONERO_UNWRAP(expect<int>{0}));
     EXPECT_THROW(
-        LUNEXA_UNWRAP(expect<void>{common_error::kInvalidArgument}), std::system_error
+        MONERO_UNWRAP(expect<void>{common_error::kInvalidArgument}), std::system_error
     );
     EXPECT_THROW(
-        LUNEXA_UNWRAP(expect<int>{common_error::kInvalidArgument}), std::system_error
+        MONERO_UNWRAP(expect<int>{common_error::kInvalidArgument}), std::system_error
     );
 }
 

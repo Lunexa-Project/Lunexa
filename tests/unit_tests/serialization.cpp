@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -783,7 +783,7 @@ TEST(Serialization, portability_wallet)
   }
 }
 
-#define OUTPUT_EXPORT_FILE_MAGIC "Lunexa output export\003"
+#define OUTPUT_EXPORT_FILE_MAGIC "Monero output export\003"
 TEST(Serialization, portability_outputs)
 {
   // read file
@@ -910,10 +910,10 @@ inline void serialize(Archive &a, unsigned_tx_set &x, const boost::serialization
   a & x.txes;
   a & x.transfers;
 }
-#define UNSIGNED_TX_PREFIX "Lunexa unsigned tx set\003"
+#define UNSIGNED_TX_PREFIX "Monero unsigned tx set\003"
 TEST(Serialization, portability_unsigned_tx)
 {
-  const boost::filesystem::path filename = unit_test::data_dir / "unsigned_lunexa_tx";
+  const boost::filesystem::path filename = unit_test::data_dir / "unsigned_monero_tx";
   std::string s;
   const cryptonote::network_type nettype = cryptonote::TESTNET;
   bool r = epee::file_io_utils::load_file_to_string(filename.string(), s);
@@ -1058,10 +1058,10 @@ TEST(Serialization, portability_unsigned_tx)
   ASSERT_TRUE(td2.m_pk_index == 0);
 }
 
-#define SIGNED_TX_PREFIX "Lunexa signed tx set\003"
+#define SIGNED_TX_PREFIX "Monero signed tx set\003"
 TEST(Serialization, portability_signed_tx)
 {
-  const boost::filesystem::path filename = unit_test::data_dir / "signed_lunexa_tx";
+  const boost::filesystem::path filename = unit_test::data_dir / "signed_monero_tx";
   const cryptonote::network_type nettype = cryptonote::TESTNET;
   std::string s;
   bool r = epee::file_io_utils::load_file_to_string(filename.string(), s);
@@ -1113,7 +1113,7 @@ TEST(Serialization, portability_signed_tx)
   ASSERT_TRUE(ptx.selected_transfers.front() == 2);
   // ptx.{key_images, tx_key}
   ASSERT_TRUE(ptx.key_images == "<6c3cd6af97c4070a7aef9b1344e7463e29c7cd245076fdb65da447a34da3ca76> ");
-  ASSERT_TRUE(epee::string_tools::pod_to_hex(ptx.tx_key) == "0100000000000000000000000000000000000000000000000000000000000000");
+  ASSERT_TRUE(epee::string_tools::pod_to_hex(unwrap(unwrap(ptx.tx_key))) == "0100000000000000000000000000000000000000000000000000000000000000");
   // ptx.dests
   ASSERT_TRUE(ptx.dests.size() == 1);
   ASSERT_TRUE(ptx.dests[0].amount == 1400000000000);

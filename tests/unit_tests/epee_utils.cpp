@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -34,6 +34,7 @@
 #include <boost/range/iterator_range.hpp>
 #include <cstdint>
 #include <gtest/gtest.h>
+#include <iomanip>
 #include <iterator>
 #include <string>
 #include <sstream>
@@ -1431,7 +1432,7 @@ TEST(StringTools, GetIpInt32)
   The existing epee conversion function does not work with 255.255.255.255, for
   the reasons specified in the inet_addr documentation. Consider fixing in a
   future patch. This address is not likely to be used for purposes within
-  lunexa.
+  monero.
   EXPECT_TRUE(epee::string_tools::get_ip_int32_from_string(ip, "255.255.255.255"));
   EXPECT_EQ(htonl(0xffffffff), ip);
 */
@@ -1441,6 +1442,21 @@ TEST(StringTools, GetIpInt32)
 
   EXPECT_TRUE(epee::string_tools::get_ip_int32_from_string(ip, "0xff.10.0xff.0"));
   EXPECT_EQ(htonl(0xff0aff00), ip);
+}
+
+TEST(StringTools, GetExtension)
+{
+  EXPECT_EQ(std::string{}, epee::string_tools::get_extension(""));
+  EXPECT_EQ(std::string{}, epee::string_tools::get_extension("."));
+  EXPECT_EQ(std::string{"keys"}, epee::string_tools::get_extension("wallet.keys"));
+  EXPECT_EQ(std::string{"3"}, epee::string_tools::get_extension("1.2.3"));
+}
+
+TEST(StringTools, CutOffExtension)
+{
+  EXPECT_EQ(std::string{}, epee::string_tools::cut_off_extension(""));
+  EXPECT_EQ(std::string{"/home/user/Monero/wallets/wallet"}, epee::string_tools::cut_off_extension("/home/user/Monero/wallets/wallet"));
+  EXPECT_EQ(std::string{"/home/user/Monero/wallets/wallet"}, epee::string_tools::cut_off_extension("/home/user/Monero/wallets/wallet.keys"));
 }
 
 TEST(NetUtils, IPv4NetworkAddress)

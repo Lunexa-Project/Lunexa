@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -398,15 +398,15 @@ public:
 };
 
 // Wallet::API tests
-class wallet_api_tests : public gen_trezor_base, public Lunexa::WalletListener
+class wallet_api_tests : public gen_trezor_base, public Monero::WalletListener
 {
 public:
   ~wallet_api_tests() override;
   void init();
   bool generate(std::vector<test_event_entry>& events) override;
 
-  Lunexa::optional<std::string> onDevicePinRequest() override;
-  Lunexa::optional<std::string> onDevicePassphraseRequest(bool &on_device) override;
+  Monero::optional<std::string> onDevicePinRequest() override;
+  Monero::optional<std::string> onDevicePassphraseRequest(bool &on_device) override;
   void moneySpent(const std::string &txId, uint64_t amount) override {};
   void moneyReceived(const std::string &txId, uint64_t amount) override {};
   void unconfirmedMoneyReceived(const std::string &txId, uint64_t amount) override {};

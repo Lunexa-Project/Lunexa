@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, The Monero Project
+// Copyright (c) 2020-2024, The Monero Project
 
 //
 // All rights reserved.
@@ -36,7 +36,6 @@
 #include <boost/preprocessor/seq/seq.hpp>
 #include <boost/preprocessor/seq.hpp>
 #include <boost/preprocessor/stringize.hpp>
-#include <boost/preprocessor/seq/enum.hpp>
 #include <boost/spirit/include/karma_char.hpp>
 #include <boost/spirit/include/karma_format.hpp>
 #include <boost/spirit/include/karma_repeat.hpp>
@@ -110,7 +109,7 @@ namespace
     template<typename T>
     bool compare(const T& lhs, const T& rhs) noexcept
     {
-        static_assert(!epee::has_padding<T>(), "type might have padding");
+        static_assert(std::is_standard_layout_v<T> && alignof(T) == 1, "type might have padding");
         return std::memcmp(std::addressof(lhs), std::addressof(rhs), sizeof(T)) == 0;
     }
 
@@ -436,3 +435,4 @@ int main(int argc, char** argv)
     }
     return 0;
 }
+

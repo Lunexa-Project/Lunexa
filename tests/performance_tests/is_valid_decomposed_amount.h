@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2024, The Monero Project
+// Copyright (c) 2024, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -25,12 +25,37 @@
 // INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-// 
-// Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
-bool transactions_flow_test(std::string& working_folder, 
-                            std::string path_source_wallet, 
-                            std::string path_target_wallet, 
-                            std::string& daemon_addr_a, 
-                            std::string& daemon_addr_b, 
-                            uint64_t amount_to_transfer, size_t mix_in_factor, size_t transactions_count, size_t transactions_per_second);
+#pragma once
+
+#include "cryptonote_basic/cryptonote_format_utils.h"
+
+class test_is_valid_decomposed_amount
+{
+public:
+  static const size_t loop_count = 3;
+  static const uint64_t max_per_loop = 1000000000; // must be power of 10
+
+  bool init()
+  {
+    m_num_valid_per_loop = 1;
+    uint64_t x = 1;
+    while (x != max_per_loop)
+    {
+        m_num_valid_per_loop += 9;
+        x *= 10;
+    }
+
+    return true;
+  }
+
+  bool test()
+  {
+    size_t num_valid = 0;
+    for (uint64_t a = 0; a <= max_per_loop; ++a)
+        num_valid += cryptonote::is_valid_decomposed_amount(a);
+    return num_valid == m_num_valid_per_loop;
+  }
+
+  size_t m_num_valid_per_loop;
+};

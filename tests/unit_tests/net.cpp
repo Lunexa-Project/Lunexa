@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2023, The Monero Project
+// Copyright (c) 2018-2024, The Monero Project
 
 //
 // All rights reserved.
@@ -32,7 +32,7 @@
 #include <boost/archive/portable_binary_oarchive.hpp>
 #include <boost/archive/portable_binary_iarchive.hpp>
 #include <boost/asio/buffer.hpp>
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/steady_timer.hpp>
@@ -163,7 +163,7 @@ TEST(tor_address, valid)
     EXPECT_FALSE(address2.less(*address1));
     EXPECT_FALSE(address1->less(address2));
 
-    address2 = LUNEXA_UNWRAP(net::tor_address::make(std::string{v3_onion_2} + ":6545"));
+    address2 = MONERO_UNWRAP(net::tor_address::make(std::string{v3_onion_2} + ":6545"));
 
     EXPECT_EQ(6545, address2.port());
     EXPECT_STREQ(v3_onion_2, address2.host_str());
@@ -180,7 +180,7 @@ TEST(tor_address, valid)
     EXPECT_FALSE(address2.less(*address1));
     EXPECT_TRUE(address1->less(address2));
 
-    net::tor_address address3 = LUNEXA_UNWRAP(net::tor_address::make(std::string{v3_onion} + ":", 65535));
+    net::tor_address address3 = MONERO_UNWRAP(net::tor_address::make(std::string{v3_onion} + ":", 65535));
 
     EXPECT_EQ(65535, address3.port());
     EXPECT_STREQ(v3_onion, address3.host_str());
@@ -211,8 +211,8 @@ TEST(tor_address, valid)
 
 TEST(tor_address, generic_network_address)
 {
-    const epee::net_utils::network_address tor1{LUNEXA_UNWRAP(net::tor_address::make(v3_onion, 8080))};
-    const epee::net_utils::network_address tor2{LUNEXA_UNWRAP(net::tor_address::make(v3_onion, 8080))};
+    const epee::net_utils::network_address tor1{MONERO_UNWRAP(net::tor_address::make(v3_onion, 8080))};
+    const epee::net_utils::network_address tor2{MONERO_UNWRAP(net::tor_address::make(v3_onion, 8080))};
     const epee::net_utils::network_address ip{epee::net_utils::ipv4_network_address{100, 200}};
 
     EXPECT_EQ(tor1, tor2);
@@ -248,7 +248,7 @@ TEST(tor_address, epee_serializev_v3)
 {
     epee::byte_slice buffer{};
     {
-        test_command_tor command{LUNEXA_UNWRAP(net::tor_address::make(v3_onion, 10))};
+        test_command_tor command{MONERO_UNWRAP(net::tor_address::make(v3_onion, 10))};
         EXPECT_FALSE(command.tor.is_unknown());
         EXPECT_NE(net::tor_address{}, command.tor);
         EXPECT_STREQ(v3_onion, command.tor.host_str());
@@ -350,7 +350,7 @@ TEST(tor_address, boost_serialize_v3)
 {
     std::string buffer{};
     {
-        const net::tor_address tor = LUNEXA_UNWRAP(net::tor_address::make(v3_onion, 10));
+        const net::tor_address tor = MONERO_UNWRAP(net::tor_address::make(v3_onion, 10));
         EXPECT_FALSE(tor.is_unknown());
         EXPECT_NE(net::tor_address{}, tor);
         EXPECT_STREQ(v3_onion, tor.host_str());
@@ -533,7 +533,7 @@ TEST(i2p_address, valid)
     EXPECT_FALSE(address2.less(*address1));
     EXPECT_FALSE(address1->less(address2));
 
-    address2 = LUNEXA_UNWRAP(net::i2p_address::make(std::string{b32_i2p_2} + ":6545"));
+    address2 = MONERO_UNWRAP(net::i2p_address::make(std::string{b32_i2p_2} + ":6545"));
 
     EXPECT_EQ(1u, address2.port());
     EXPECT_STREQ(b32_i2p_2, address2.host_str());
@@ -550,7 +550,7 @@ TEST(i2p_address, valid)
     EXPECT_FALSE(address2.less(*address1));
     EXPECT_TRUE(address1->less(address2));
 
-    net::i2p_address address3 = LUNEXA_UNWRAP(net::i2p_address::make(std::string{b32_i2p} + ":65535"));
+    net::i2p_address address3 = MONERO_UNWRAP(net::i2p_address::make(std::string{b32_i2p} + ":65535"));
 
     EXPECT_EQ(1u, address3.port());
     EXPECT_STREQ(b32_i2p, address3.host_str());
@@ -581,8 +581,8 @@ TEST(i2p_address, valid)
 
 TEST(i2p_address, generic_network_address)
 {
-    const epee::net_utils::network_address i2p1{LUNEXA_UNWRAP(net::i2p_address::make(b32_i2p))};
-    const epee::net_utils::network_address i2p2{LUNEXA_UNWRAP(net::i2p_address::make(b32_i2p))};
+    const epee::net_utils::network_address i2p1{MONERO_UNWRAP(net::i2p_address::make(b32_i2p))};
+    const epee::net_utils::network_address i2p2{MONERO_UNWRAP(net::i2p_address::make(b32_i2p))};
     const epee::net_utils::network_address ip{epee::net_utils::ipv4_network_address{100, 200}};
 
     EXPECT_EQ(i2p1, i2p2);
@@ -618,7 +618,7 @@ TEST(i2p_address, epee_serializev_b32)
 {
     epee::byte_slice buffer{};
     {
-        test_command_i2p command{LUNEXA_UNWRAP(net::i2p_address::make(b32_i2p))};
+        test_command_i2p command{MONERO_UNWRAP(net::i2p_address::make(b32_i2p))};
         EXPECT_FALSE(command.i2p.is_unknown());
         EXPECT_NE(net::i2p_address{}, command.i2p);
         EXPECT_STREQ(b32_i2p, command.i2p.host_str());
@@ -720,7 +720,7 @@ TEST(i2p_address, boost_serialize_b32)
 {
     std::string buffer{};
     {
-        const net::i2p_address i2p = LUNEXA_UNWRAP(net::i2p_address::make(b32_i2p));
+        const net::i2p_address i2p = MONERO_UNWRAP(net::i2p_address::make(b32_i2p));
         EXPECT_FALSE(i2p.is_unknown());
         EXPECT_NE(net::i2p_address{}, i2p);
         EXPECT_STREQ(b32_i2p, i2p.host_str());
@@ -880,6 +880,7 @@ TEST(get_network_address_host_and_port, hostname)
 {
     na_host_and_port_test("localhost", "localhost", "xxxxx");
     na_host_and_port_test("bar:29080", "bar", "29080"); // Issue https://github.com/monero-project/monero/issues/8633
+    na_host_and_port_test("xmrchain.net:18081", "xmrchain.net", "18081");
 }
 
 namespace
@@ -888,8 +889,8 @@ namespace
 
     struct io_thread
     {
-        boost::asio::io_service io_service;
-        boost::asio::io_service::work work;
+        boost::asio::io_context io_service;
+        boost::asio::executor_work_guard<boost::asio::io_context::executor_type> work;
         stream_type::socket server;
         stream_type::acceptor acceptor;
         boost::thread io;
@@ -897,7 +898,7 @@ namespace
 
         io_thread()
           : io_service(),
-            work(io_service),
+            work(io_service.get_executor()),
             server(io_service),
             acceptor(io_service),
             io([this] () { try { this->io_service.run(); } catch (const std::exception& e) { MERROR(e.what()); }}),
@@ -937,7 +938,7 @@ namespace
 
 TEST(socks_client, unsupported_command)
 {
-    boost::asio::io_service io_service{};
+    boost::asio::io_context io_service{};
     stream_type::socket client{io_service};
 
     auto test_client = net::socks::make_connect_client(
@@ -955,7 +956,7 @@ TEST(socks_client, unsupported_command)
 
 TEST(socks_client, no_command)
 {
-    boost::asio::io_service io_service{};
+    boost::asio::io_context io_service{};
     stream_type::socket client{io_service};
 
     auto test_client = net::socks::make_connect_client(
@@ -1109,7 +1110,7 @@ TEST(socks_connector, host)
 {
     io_thread io{};
     boost::asio::steady_timer timeout{io.io_service};
-    timeout.expires_from_now(std::chrono::seconds{5});
+    timeout.expires_after(std::chrono::seconds{5});
 
     boost::unique_future<boost::asio::ip::tcp::socket> sock =
         net::socks::connector{io.acceptor.local_endpoint()}("example.com", "8080", timeout);
@@ -1136,7 +1137,7 @@ TEST(socks_connector, ipv4)
 {
     io_thread io{};
     boost::asio::steady_timer timeout{io.io_service};
-    timeout.expires_from_now(std::chrono::seconds{5});
+    timeout.expires_after(std::chrono::seconds{5});
 
     boost::unique_future<boost::asio::ip::tcp::socket> sock =
         net::socks::connector{io.acceptor.local_endpoint()}("250.88.125.99", "8080", timeout);
@@ -1162,7 +1163,7 @@ TEST(socks_connector, error)
 {
     io_thread io{};
     boost::asio::steady_timer timeout{io.io_service};
-    timeout.expires_from_now(std::chrono::seconds{5});
+    timeout.expires_after(std::chrono::seconds{5});
 
     boost::unique_future<boost::asio::ip::tcp::socket> sock =
         net::socks::connector{io.acceptor.local_endpoint()}("250.88.125.99", "8080", timeout);
@@ -1188,7 +1189,7 @@ TEST(socks_connector, timeout)
 {
     io_thread io{};
     boost::asio::steady_timer timeout{io.io_service};
-    timeout.expires_from_now(std::chrono::milliseconds{10});
+    timeout.expires_after(std::chrono::milliseconds{10});
 
     boost::unique_future<boost::asio::ip::tcp::socket> sock =
         net::socks::connector{io.acceptor.local_endpoint()}("250.88.125.99", "8080", timeout);
@@ -1607,7 +1608,7 @@ TEST(zmq, error_codes)
     EXPECT_TRUE(
         []() -> expect<void>
         {
-            LUNEXA_ZMQ_CHECK(zmq_msg_send(nullptr, nullptr, 0));
+            MONERO_ZMQ_CHECK(zmq_msg_send(nullptr, nullptr, 0));
             return success();
         }().matches(std::errc::not_a_socket)
     );
@@ -1615,7 +1616,7 @@ TEST(zmq, error_codes)
     bool thrown = false;
     try
     {
-        LUNEXA_ZMQ_THROW("stuff");
+        MONERO_ZMQ_THROW("stuff");
     }
     catch (const std::system_error& e)
     {

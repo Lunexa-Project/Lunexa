@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2023, The Monero Project
+# Copyright (c) 2014-2024, The Monero Project
 #
 # All rights reserved.
 #
@@ -51,7 +51,6 @@ set(unit_tests_sources
   epee_serialization.cpp
   epee_utils.cpp
   expect.cpp
-  fee.cpp
   json_serialization.cpp
   get_xtype_from_string.cpp
   hashchain.cpp
@@ -108,7 +107,7 @@ set(unit_tests_sources
 set(unit_tests_headers
   unit_tests_utils.h)
 
-lunexa_add_minimal_executable(unit_tests
+monero_add_minimal_executable(unit_tests
   ${unit_tests_sources}
   ${unit_tests_headers})
 target_link_libraries(unit_tests
@@ -132,7 +131,7 @@ target_link_libraries(unit_tests
     ${GTEST_LIBRARIES}
     ${CMAKE_THREAD_LIBS_INIT}
     ${EXTRA_LIBRARIES}
-    ${ZMQ_LIB})
+    PkgConfig::libzmq)
 set_property(TARGET unit_tests
   PROPERTY
     FOLDER "tests")
@@ -150,6 +149,6 @@ add_test(
   NAME    unit_tests
   COMMAND unit_tests --data-dir "${TEST_DATA_DIR}")
 
-lunexa_add_minimal_executable(test_notifier test_notifier.cpp)
+monero_add_minimal_executable(test_notifier test_notifier.cpp)
 target_link_libraries(test_notifier ${EXTRA_LIBRARIES})
 set_property(TARGET test_notifier PROPERTY FOLDER "tests")

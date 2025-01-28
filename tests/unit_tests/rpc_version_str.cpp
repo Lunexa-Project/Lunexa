@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2023, The Monero Project
+// Copyright (c) 2019-2024, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -34,7 +34,7 @@
 TEST(rpc, is_version_string_valid)
 {
   using namespace cryptonote::rpc;
-  ASSERT_TRUE(is_version_string_valid(LUNEXA_VERSION));
+  ASSERT_TRUE(is_version_string_valid(MONERO_VERSION));
   ASSERT_TRUE(is_version_string_valid("0.14.1.2"));
   ASSERT_TRUE(is_version_string_valid("0.15.0.0-release"));
   ASSERT_TRUE(is_version_string_valid("0.15.0.0-fe3f6a3e6"));
