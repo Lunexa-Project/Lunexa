@@ -71,7 +71,7 @@
 namespace
 {
     static constexpr const char v2_onion[] =
-        "xmrto2bturnore26.onion";
+        "lxato2bturnore26.onion";
     static constexpr const char v3_onion[] =
         "vww6ybal4bd7szmgncyruucpgfkqahzddi37ktceo3ah7ngmcopnpyyd.onion";
     static constexpr const char v3_onion_2[] =
@@ -449,7 +449,7 @@ namespace
     static constexpr const char b32_i2p[] =
         "vww6ybal4bd7szmgncyruucpgfkqahzddi37ktceo3ah7ngmcopn.b32.i2p";
     static constexpr const char b32_i2p_2[] =
-        "xmrto2bturnore26xmrto2bturnore26xmrto2bturnore26xmr2.b32.i2p";
+        "lxato2bturnore26lxato2bturnore26lxato2bturnore26lxa2.b32.i2p";
 }
 
 TEST(i2p_address, constants)
@@ -880,7 +880,7 @@ TEST(get_network_address_host_and_port, hostname)
 {
     na_host_and_port_test("localhost", "localhost", "xxxxx");
     na_host_and_port_test("bar:29080", "bar", "29080"); // Issue https://github.com/lunexa-project/lunexa/issues/8633
-    na_host_and_port_test("xmrchain.net:18081", "xmrchain.net", "18081");
+    na_host_and_port_test("lxachain.net:18081", "lxachain.net", "18081");
 }
 
 namespace
