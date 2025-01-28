@@ -88,11 +88,11 @@ An anonymity network can be configured to forward incoming connections to a
 `lunexad` RPC port - which is independent from the configuration for incoming
 P2P anonymity connections. The anonymity network (Tor/I2P) is
 [configured in the same manner](#configuration), except the localhost port
-must be the RPC port (typically 18081 for mainnet) instead of the P2P port:
+must be the RPC port (typically 9029 for mainnet) instead of the P2P port:
 
 ```
 HiddenServiceDir /var/lib/tor/data/lunexa
-HiddenServicePort 18081 127.0.0.1:18081
+HiddenServicePort 9029 127.0.0.1:9029
 ```
 
 Then the wallet will be configured to use a Tor/I2P address:
@@ -221,7 +221,7 @@ key identity.
 
 @secparam ([Twitter](https://twitter.com/secparam/status/1153411968147042304)) recommended changing circuits (Tor) as an additional
 precaution. This is likely not a good idea - forcibly requesting Tor to change
-circuits is observable by the ISP. Instead, `lunexad` should likely disconnect
+circuits is observable by the ISP. Instead, `monerod` should likely disconnect
 from peers occasionally. Tor will rotate circuits every ~10 minutes, so
 establishing new connections will use a new public key identity and make it
 more difficult for the hidden service to link information. This process will

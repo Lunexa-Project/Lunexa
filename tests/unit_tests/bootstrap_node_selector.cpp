@@ -50,7 +50,7 @@ protected:
   };
   const std::map<std::string, bool> gray_nodes = {
     {
-      "gray_node_1:18081", false
+      "gray_node_1:9029", false
     },
     {
       "gray_node_2:18089", false

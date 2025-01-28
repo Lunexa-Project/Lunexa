@@ -1,9 +1,9 @@
 Lunexa daemon internationalization
 ==================================
 
-The Lunexa command line tools can be translated in various languages. If you wish to contribute and need help/support, contact the [Lunexa Localization Workgroup on Taiga](https://taiga.getlunexa.org/project/erciccione-lunexa-localization/) or come chat on `#lunexa-translations` (Libera/IRC, riot/matrix, MatterMost)
+The Lunexa command line tools can be translated in various languages. If you wish to contribute and need help/support, contact the [Monero Localization Workgroup on Taiga](https://taiga.getmonero.org/project/erciccione-monero-localization/) or come chat on `#monero-translations` (Libera/IRC, riot/matrix, MatterMost)
 
-In order to use the same translation workflow as the [Lunexa Core GUI](https://github.com/lunexa-project/lxagui), they use Qt Linguist translation files.  However, to avoid the dependencies on Qt this normally implies, they use a custom loader to read those files at runtime.
+In order to use the same translation workflow as the [Monero Core GUI](https://github.com/monero-project/monero-gui), they use Qt Linguist translation files.  However, to avoid the dependencies on Qt this normally implies, they use a custom loader to read those files at runtime.
 
 ### Tools for translators
 
@@ -22,13 +22,13 @@ To update ts files after changing source code:
 To add a new language, eg Spanish (ISO code es):
 
 ```bash
-cp translations/lunexa.ts translations/lunexa_es.ts
+cp translations/monero.ts translations/monero_es.ts
 ```
 
 To edit translations for Spanish:
 
 ```bash
-linguist translations/lunexa_es.ts
+linguist translations/monero_es.ts
 ```
 
 To build translations after modifying them:
@@ -40,7 +40,7 @@ To build translations after modifying them:
 To test a translation:
 
 ```bash
-LANG=es ./build/release/bin/lunexa-wallet-cli
+LANG=es ./build/release/bin/monero-wallet-cli
 ```
 
 To add new translatable strings in the source code:
