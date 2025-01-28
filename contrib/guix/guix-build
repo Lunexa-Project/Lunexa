@@ -85,10 +85,10 @@ export HOSTS="${HOSTS:-x86_64-linux-gnu
                        riscv64-linux-gnu
                        i686-linux-gnu
                        x86_64-w64-mingw32
-                       i686-w64-mingw32
                        x86_64-unknown-freebsd
-                       aarch64-linux-android
-                       arm-linux-androideabi}"
+                       x86_64-apple-darwin
+                       aarch64-apple-darwin
+                       aarch64-linux-android}"
 
 # Usage: distsrc_for_host HOST
 #
@@ -246,18 +246,14 @@ mkdir -p "$VAR_BASE"
 #
 # shellcheck disable=SC2046,SC2086
 {
-    # Get depends precious dir definitions from depends
-    for precious_dir_name in $depends_precious_dir_names; do
-        precious_dir_path="$(make -C "${PWD}/contrib/depends" --no-print-directory print-${precious_dir_name})"
-        echo "${precious_dir_name}=${precious_dir_path}"
-    done
-
-    # Get remaining precious dir definitions from the environment
+    # Get precious dir definitions from depends and the environment
     for precious_dir_name in $precious_dir_names; do
-        precious_dir_path="${!precious_dir_name}"
-        if ! contains "$depends_precious_dir_names" "$precious_dir_name"; then
-            echo "${precious_dir_name}=${precious_dir_path}"
+        if contains "$depends_precious_dir_names" "$precious_dir_name"; then
+            precious_dir_path="$(make -C "${PWD}/contrib/depends" --no-print-directory print-${precious_dir_name})"
+        else
+            precious_dir_path="${!precious_dir_name}"
         fi
+        echo "${precious_dir_name}=${precious_dir_path}"
     done
 } > "${VAR_BASE}/precious_dirs"
 
@@ -273,28 +269,28 @@ for host in $HOSTS; do
     make -C "${PWD}/contrib/depends" -j"$JOBS" download-"$(host_to_commonname "${host}")" ${V:+V=1} ${SOURCES_PATH:+SOURCES_PATH="$SOURCES_PATH"}
 done
 
-# Usage: outdir_for_host HOST SUFFIX
+# Usage: outdir_for_host HOST
 #
 #   HOST: The current platform triple we're building for
 #
 outdir_for_host() {
-    echo "${OUTDIR_BASE}/${1}${2:+-${2}}"
+    echo "${OUTDIR_BASE}/${1}"
 }
 
-# Usage: logdir_for_host HOST SUFFIX
+# Usage: logdir_for_host HOST
 #
 #   HOST: The current platform triple we're building for
 #
 logdir_for_host() {
-    echo "${LOGDIR_BASE}/${1}${2:+-${2}}"
+    echo "${LOGDIR_BASE}/${1}"
 }
 
-# Usage: profiledir_for_host HOST SUFFIX
+# Usage: profiledir_for_host HOST
 #
 #   HOST: The current platform triple we're building for
 #
 profiledir_for_host() {
-    echo "${PROFILES_BASE}/${1}${2:+-${2}}"
+    echo "${PROFILES_BASE}/${1}"
 }
 
 
@@ -353,9 +349,15 @@ EOF
                                  --container \
                                  --pure \
                                  --no-cwd \
+                                 --cores="$JOBS" \
+                                 --keep-failed \
+                                 --fallback \
                                  ${SUBSTITUTE_URLS:+--substitute-urls="$SUBSTITUTE_URLS"} \
+                                 ${ADDITIONAL_GUIX_COMMON_FLAGS} ${ADDITIONAL_GUIX_ENVIRONMENT_FLAGS} \
                                  -- echo "$HOST"
 
+        # Useful for CI environments where you only want to build Guix packages so they
+        # can be cached. Currently unused.
         if [[ -v DRY_RUN ]]; then
             echo "Dry run, exiting.."
             exit 0

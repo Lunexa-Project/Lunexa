@@ -78,7 +78,7 @@ verify() {
         echo "Hint: Either the signature is invalid or the public key is missing"
         echo ""
         failure=1
-    elif ! diff --report-identical "$compare_manifest" "$current_manifest" 1>&2; then
+    elif ! diff --text --report-identical "$compare_manifest" "$current_manifest" 1>&2; then
         echo "ERR: The SHA256SUMS attestation in these two directories differ:"
         echo "    '${compare_manifest}'"
         echo "    '${current_manifest}'"
@@ -91,42 +91,9 @@ verify() {
 }
 
 shopt -s nullglob
-all_noncodesigned=( "$OUTSIGDIR_BASE"/*/noncodesigned.SHA256SUMS )
-shopt -u nullglob
-
-echo "--------------------"
-echo ""
-if (( ${#all_noncodesigned[@]} )); then
-    compare_noncodesigned="${all_noncodesigned[0]}"
-    if [[ -n "$SIGNER" ]]; then
-        signer_noncodesigned="$OUTSIGDIR_BASE/$SIGNER/noncodesigned.SHA256SUMS"
-        if [[ -f "$signer_noncodesigned" ]]; then
-            echo "Using $SIGNER's manifest as the base to compare against"
-            compare_noncodesigned="$signer_noncodesigned"
-        else
-            echo "Unable to find $SIGNER's manifest, using the first one found"
-        fi
-    else
-        echo "No SIGNER provided, using the first manifest found"
-    fi
-
-    for current_manifest in "${all_noncodesigned[@]}"; do
-        verify "$compare_noncodesigned" "$current_manifest"
-    done
-
-    echo "DONE: Checking output signatures for noncodesigned.SHA256SUMS"
-    echo ""
-else
-    echo "WARN: No signature directories with noncodesigned.SHA256SUMS found"
-    echo ""
-fi
-
-shopt -s nullglob
 all_all=( "$OUTSIGDIR_BASE"/*/all.SHA256SUMS )
 shopt -u nullglob
 
-echo "--------------------"
-echo ""
 if (( ${#all_all[@]} )); then
     compare_all="${all_all[0]}"
     if [[ -n "$SIGNER" ]]; then
@@ -145,27 +112,10 @@ if (( ${#all_all[@]} )); then
         verify "$compare_all" "$current_manifest"
     done
 
-    # Sanity check: there should be no entries that exist in
-    # noncodesigned.SHA256SUMS that doesn't exist in all.SHA256SUMS
-    if [[ "$(comm -23 <(sort "$compare_noncodesigned") <(sort "$compare_all") | wc -c)" -ne 0 ]]; then
-        echo "ERR: There are unique lines in noncodesigned.SHA256SUMS which"
-        echo "     do not exist in all.SHA256SUMS, something went very wrong."
-        exit 1
-    fi
-
     echo "DONE: Checking output signatures for all.SHA256SUMS"
     echo ""
 else
-    echo "WARN: No signature directories with all.SHA256SUMS found"
-    echo ""
-fi
-
-echo "===================="
-echo ""
-if (( ${#all_noncodesigned[@]} + ${#all_all[@]} == 0 )); then
-    echo "ERR: Unable to perform any verifications as no signature directories"
-    echo "     were found"
-    echo ""
+    echo "ERR: No signature directories with all.SHA256SUMS found"
     exit 1
 fi
 

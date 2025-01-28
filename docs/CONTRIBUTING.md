@@ -15,6 +15,7 @@ of software solid and usable.
 Patches are preferably to be sent via a GitHub pull request. If that
 can't be done, patches in "git format-patch" format can be sent
 (eg, posted to fpaste.org with a long enough timeout and a link
+posted to #monero-dev on irc.libera.chat).
 
 Patches should be self contained. A good rule of thumb is to have
 one patch per separate issue, feature, or logical change. Also, no
@@ -42,6 +43,15 @@ Commit messages should be sensible. That means a subject line that
 describes the patch, with an optional longer body that gives details,
 documentation, etc.
 
+Please reference the current merged PR list for a general subject line
+format of the current contributors. As of 2024 the subject line uses the
+following format:
+
+subdirectory under src where changes were made: description of change
+
+For example (PR #9189):
+cryptonote_core: early out on out of bounds scaling parameter
+
 When submitting a pull request on GitHub, make sure your branch is
 rebased. No merge commits nor stray commits from other people in
 your submitted branch, please. You may be asked to rebase if there
@@ -55,7 +65,7 @@ the previous paragraph is here.
 ## License
 
 Copyright (c) 2009-2015 Pieter Hintjens.
-Copyright (c) 2017-2023, The Lunexa Project
+Copyright (c) 2017-2024, The Monero Project
 
 This Specification is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 3 of the License, or (at your option) any later version.
 
@@ -67,9 +77,10 @@ You should have received a copy of the GNU General Public License along with thi
 
 The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this document are to be interpreted as described in RFC 2119.
 
-The "Lunexa Maintainer Team" is defined in this document as the following users:
-- Mysticalai
-
+The "Monero Maintainer Team" is defined in this document as the following users:
+- fluffypony
+- moneromooo
+- hyc
 
 ## Goals
 

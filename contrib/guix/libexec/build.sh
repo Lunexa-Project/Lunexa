@@ -46,7 +46,9 @@ ACTUAL_OUTDIR="${OUTDIR}"
 OUTDIR="${DISTSRC}/output"
 DISTNAME="lunexa-${HOST}-${VERSION}"
 
-# Use a fixed timestamp for depends builds so hashes match across commits that don't make changes to the build system
+# Use a fixed timestamp for depends builds so hashes match across commits that
+# don't make changes to the build system. This timestamp is only used for depends
+# packages. Source archive and binary tarballs use the commit date.
 export SOURCE_DATE_EPOCH=1397818193
 
 #####################
@@ -72,12 +74,8 @@ store_path() {
               --expression='s|"[[:space:]]*$||'
 }
 
-
-# Set environment variables to point the NATIVE toolchain to the right
-# includes/libs
-NATIVE_GCC="$(store_path gcc-toolchain)"
-NATIVE_GCC_STATIC="$(store_path gcc-toolchain static)"
-
+# These environment variables are automatically set by Guix, but don't
+# necessarily point to the correct toolchain paths. This is fixed below.
 unset LIBRARY_PATH
 unset CPATH
 unset C_INCLUDE_PATH
@@ -85,11 +83,21 @@ unset CPLUS_INCLUDE_PATH
 unset OBJC_INCLUDE_PATH
 unset OBJCPLUS_INCLUDE_PATH
 
-export LIBRARY_PATH="${NATIVE_GCC}/lib:${NATIVE_GCC}/lib64:${NATIVE_GCC_STATIC}/lib:${NATIVE_GCC_STATIC}/lib64"
+NATIVE_GCC="$(store_path gcc-toolchain)"
+
 export C_INCLUDE_PATH="${NATIVE_GCC}/include"
 export CPLUS_INCLUDE_PATH="${NATIVE_GCC}/include/c++:${NATIVE_GCC}/include"
 export OBJC_INCLUDE_PATH="${NATIVE_GCC}/include"
 export OBJCPLUS_INCLUDE_PATH="${NATIVE_GCC}/include/c++:${NATIVE_GCC}/include"
+
+case "$HOST" in
+    *darwin*) export LIBRARY_PATH="${NATIVE_GCC}/lib" ;;
+    *mingw*) export LIBRARY_PATH="${NATIVE_GCC}/lib" ;;
+    *)
+        NATIVE_GCC_STATIC="$(store_path gcc-toolchain static)"
+        export LIBRARY_PATH="${NATIVE_GCC}/lib:${NATIVE_GCC_STATIC}/lib"
+        ;;
+esac
 
 prepend_to_search_env_var() {
     export "${1}=${2}${!1:+:}${!1}"
@@ -180,9 +188,18 @@ esac
 [ -e /usr/bin/env ]  || ln -s --no-dereference "$(command -v env)"  /usr/bin/env
 [ -e /bin/bash ]  || ln -s --no-dereference "$(command -v bash)"  /bin/bash
 [ -e /bin/sh ]  || ln -s --no-dereference "$(command -v sh)"  /bin/sh
+
+# The Android NDK toolchain cannot (yet) be bootstrapped. The compiler binaries
+# included in the NDK have their dynamic interpreter set to the standard x86_64
+# interpreter path, which does not exist in this location in the Guix environment.
+# The alternative was patchelf-ing all binaries included in the NDK, but this is
+# more hacky and adds a dependency on patchelf for non-Guix builders.
 [ -e /lib64/ld-linux-x86-64.so.2 ]  || ln -s --no-dereference "${NATIVE_GCC}/lib/ld-linux-x86-64.so.2"  /lib64/ld-linux-x86-64.so.2
 
 # Determine the correct value for -Wl,--dynamic-linker for the current $HOST
+#
+# We need to do this because the dynamic linker does not exist at a standard path
+# in the Guix container. Binaries wouldn't be able to start in other environments.
 case "$HOST" in
     *linux-gnu*)
         glibc_dynamic_linker=$(
@@ -218,12 +235,6 @@ esac
 # Depends Building #
 ####################
 
-# LDFLAGS
-case "$HOST" in
-    *linux-gnu*)  HOST_LDFLAGS="-Wl,--as-needed -Wl,--dynamic-linker=$glibc_dynamic_linker -static-libstdc++ -Wl,-O2" ;;
-    *mingw*)  HOST_LDFLAGS="-Wl,--no-insert-timestamp" ;;
-esac
-
 mkdir -p "${OUTDIR}"
 
 # Log the depends build ids
@@ -248,13 +259,18 @@ make -C contrib/depends --jobs="$JOBS" HOST="$HOST" \
 DEPENDS_PACKAGES="$(make -C contrib/depends --no-print-directory HOST="$HOST" print-all_packages)"
 DEPENDS_CACHE="$(make -C contrib/depends --no-print-directory ${BASE_CACHE+BASE_CACHE="$BASE_CACHE"} print-BASE_CACHE)"
 
+# Keep a record of the depends packages and their hashes that will be used for
+# our build. If there is a reproducibility issue, comparing this log file could
+# help narrow down which package is responsible for the defect.
 {
     for package in ${DEPENDS_PACKAGES}; do
         cat "${DEPENDS_CACHE}/${HOST}/${package}"/*.hash
     done
 } | sort -k2 > "${LOGDIR}/depends-packages.txt"
 
-# Stop here if we're only building depends packages
+# Stop here if we're only building depends packages. This is useful when
+# debugging reproducibility issues in depends packages. Skips ahead to the next
+# target, so we don't spend time building Lunexa binaries.
 if [[ -n "$DEPENDS_ONLY" ]]; then
     exit 0
 fi
@@ -270,10 +286,11 @@ export TAR_OPTIONS="--owner=0 --group=0 --numeric-owner --mtime='@${SOURCE_DATE_
 GIT_ARCHIVE="${DIST_ARCHIVE_BASE}/lunexa-source-${VERSION}.tar.gz"
 
 # Create the source tarball if not already there
+# This uses `git ls-files --recurse-submodules` instead of `git archive` to make
+# sure submodules are included in the source archive.
 if [ ! -e "$GIT_ARCHIVE" ]; then
     mkdir -p "$(dirname "$GIT_ARCHIVE")"
     git ls-files --recurse-submodules \
-    | cat \
     | sort \
     | tar --create --transform "s,^,lunexa-source-${VERSION}/," --mode='u+rw,go+r-w,a+X' --files-from=- \
     | gzip -9n > ${GIT_ARCHIVE}
@@ -285,23 +302,27 @@ fi
 ###########################
 
 # CFLAGS
-HOST_CFLAGS="-O2"
-HOST_CFLAGS+=$(find /gnu/store -maxdepth 1 -mindepth 1 -type d -exec echo -n " -ffile-prefix-map={}=/usr" \;)
 case "$HOST" in
-    *linux-gnu*)  HOST_CFLAGS+=" -ffile-prefix-map=${PWD}=." ;;
-    *darwin*) unset HOST_CFLAGS ;;
-    *android*) unset HOST_CFLAGS ;;
+    *linux-gnu*)
+        HOST_CFLAGS=$(find /gnu/store -maxdepth 1 -mindepth 1 -type d -exec echo -n " -ffile-prefix-map={}=/usr" \;)
+        HOST_CFLAGS+=" -ffile-prefix-map=${PWD}=." ;;
 esac
 
 # CXXFLAGS
 HOST_CXXFLAGS="$HOST_CFLAGS"
-
 case "$HOST" in
     arm-linux-gnueabihf) HOST_CXXFLAGS+=" -Wno-psabi" ;;
 esac
 
+# LDFLAGS
+case "$HOST" in
+    *linux-gnu*)  HOST_LDFLAGS="-Wl,--as-needed -Wl,--dynamic-linker=$glibc_dynamic_linker -static-libstdc++" ;;
+    *mingw*)  HOST_LDFLAGS="-Wl,--no-insert-timestamp" ;;
+esac
+
 export GIT_DISCOVERY_ACROSS_FILESYSTEM=1
-export USE_DEVICE_TREZOR_MANDATORY=0
+# Force Trezor support for release binaries
+export USE_DEVICE_TREZOR_MANDATORY=1
 
 # Make $HOST-specific native binaries from depends available in $PATH
 export PATH="${BASEPREFIX}/${HOST}/native/bin:${PATH}"
@@ -318,6 +339,14 @@ mkdir -p "$DISTSRC"
     INSTALLPATH="${DISTSRC}/installed/${DISTNAME}"
     mkdir -p "${INSTALLPATH}"
 
+    # Ensure rpath in the resulting binaries is empty
+    CMAKEFLAGS="-DCMAKE_SKIP_RPATH=ON"
+
+    # We can't check if submodules are checked out because we're building in an
+    # extracted source archive. The guix-build script makes sure submodules are
+    # checked out before starting a build.
+    CMAKEFLAGS+=" -DMANUAL_SUBMODULES=1"
+
     # Configure this DISTSRC for $HOST
     # shellcheck disable=SC2086
     env CFLAGS="${HOST_CFLAGS}" CXXFLAGS="${HOST_CXXFLAGS}" \
@@ -325,13 +354,20 @@ mkdir -p "$DISTSRC"
       -DCMAKE_INSTALL_PREFIX="${INSTALLPATH}" \
       -DCMAKE_EXE_LINKER_FLAGS="${HOST_LDFLAGS}" \
       -DCMAKE_SHARED_LINKER_FLAGS="${HOST_LDFLAGS}" \
-      -DCMAKE_SKIP_RPATH=ON \
-      -DMANUAL_SUBMODULES=1
+      ${CMAKEFLAGS}
 
     make -C build --jobs="$JOBS"
 
     # Copy docs
     cp README.md LICENSE docs/ANONYMITY_NETWORKS.md "${INSTALLPATH}"
+
+    # Binaries should not contain references to the store path
+    for binary in "build/bin"/*; do
+        if strings "$binary" | grep -q "/gnu/store"; then
+            echo "ERR: ${binary} contains unexpected string: /gnu/store"
+            exit 1
+        fi
+    done
 
     # Copy binaries
     cp -a build/bin/* "${INSTALLPATH}"
@@ -373,6 +409,5 @@ mv --no-target-directory "$OUTDIR" "$ACTUAL_OUTDIR" \
         find "$ACTUAL_OUTDIR" -type f
     } | xargs realpath --relative-base="$PWD" \
       | xargs sha256sum \
-      | sort -k2 \
-      | sponge "$LOGDIR"/SHA256SUMS.part
+      | sort -k2 -o "$LOGDIR"/SHA256SUMS.part
 )

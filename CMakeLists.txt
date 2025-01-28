@@ -282,7 +282,10 @@ if (NOT ARCH OR ARCH STREQUAL "" OR ARCH STREQUAL "native" OR ARCH STREQUAL "def
   if(CMAKE_SYSTEM_PROCESSOR STREQUAL "")
     set(CMAKE_SYSTEM_PROCESSOR ${CMAKE_HOST_SYSTEM_PROCESSOR})
   endif()
-  set(ARCH_ID "${CMAKE_SYSTEM_PROCESSOR}")
+  # On Windows, CMake sets CMAKE{_HOST,}_SYSTEM_PROCESSOR to the value of the
+  # PROCESSOR_ARCHITECTURE environment variable. On some systems it may be set to
+  # AMD64. Lowercase it to ensure checks for "x86_64" or "amd64" work as expected.
+  string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" ARCH_ID)
 else()
   set(ARCH_ID "${ARCH}")
 endif()
@@ -338,6 +341,11 @@ set(RISCV   1)
 set(RISCV32 1)
 endif()
 
+if(ARCH_ID STREQUAL "loongarch64")
+set(LOONGARCH   1)
+set(LOONGARCH64 1)
+endif()
+
 if(WIN32 OR ARM OR PPC64LE OR PPC64 OR PPC)
   set(OPT_FLAGS_RELEASE "-O2")
 else()
@@ -378,14 +386,9 @@ endif()
 set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 
-# set this to 0 if per-block checkpoint needs to be disabled
-set(PER_BLOCK_CHECKPOINT 0)
-
+option(PER_BLOCK_CHECKPOINT "Enable per-block checkpoint" ON)
 if(PER_BLOCK_CHECKPOINT)
   add_definitions("-DPER_BLOCK_CHECKPOINT")
-  set(Blocks "blocks")
-else()
-  set(Blocks "")
 endif()
 
 list(INSERT CMAKE_MODULE_PATH 0
@@ -757,6 +760,8 @@ else()
     message(STATUS "AES support not available on s390x")
   elseif(RISCV)
     message(STATUS "AES support not available on RISC-V")
+  elseif(LOONGARCH)
+    message(STATUS "AES support not available on LOONGARCH")
   elseif(ARM6)
     message(STATUS "AES support not available on ARMv6")
   elseif(ARM7)
@@ -1077,31 +1082,40 @@ if(STATIC)
   set(Boost_USE_STATIC_RUNTIME ON)
 endif()
 
-set(BOOST_COMPONENTS system filesystem thread date_time chrono regex serialization program_options)
-if (WIN32)
-  list(APPEND BOOST_COMPONENTS locale)
+# Find Boost headers
+set(BOOST_MIN_VER 1.62)
+find_package(Boost ${BOOST_MIN_VER} QUIET REQUIRED)
+
+if(NOT Boost_FOUND)
+  die("Could not find Boost libraries, please make sure you have installed Boost or libboost-all-dev (>=${BOOST_MIN_VER}) or the equivalent")
+elseif(Boost_FOUND)
+  message(STATUS "Found Boost Version: ${Boost_VERSION_STRING}")
+
+  set(BOOST_COMPONENTS filesystem thread date_time chrono serialization program_options)
+  if (WIN32)
+    list(APPEND BOOST_COMPONENTS locale)
+  endif()
+
+  # Boost System is header-only since 1.69
+  if (Boost_VERSION_STRING VERSION_LESS 1.69.0)
+    list(APPEND BOOST_COMPONENTS system)
+  endif()
+
+  # Boost Regex is header-only since 1.77
+  if (Boost_VERSION_STRING VERSION_LESS 1.77.0)
+    list(APPEND BOOST_COMPONENTS regex)
+  endif()
+
+  message(STATUS "Boost components: ${BOOST_COMPONENTS}")
+
+  # Find required Boost libraries
+  find_package(Boost ${BOOST_MIN_VER} QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+  set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
 endif()
-find_package(Boost 1.58 QUIET REQUIRED COMPONENTS ${BOOST_COMPONENTS})
+
 add_definitions(-DBOOST_ASIO_ENABLE_SEQUENTIAL_STRAND_ALLOCATION)
 add_definitions(-DBOOST_NO_AUTO_PTR)
-
-set(CMAKE_FIND_LIBRARY_SUFFIXES ${OLD_LIB_SUFFIXES})
-if(NOT Boost_FOUND)
-  die("Could not find Boost libraries, please make sure you have installed Boost or libboost-all-dev (>=1.58) or the equivalent")
-elseif(Boost_FOUND)
-  message(STATUS "Found Boost Version: ${Boost_VERSION}")
-  if (Boost_VERSION VERSION_LESS 10 AND Boost_VERSION VERSION_LESS 1.62.0 AND NOT (OPENSSL_VERSION VERSION_LESS 1.1))
-    set(BOOST_BEFORE_1_62 true)
-  endif()
-  if (NOT Boost_VERSION VERSION_LESS 10 AND Boost_VERSION VERSION_LESS 106200 AND NOT (OPENSSL_VERSION VERSION_LESS 1.1))
-    set(BOOST_BEFORE_1_62 true)
-  endif()
-  if (BOOST_BEFORE_1_62)
-      message(FATAL_ERROR "Boost ${Boost_VERSION} (older than 1.62) is too old to link with OpenSSL ${OPENSSL_VERSION} (1.1 or newer) found at ${OPENSSL_INCLUDE_DIR} and ${OPENSSL_LIBRARIES}. "
-                          "Update Boost or install OpenSSL 1.0 and set path to it when running cmake: "
-                          "cmake -DOPENSSL_ROOT_DIR='/usr/include/openssl-1.0'")
-  endif()
-endif()
+add_definitions(-DBOOST_UUID_DISABLE_ALIGNMENT) # This restores UUID's std::has_unique_object_representations property
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 if(MINGW)
@@ -1184,46 +1198,8 @@ if(STATIC)
 endif()
 find_package(Sodium REQUIRED)
 
-find_path(ZMQ_INCLUDE_PATH zmq.h)
-find_library(ZMQ_LIB zmq)
-find_library(PGM_LIBRARY pgm)
-find_library(NORM_LIBRARY norm)
-find_library(GSSAPI_LIBRARY gssapi_krb5)
-find_library(PROTOLIB_LIBRARY protolib)
-find_library(BSD_LIBRARY bsd)
-find_library(MD_LIBRARY md)
-find_library(PROTOKIT_LIBRARY protokit)
-
-if(NOT ZMQ_INCLUDE_PATH)
-  message(FATAL_ERROR "Could not find required header zmq.h")
-endif()
-if(NOT ZMQ_LIB)
-  message(FATAL_ERROR "Could not find required libzmq")
-endif()
-if(PGM_LIBRARY)
-  set(ZMQ_LIB "${ZMQ_LIB};${PGM_LIBRARY}")
-endif()
-if(NORM_LIBRARY)
-  set(ZMQ_LIB "${ZMQ_LIB};${NORM_LIBRARY}")
-endif()
-if(GSSAPI_LIBRARY)
-  set(ZMQ_LIB "${ZMQ_LIB};${GSSAPI_LIBRARY}")
-endif()
-if(PROTOLIB_LIBRARY)
-  set(ZMQ_LIB "${ZMQ_LIB};${PROTOLIB_LIBRARY}")
-endif()
-if(Sodium_FOUND)
-  set(ZMQ_LIB "${ZMQ_LIB};${sodium_LIBRARIES}")
-endif()
-if(BSD_LIBRARY)
-  set(ZMQ_LIB "${ZMQ_LIB};${BSD_LIBRARY}")
-endif()
-if(MD_LIBRARY)
-  set(ZMQ_LIB "${ZMQ_LIB};${MD_LIBRARY}")
-endif()
-if(PROTOKIT_LIBRARY)
-  set(ZMQ_LIB "${ZMQ_LIB};${PROTOKIT_LIBRARY}")
-endif()
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(libzmq REQUIRED IMPORTED_TARGET libzmq)
 
 include(external/supercop/functions.cmake) # place after setting flags and before src directory inclusion
 add_subdirectory(contrib)

@@ -18,7 +18,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/libexec/prelude.bash"
 # Required non-builtin commands should be invokable
 ################
 
-check_tools cat mkdir make git guix
+check_tools git realpath
 
 
 #############
@@ -30,15 +30,15 @@ check_tools cat mkdir make git guix
 # If MAYBE_CHILD is a subdirectory of MAYBE_PARENT, print the relative path
 # from MAYBE_PARENT to MAYBE_CHILD. Otherwise, return 1 as the error code.
 #
-# NOTE: This does not perform any symlink-resolving or path canonicalization.
+# NOTE: This does not perform any symlink-resolving.
 #
 under_dir() {
-    local path_residue
-    path_residue="${2##"${1}"}"
-    if [ -z "$path_residue" ] || [ "$path_residue" = "$2" ]; then
+    local relpath
+    relpath="$(realpath --no-symlinks --relative-base="$1" "$2")"
+    if [ -z "$relpath" ] || [ "$relpath" = "$2" ] || [ "$relpath" = "." ]; then
         return 1
     else
-        echo "$path_residue"
+        echo "$relpath"
     fi
 }
 
@@ -67,7 +67,7 @@ for precious_dirs_file in "${found_precious_dirs_files[@]}"; do
 
     # Exclude the precious_dirs file itself
     if dirs_file_exclude_fragment=$(dir_under_git_root "$(dirname "$precious_dirs_file")"); then
-        exclude_flags+=( --exclude="${dirs_file_exclude_fragment}/precious_dirs" )
+        exclude_flags+=( --exclude="/${dirs_file_exclude_fragment}/precious_dirs" )
     fi
 
     # Read each 'name=dir' pair from the precious_dirs file
@@ -75,7 +75,7 @@ for precious_dirs_file in "${found_precious_dirs_files[@]}"; do
         # Add an exclusion flag if the precious directory is under the git root.
         if under=$(dir_under_git_root "$dir"); then
             echo "Avoiding ${name}: ${under}"
-            exclude_flags+=( --exclude="$under" )
+            exclude_flags+=( --exclude="/$under" )
         fi
     done < "$precious_dirs_file"
 done
