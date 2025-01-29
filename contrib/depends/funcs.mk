@@ -86,7 +86,7 @@ $(1)_download_path_fixed=$(subst :,\:,$$($(1)_download_path))
 
 #default commands
 $(1)_fetch_cmds ?= $(call fetch_file,$(1),$(subst \:,:,$$($(1)_download_path_fixed)),$$($(1)_download_file),$($(1)_file_name),$($(1)_sha256_hash))
-$(1)_extract_cmds ?= mkdir -p $$($(1)_extract_dir) && echo "$$($(1)_sha256_hash)  $$($(1)_source)" > $$($(1)_extract_dir)/.$$($(1)_file_name).hash &&  $(build_SHA256SUM) -c $$($(1)_extract_dir)/.$$($(1)_file_name).hash && tar --strip-components=1 -xf $$($(1)_source)
+$(1)_extract_cmds ?= mkdir -p $$($(1)_extract_dir) && echo "$$($(1)_sha256_hash)  $$($(1)_source)" > $$($(1)_extract_dir)/.$$($(1)_file_name).hash &&  $(build_SHA256SUM) -c $$($(1)_extract_dir)/.$$($(1)_file_name).hash && tar --no-same-owner --strip-components=1 -xf $$($(1)_source)
 $(1)_preprocess_cmds ?=
 $(1)_build_cmds ?=
 $(1)_config_cmds ?=
@@ -146,8 +146,14 @@ $(1)_build_env+=$($(1)_build_env_$(host_arch)) $($(1)_build_env_$(host_arch)_$(r
 $(1)_build_env+=$($(1)_build_env_$(host_os)) $($(1)_build_env_$(host_os)_$(release_type))
 $(1)_build_env+=$($(1)_build_env_$(host_arch)_$(host_os)) $($(1)_build_env_$(host_arch)_$(host_os)_$(release_type))
 
+$(1)_stage_env+=$$($(1)_stage_env_$(release_type))
+$(1)_stage_env+=$($(1)_stage_env_$(host_arch)) $($(1)_stage_env_$(host_arch)_$(release_type))
+$(1)_stage_env+=$($(1)_stage_env_$(host_os)) $($(1)_stage_env_$(host_os)_$(release_type))
+$(1)_stage_env+=$($(1)_stage_env_$(host_arch)_$(host_os)) $($(1)_stage_env_$(host_arch)_$(host_os)_$(release_type))
+
 $(1)_config_env+=PKG_CONFIG_LIBDIR=$($($(1)_type)_prefix)/lib/pkgconfig
 $(1)_config_env+=PKG_CONFIG_PATH=$($($(1)_type)_prefix)/share/pkgconfig
+$(1)_config_env+=CMAKE_MODULE_PATH=$($($(1)_type)_prefix)/lib/cmake
 $(1)_config_env+=PATH="$(build_prefix)/bin:$(PATH)"
 $(1)_build_env+=PATH="$(build_prefix)/bin:$(PATH)"
 $(1)_stage_env+=PATH="$(build_prefix)/bin:$(PATH)"
@@ -179,6 +185,22 @@ $(1)_autoconf += CPPFLAGS="$$($(1)_cppflags)"
 endif
 ifneq ($($(1)_ldflags),)
 $(1)_autoconf += LDFLAGS="$$($(1)_ldflags)"
+endif
+
+$(1)_cmake=env CC="$$($(1)_cc)" \
+               CFLAGS="$$($(1)_cppflags) $$($(1)_cflags)" \
+               CXX="$$($(1)_cxx)" \
+               CXXFLAGS="$$($(1)_cppflags) $$($(1)_cxxflags)" \
+               LDFLAGS="$$($(1)_ldflags)" \
+             cmake -DCMAKE_INSTALL_PREFIX:PATH="$$($($(1)_type)_prefix)" $$($(1)_config_opts)
+ifeq ($($(1)_type),build)
+$(1)_cmake += -DCMAKE_INSTALL_RPATH:PATH="$$($($(1)_type)_prefix)/lib"
+else
+ifneq ($(host),$(build))
+$(1)_cmake += -DCMAKE_SYSTEM_NAME=$($(host_os)_cmake_system)
+$(1)_cmake += -DCMAKE_C_COMPILER_TARGET=$(host)
+$(1)_cmake += -DCMAKE_CXX_COMPILER_TARGET=$(host)
+endif
 endif
 endef
 
