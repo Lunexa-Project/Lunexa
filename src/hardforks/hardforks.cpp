@@ -36,13 +36,13 @@ const hardfork_t mainnet_hard_forks[] = {
   { 1, 1, 0, 1729126800 },
 
   // version 2 starts from block 2 RandomX intergration time stamp put as this as placeholder until it reaches the day it needs to be changed
-  { 2, 3, 0, 1729126800},
+  { 10, 3, 0, 1729126800},
   
 
 };
 
 const size_t num_mainnet_hard_forks = sizeof(mainnet_hard_forks) / sizeof(mainnet_hard_forks[0]);
-const uint64_t mainnet_hard_fork_version_1_till = 500;
+const uint64_t mainnet_hard_fork_version_1_till = 10;
 
 
 const hardfork_t testnet_hard_forks[] = {

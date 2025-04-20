@@ -193,7 +193,8 @@ chain for " target " development."))
                 "0azpb9cvnbv25zg8019rqz48h8i2257ngyjg566dlnp74ivrs9vq"))
               (patches (search-our-patches "glibc-2.27-riscv64-Use-__has_include-to-include-asm-syscalls.h.patch"
                                            "glibc-2.27-guix-prefix.patch"
-                                           "glibc-2.27-no-librt.patch"))))
+                                           "glibc-2.27-no-librt.patch"
+                                           "glibc-2.27-riscv64-fix-incorrect-jal-with-HIDDEN_JUMPTARGET.patch"))))
     (arguments
       (substitute-keyword-arguments (package-arguments glibc)
         ((#:configure-flags flags)
@@ -270,10 +271,7 @@ chain for " target " development."))
         ;; Build tools
         gnu-make
         libtool
-        autoconf-2.71 ; defaults to 2.69, which does not recognize the aarch64-apple-darwin target
-        automake
         pkg-config
-        gperf         ; required to build eudev in depends
         cmake-minimal
 
         ;; Scripting

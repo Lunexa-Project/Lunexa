@@ -38,7 +38,7 @@ Thank you!
 
 - Web: [Lunexa.co](https://Lunexa.co)
 - GitHub: [https://github.com/lunexa-project/lunexa](https://github.com/lunexa-project/lunexa)
-- Discord: [Lunexa on Discord](https://discord.gg/KUMuN6Gvq2)
+- Discord: (i currently have taken down the discord for now)
 
 
 ## Vulnerability response
@@ -51,13 +51,13 @@ Lunexa is an independent project, establishing its own unique ecosystem while dr
 
 As the Lunexa community explores various aspects of cryptography, protocols, and analysis, we encourage engagement and interaction with researchers outside our ecosystem. Collaboration is key to our progress. We invite those interested to connect with us, whether for inquiries, collaborative opportunities, or seeking guidance to avoid redundant efforts.
 
-While the Monero research community remains a valuable resource, Lunexa's ecosystem thrives on separate platforms. You can find us on Discord at [Lunexa Discord](https://discord.gg/KUMuN6Gvq2) and on other accessible channels.
+While the Monero research community remains a valuable resource, Lunexa's ecosystem thrives on separate platforms. You can find us on Discord (i currently have taken down the discord for now) and on other accessible channels.
 
 Join us in shaping the future of Lunexa's ecosystem, where innovation and collaboration pave the way for new advancements in the realm of cryptocurrencies.
 
 ## Announcements
 
-- You can head to our discord [Lunexa's Discord](https://discord.gg/KUMuN6Gvq2) to get critical announcements from the core team and also talk to the people in our community. The announcement list can be very helpful for knowing when software updates are needed.
+- You can head to our discord [Lunexa's Discord]() to get critical announcements from the core team and also talk to the people in our community. The announcement list can be very helpful for knowing when software updates are needed.
 
 ## Introduction
 
@@ -558,7 +558,6 @@ Its recommended to build guix builds on **Ubuntu 22.04**, follow these steps to 
     ```bash
     git clone https://github.com/lunexa-project/lunexa && cd lunexa
 2. **GUIX BUILD** 
-    it is recommended to build everything other than OSX builds as the time being OSX isnt been worked on 
     ```bash
     ./contrib/guix/guix-build
 
