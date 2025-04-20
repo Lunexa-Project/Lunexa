@@ -32,11 +32,11 @@
 #define LUNEXA_DEFAULT_LOG_CATEGORY "blockchain.hardforks"
 
 const hardfork_t mainnet_hard_forks[] = {
-  // version 1 from the start of the blockchain 17 October 2024 01:00:00 GMT
-  { 1, 1, 0, 1729126800 },
+  // version 1 from the start of the blockchain 20 April 2025 14:42:28 GMT
+  { 1, 1, 0, 1745131326 },
 
   // version 2 starts from block 2 RandomX intergration time stamp put as this as placeholder until it reaches the day it needs to be changed
-  { 10, 3, 0, 1729126800},
+  { 10, 3, 0, 1745131326},
   
 
 };
