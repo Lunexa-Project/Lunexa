@@ -30,7 +30,7 @@
   - [ ] Monerujo
   - [ ] Edge Wallet
   - [ ] Exodus
-  - [ ] XMRWallet
+  - [ ] LXAWallet
   - [ ] Feather Wallet
 - [ ] Notify exchanges
   - [ ] https://www.getlunexa.org/community/merchants/#exchanges

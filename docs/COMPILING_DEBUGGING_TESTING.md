@@ -73,14 +73,14 @@ If everything looks fine, then after setting some breakpoints of your choice, th
 
 ## To be done (and merged):
 ### Multihost parallel compilation
-https://github.com/monero-project/monero/pull/7160
+https://github.com/lunexa-project/lunexa/pull/7160
 
 ### Faster core_tests with caching
-https://github.com/monero-project/monero/pull/5821
+https://github.com/lunexa-project/lunexa/pull/5821
 
 ### Precompiled headers
-https://github.com/monero-project/monero/pull/7216
+https://github.com/lunexa-project/lunexa/pull/7216
 
 ### Unity builds
-https://github.com/monero-project/monero/pull/7217
+https://github.com/lunexa-project/lunexa/pull/7217
 

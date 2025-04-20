@@ -221,7 +221,7 @@ key identity.
 
 @secparam ([Twitter](https://twitter.com/secparam/status/1153411968147042304)) recommended changing circuits (Tor) as an additional
 precaution. This is likely not a good idea - forcibly requesting Tor to change
-circuits is observable by the ISP. Instead, `monerod` should likely disconnect
+circuits is observable by the ISP. Instead, `lunexad` should likely disconnect
 from peers occasionally. Tor will rotate circuits every ~10 minutes, so
 establishing new connections will use a new public key identity and make it
 more difficult for the hidden service to link information. This process will
