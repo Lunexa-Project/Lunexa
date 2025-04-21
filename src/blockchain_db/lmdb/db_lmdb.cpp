@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification, are
@@ -28,13 +28,17 @@
 #include "db_lmdb.h"
 
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/format.hpp>
 #include <boost/circular_buffer.hpp>
 #include <memory>  // std::unique_ptr
 #include <cstring>  // memcpy
 
+#ifdef WIN32
+#include <winioctl.h>
+#endif
+
 #include "string_tools.h"
-#include "file_io_utils.h"
 #include "common/util.h"
 #include "common/pruning.h"
 #include "cryptonote_basic/cryptonote_format_utils.h"
@@ -883,7 +887,7 @@ void BlockchainLMDB::remove_block()
       throw1(DB_ERROR(lmdb_error("Failed to add removal of block info to db transaction: ", result).c_str()));
 }
 
-uint64_t BlockchainLMDB::add_transaction_data(const crypto::hash& blk_hash, const std::pair<transaction, blobdata_ref>& txp, const crypto::hash& tx_hash, const crypto::hash& tx_prunable_hash)
+uint64_t BlockchainLMDB::add_transaction_data(const crypto::hash& blk_hash, const transaction& tx, const epee::span<const std::uint8_t> blob, const crypto::hash& tx_hash, const crypto::hash& tx_prunable_hash)
 {
   LOG_PRINT_L3("BlockchainLMDB::" << __func__);
   check_open();
@@ -909,7 +913,6 @@ uint64_t BlockchainLMDB::add_transaction_data(const crypto::hash& blk_hash, cons
     throw1(DB_ERROR(lmdb_error(std::string("Error checking if tx index exists for tx hash ") + epee::string_tools::pod_to_hex(tx_hash) + ": ", result).c_str()));
   }
 
-  const cryptonote::transaction &tx = txp.first;
   txindex ti;
   ti.key = tx_hash;
   ti.data.tx_id = tx_id;
@@ -922,8 +925,6 @@ uint64_t BlockchainLMDB::add_transaction_data(const crypto::hash& blk_hash, cons
   result = mdb_cursor_put(m_cur_tx_indices, (MDB_val *)&zerokval, &val_h, 0);
   if (result)
     throw0(DB_ERROR(lmdb_error("Failed to add tx data to db transaction: ", result).c_str()));
-
-  const cryptonote::blobdata_ref &blob = txp.second;
 
   unsigned int unprunable_size = tx.unprunable_size;
   if (unprunable_size == 0)
@@ -1321,6 +1322,54 @@ BlockchainLMDB::BlockchainLMDB(bool batch_transactions): BlockchainDB()
   m_hardfork = nullptr;
 }
 
+#ifdef WIN32
+static bool disable_ntfs_compression(const boost::filesystem::path& filepath)
+{
+  DWORD file_attributes = ::GetFileAttributesW(filepath.c_str());
+  if (file_attributes == INVALID_FILE_ATTRIBUTES)
+  {
+    MERROR("Failed to get " << filepath.string() << " file attributes. Error: " << ::GetLastError());
+    return false;
+  }
+  
+  if (!(file_attributes & FILE_ATTRIBUTE_COMPRESSED))
+    return true; // not compressed
+
+  LOG_PRINT_L1("Disabling NTFS compression for " << filepath.string());
+  HANDLE file_handle = ::CreateFileW(
+    filepath.c_str(),
+    GENERIC_READ | GENERIC_WRITE,
+    FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+    nullptr,
+    OPEN_EXISTING,
+    boost::filesystem::is_directory(filepath) ? FILE_FLAG_BACKUP_SEMANTICS : 0, // Needed to open handles to directories
+    nullptr
+  );
+
+  if (file_handle == INVALID_HANDLE_VALUE) 
+  {
+    MERROR("Failed to open handle: " << filepath.string() << ". Error: " << ::GetLastError());
+    return false;
+  }
+
+  USHORT compression_state = COMPRESSION_FORMAT_NONE;
+  DWORD bytes_returned;
+  BOOL ok = ::DeviceIoControl(
+    file_handle,
+    FSCTL_SET_COMPRESSION,
+    &compression_state,
+    sizeof(compression_state),
+    nullptr,
+    0,
+    &bytes_returned,
+    nullptr
+  );
+
+  ::CloseHandle(file_handle);
+  return ok;
+}
+#endif
+
 void BlockchainLMDB::open(const std::string& filename, const int db_flags)
 {
   int result;
@@ -1346,6 +1395,18 @@ void BlockchainLMDB::open(const std::string& filename, const int db_flags)
     LOG_PRINT_L0("Move " << CRYPTONOTE_BLOCKCHAINDATA_FILENAME << " and/or " << CRYPTONOTE_BLOCKCHAINDATA_LOCK_FILENAME << " to " << filename << ", or delete them, and then restart");
     throw DB_ERROR("Database could not be opened");
   }
+
+#ifdef WIN32
+  // ensure NTFS compression is disabled on the directory and database file to avoid corruption of the blockchain
+  if (!disable_ntfs_compression(filename))
+    LOG_PRINT_L0("Failed to disable NTFS compression on folder: " << filename << ". Error: " << ::GetLastError());
+  boost::filesystem::path datafile(filename);
+  datafile /= CRYPTONOTE_BLOCKCHAINDATA_FILENAME;
+  if (!boost::filesystem::exists(datafile))
+    boost::filesystem::ofstream(datafile).close(); // create the file to see if NTFS compression is enabled beforehand
+  if (!disable_ntfs_compression(datafile))
+    throw DB_ERROR("Database file is NTFS compressed and compression could not be disabled");
+#endif
 
   boost::optional<bool> is_hdd_result = tools::is_hdd(filename.c_str());
   if (is_hdd_result)
@@ -1687,22 +1748,6 @@ std::string BlockchainLMDB::get_db_name() const
 
   return std::string("lmdb");
 }
-
-// TODO: this?
-bool BlockchainLMDB::lock()
-{
-  LOG_PRINT_L3("BlockchainLMDB::" << __func__);
-  check_open();
-  return false;
-}
-
-// TODO: this?
-void BlockchainLMDB::unlock()
-{
-  LOG_PRINT_L3("BlockchainLMDB::" << __func__);
-  check_open();
-}
-
 
 // The below two macros are for DB access within block add/remove, whether
 // regular batch txn is in use or not. m_write_txn is used as a batch txn, even
@@ -4552,12 +4597,11 @@ bool BlockchainLMDB::is_read_only() const
 
 uint64_t BlockchainLMDB::get_database_size() const
 {
-  uint64_t size = 0;
   boost::filesystem::path datafile(m_folder);
   datafile /= CRYPTONOTE_BLOCKCHAINDATA_FILENAME;
-  if (!epee::file_io_utils::get_file_size(datafile.string(), size))
-    size = 0;
-  return size;
+  boost::system::error_code ec{};
+  const boost::uintmax_t size = boost::filesystem::file_size(datafile, ec);
+  return (ec ? 0 : static_cast<uint64_t>(size));
 }
 
 void BlockchainLMDB::fixup()
@@ -5086,7 +5130,8 @@ void BlockchainLMDB::migrate_0_1()
       if (!parse_and_validate_block_from_blob(bd, b))
         throw0(DB_ERROR("Failed to parse block from blob retrieved from the db"));
 
-      add_transaction(null_hash, std::make_pair(b.miner_tx, tx_to_blob(b.miner_tx)));
+      const auto miner_blob = tx_to_blob(b.miner_tx);
+      add_transaction(null_hash, b.miner_tx, epee::strspan<std::uint8_t>(miner_blob));
       for (unsigned int j = 0; j<b.tx_hashes.size(); j++) {
         transaction tx;
         hk.mv_data = &b.tx_hashes[j];
@@ -5096,7 +5141,7 @@ void BlockchainLMDB::migrate_0_1()
         bd = {reinterpret_cast<char*>(v.mv_data), v.mv_size};
         if (!parse_and_validate_tx_from_blob(bd, tx))
           throw0(DB_ERROR("Failed to parse tx from blob retrieved from the db"));
-        add_transaction(null_hash, std::make_pair(std::move(tx), bd), &b.tx_hashes[j]);
+        add_transaction(null_hash, std::move(tx), epee::strspan<std::uint8_t>(bd), &b.tx_hashes[j]);
         result = mdb_cursor_del(c_txs, 0);
         if (result)
           throw0(DB_ERROR(lmdb_error("Failed to get record from txs: ", result).c_str()));

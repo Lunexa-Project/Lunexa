@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -436,11 +436,12 @@ private:
    *
    * @param blk_hash the hash of the block containing the transaction
    * @param tx the transaction to be added
+   * @param blob for `tx`
    * @param tx_hash the hash of the transaction
    * @param tx_prunable_hash the hash of the prunable part of the transaction
    * @return the transaction ID
    */
-  virtual uint64_t add_transaction_data(const crypto::hash& blk_hash, const std::pair<transaction, blobdata_ref>& tx, const crypto::hash& tx_hash, const crypto::hash& tx_prunable_hash) = 0;
+  virtual uint64_t add_transaction_data(const crypto::hash& blk_hash, const transaction& tx, epee::span<const std::uint8_t> blob, const crypto::hash& tx_hash, const crypto::hash& tx_prunable_hash) = 0;
 
   /**
    * @brief remove data about a transaction
@@ -565,10 +566,11 @@ protected:
    *
    * @param blk_hash hash of the block which has the transaction
    * @param tx the transaction to add
+   * @param blob for `tx`
    * @param tx_hash_ptr the hash of the transaction, if already calculated
    * @param tx_prunable_hash_ptr the hash of the prunable part of the transaction, if already calculated
    */
-  void add_transaction(const crypto::hash& blk_hash, const std::pair<transaction, blobdata_ref>& tx, const crypto::hash* tx_hash_ptr = NULL, const crypto::hash* tx_prunable_hash_ptr = NULL);
+  void add_transaction(const crypto::hash& blk_hash, const transaction& tx, epee::span<const std::uint8_t> blob, const crypto::hash* tx_hash_ptr = NULL, const crypto::hash* tx_prunable_hash_ptr = NULL);
 
   mutable uint64_t time_tx_exists = 0;  //!< a performance metric
   uint64_t time_commit1 = 0;  //!< a performance metric
@@ -717,41 +719,6 @@ public:
    * @return the name of the folder with the BlockchainDB's files, if any.
    */
   virtual std::string get_db_name() const = 0;
-
-
-  // FIXME: these are just for functionality mocking, need to implement
-  // RAII-friendly and multi-read one-write friendly locking mechanism
-  //
-  // acquire db lock
-  /**
-   * @brief acquires the BlockchainDB lock
-   *
-   * This function is a stub until such a time as locking is implemented at
-   * this level.
-   *
-   * The subclass implementation should return true unless implementing a
-   * locking scheme of some sort, in which case it should return true upon
-   * acquisition of the lock and block until then.
-   *
-   * If any of this cannot be done, the subclass should throw the corresponding
-   * subclass of DB_EXCEPTION
-   *
-   * @return true, unless at a future time false makes sense (timeout, etc)
-   */
-  virtual bool lock() = 0;
-
-  // release db lock
-  /**
-   * @brief This function releases the BlockchainDB lock
-   *
-   * The subclass, should it have implemented lock(), will release any lock
-   * held by the calling thread.  In the case of recursive locking, it should
-   * release one instance of a lock.
-   *
-   * If any of this cannot be done, the subclass should throw the corresponding
-   * subclass of DB_EXCEPTION
-   */
-  virtual void unlock() = 0;
 
   /**
    * @brief tells the BlockchainDB to start a new "batch" of blocks
