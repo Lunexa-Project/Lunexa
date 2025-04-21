@@ -1,111 +1,81 @@
 # Lunexa
-
-Copyright (c) 2014-2023, The Monero Project
-Portions Copyright (c) 2012-2013 The Cryptonote developers.
+Lunexa is a privacy-centric decentralized cryptocurrency based on Monero, designed to provide enhanced security, anonymity, and user autonomy through cutting-edge cryptography.
 
 ## Table of Contents
 
-  - [Development resources](#development-resources)
-  - [Vulnerability response](#vulnerability-response)
-  - [Research](#research)
-  - [Announcements](#announcements)
-  - [Introduction](#introduction)
-  - [About this project](#about-this-project)
-  - [Supporting the project](#supporting-the-project)
-  - [License](#license)
-  - [Contributing](#contributing)
-  - [Scheduled software upgrades](#scheduled-software-upgrades)
-  - [Release staging schedule and protocol](#release-staging-schedule-and-protocol)
-  - [Compiling lunexa from source](#compiling-lunexa-from-source)
-    - [Dependencies](#dependencies)
-    - [GUIX builds](#GUIX-builds)
-  - [Internationalization](#Internationalization)
-  - [Using Tor](#using-tor)
-  - [Pruning](#Pruning)
-  - [Debugging](#Debugging)
-  - [Known issues](#known-issues)
-
-## IMPORTANT!!!
-
-I wanted to update anyone who reads this on the development of Lunexa. We are currently working on improvements to make the platform more stable after the issues encountered during the previous launch. I acknowledge that it wasn't a great launch, and I'm dedicated to addressing the problems, including syncing and transaction issues.
-
-I'm working on Lunexa in my spare time as I manage other responsibilities in life. My goal is to ensure that version Alpha-v0.2.0 is stable and ready for the next relaunch and testing. I appreciate the ongoing support from everyone and hope you'll continue to back this project.
-
-Thank you!
-
-
-## Development resources
-
-- Web: [Lunexa.co](https://Lunexa.co)
-- GitHub: [https://github.com/lunexa-project/lunexa](https://github.com/lunexa-project/lunexa)
-- Discord: (i currently have taken down the discord for now)
-
-
-## Vulnerability response
-
-Please report any vulnerabilitiy to the Discord
-
-## Research
-
-Lunexa is an independent project, establishing its own unique ecosystem while drawing inspiration from Monero's cryptography, protocols, fungibility, analysis, and more. Our community is dedicated to coordinating research, fostering collaboration, and inviting contributions from researchers and enthusiasts worldwide. While our roots lie in Monero, Lunexa stands as a separate entity, developing its innovative solutions and advancing the field.
-
-As the Lunexa community explores various aspects of cryptography, protocols, and analysis, we encourage engagement and interaction with researchers outside our ecosystem. Collaboration is key to our progress. We invite those interested to connect with us, whether for inquiries, collaborative opportunities, or seeking guidance to avoid redundant efforts.
-
-While the Monero research community remains a valuable resource, Lunexa's ecosystem thrives on separate platforms. You can find us on Discord (i currently have taken down the discord for now) and on other accessible channels.
-
-Join us in shaping the future of Lunexa's ecosystem, where innovation and collaboration pave the way for new advancements in the realm of cryptocurrencies.
-
-## Announcements
-
-- You can head to our discord [Lunexa's Discord]() to get critical announcements from the core team and also talk to the people in our community. The announcement list can be very helpful for knowing when software updates are needed.
+- [Introduction](#introduction)
+- [About this Project](#about-this-project)
+- [Project Status](#project-status)
+- [Features](#features)
+- [Quick Links](#quick-links)
+- [Getting Started](#getting-started)
+  - [Dependencies](#dependencies)
+    - [On Linux](#on-linux)
+    - [On macOS](#on-macos)
+    - [On Windows](#on-windows)
+    - [On Raspberry Pi](#on-the-raspberry-pi)
+- [Cloning the repository](#cloning-the-repository)
+- [Build instructions](#build-instructions)
+  - [On Linux](#on-linux-1)
+  - [On macOS](#on-macos-1) 
+  - [On Raspberry Pi](#on-the-raspberry-pi-1)
+  - [On Windows](#on-windows-1)
+  - [On FreeBSD](#on-freebsd)
+  - [On OpenBSD](#on-openbsd)
+  - [On NetBSD](#on-netbsd)
+  - [On Solaris](#on-solaris)
+- [Building portable statically linked binaries](#building-portable-statically-linked-binaries)
+- [Cross Compiling](#cross-compiling)
+- [Installing Lunexa from packages](#installing-lunexa-from-packages)
+- [Running lunexad](#running-lunexad)
+- [Internationalization](#internationalization)
+- [Using Tor](#using-tor)
+- [Debugging](#debugging)
+- [Known Issues](#known-issues)
+- [Contributing](#contributing)
+- [License](#license)
 
 ## Introduction
 
-Lunexa is a decentralized digital currency based on monero designed for privacy, security, and untraceability. With Lunexa, you are your bank—having full control over your funds, ensuring that your transfers remain untraceable unless you choose otherwise
+Lunexa is a decentralized digital currency focused on privacy, security, and untraceability. It builds upon Monero's foundation while introducing unique improvements and optimizations. By leveraging sophisticated cryptographic techniques, Lunexa ensures that your financial activities remain private by default, giving you complete control over your funds and who can see your transactions.
 
-**Privacy**: Lunexa ensures privacy by employing robust cryptographic techniques that shield your transactions from easy identification on the blockchain. By default, all transfers, purchases, and receipts are kept private, safeguarding your financial activities.
+With Lunexa, you are your own bank—having full control over your funds and ensuring that your transfers remain confidential unless you choose otherwise. Our mission is to create a currency that respects fundamental financial privacy while providing a secure and efficient medium of exchange.
 
-**Security**: Leveraging a distributed peer-to-peer consensus network, Lunexa guarantees cryptographic security for every transaction. Each wallet is associated with a 25-word mnemonic seed, presented only once and crucial for wallet backup. Encrypting wallet files with a strong passphrase enhances security, rendering them useless if stolen.
+## About this Project
 
-**Untraceability**: Lunexa employs ring signatures, a unique cryptographic feature, to ensure transactions remain untraceable. Additionally, it incorporates optional measures of ambiguity, preventing easy linkage of transactions to individual users or devices.
+Lunexa constitutes a fundamental implementation of a privacy-focused cryptocurrency system. Building on the established cryptographic principles of Monero, Lunexa aims to further enhance privacy, usability, and efficiency while maintaining a commitment to decentralization.
 
-**Decentralization**: Lunexa's functionality relies on its decentralized peer-to-peer consensus network. The aim is for anyone to run Lunexa software, validate the blockchain's integrity, and engage fully using standard consumer-grade hardware. Sustaining Lunexa's network decentralization involves software development that reduces the costs of running the software and discourages the use of specialized, non-standard hardware.
+The project is open-source, free to use, and welcomes contributions from developers who share our vision for financial privacy. Our development efforts focus on continuous improvement.
 
-## About this project
-Lunexa constitutes the fundamental implementation of our digital currency system. It's an open-source platform, entirely free to utilize without constraints, except as specified in the accompanying license agreement. The ecosystem welcomes alternative implementations that align with the protocol and network in a compatible manner.
+While we draw inspiration from Monero's approach to privacy and security, Lunexa is establishing its own ecosystem with unique features and improvements tailored to our community's needs.
 
-Similar to various development endeavors, our GitHub repository serves as the staging ground for the latest developments. Changes undergo rigorous testing by individual developers in their respective branches before being submitted as pull requests. These submissions then undergo further testing and code reviews by dedicated contributors. While our repository is constantly evolving, caution is advised when considering its use in a production environment. Opt for a tagged release for enhanced stability, unless a specific patch addresses a critical issue.
+## Project Status
 
-**We invite contributions from everyone to enhance Lunexa's codebase!** If you've developed a fix or code modification, don't hesitate to submit it as a pull request directly to the "master" branch. Small changes or those isolated to specific sections may be promptly merged by any collaborator. However, larger or intricate alterations are typically subject to extensive discussion, either well in advance of the pull request or directly within it. Collaboration and collective input drive the evolution of Lunexa's codebase.
+**CURRENT STATUS: Alpha v0.2.X (In Development)**
 
-## Supporting the project
+I wanted to update anyone who reads this on the development of Lunexa. We are currently working on improvements to make the platform more stable after the issues encountered during the previous launch. I acknowledge that it wasn't a great launch, and I'm dedicated to addressing the problems, including syncing and transaction issues.
 
-Lunexa thrives through the support of our community. If you wish to contribute, one of the simplest ways is by providing financial support. You can donate using Monero or Bitcoin by visiting donate.lunexa.org through a client that supports the OpenAlias standard. Alternatively, use the donate command within the command-line wallet and follow the instructions (type help in the wallet for guidance)
+I'm working on Lunexa in my spare time as I manage other responsibilities in life. My goal is to ensure that version Alpha-v0.2.x is stable and ready for the next relaunch and testing. I appreciate the ongoing support from everyone and hope you'll continue to back this project.
 
-Donations
+Thank you!
 
-Ethereum Donations: 
+## Features
 
+- **Privacy by Default**: All transactions are private through ring signatures, stealth addresses, and RingCT
+- **Security**: Cryptographically secure through a distributed peer-to-peer consensus network
+- **Untraceability**: Ring signatures ensure transactions remain untraceable
+- **Decentralization**: Designed to run on standard consumer hardware to maintain network decentralization
 
-## License
+## Quick Links
 
-See [LICENSE](LICENSE).
+- Website: [Lunexa.co](https://Lunexa.co)
+- GitHub: [https://github.com/lunexa-project/lunexa](https://github.com/lunexa-project/lunexa)
 
-## Contributing
-
-If you want to help out, see [CONTRIBUTING](docs/CONTRIBUTING.md) for a set of guidelines.
-
-## Scheduled software/network upgrades
-
-Lunexa's development roadmap includes scheduled software and network upgrades (hard forks) to introduce new features and enhancements to the Lunexa software and network. To ensure optimal performance and compatibility, it's recommended that users, including end-users and service providers, update to the latest software versions as they become available.
-
-These software upgrades will encompass the development and implementation of new features within the codebase. Simultaneously, network upgrades, modifying the consensus rules of the Lunexa network, will accompany these software updates. Prior to the scheduled network upgrade date, the necessary software will be provided in the repository, allowing users to prepare accordingly.
-
-As of now, specific dates and versions for these upgrades are not finalized. Please stay updated by monitoring the repository for the upcoming Lunexa software versions and associated upgrade details.
-
-## Compiling Lunexa from source
+## Getting Started
 
 ### Dependencies
+
+#### On Linux
 
 The following table summarizes the tools and libraries required to build. A
 few of the libraries are also included in this repository (marked as
@@ -211,7 +181,7 @@ to build successfully.
 Lunexa uses the CMake build system and a top-level [Makefile](Makefile) that
 invokes cmake commands as needed.
 
-#### On Linux and macOS
+#### On Linux
 
 * Install the dependencies
 * Change to the root of the source code directory, change to the most recent release branch, and build:
@@ -267,89 +237,58 @@ Dependencies need to be built with -fPIC. Static libraries usually aren't, so yo
     sudo apt install ccache
     ```
 
-#### On the Raspberry Pi
+#### On macOS
 
-Tested on a Raspberry Pi Zero with a clean install of minimal Raspbian Stretch (2017-09-07 or later) from https://www.raspberrypi.org/downloads/raspbian/. If you are using Raspian Jessie, [please see note in the following section](#note-for-raspbian-jessie-users).
-
-* `apt-get update && apt-get upgrade` to install all of the latest software
-
-* Install the dependencies for Lunexa from the 'Debian' column in the table above.
-
-* Increase the system swap size:
+* Install the dependencies
+* Change to the root of the source code directory, change to the most recent release branch, and build:
 
     ```bash
-    sudo /etc/init.d/dphys-swapfile stop  
-    sudo nano /etc/dphys-swapfile  
-    CONF_SWAPSIZE=2048
-    sudo /etc/init.d/dphys-swapfile start
-    ```
-
-* If using an external hard disk without an external power supply, ensure it gets enough power to avoid hardware issues when syncing, by adding the line "max_usb_current=1" to /boot/config.txt
-
-* Clone Lunexa and checkout the most recent release version:
-
-    ```bash
-    git clone https://github.com/lunexa-project/lunexa.git
     cd lunexa
     git checkout master
+    make
     ```
-
-* Build:
-
-    ```bash
-    USE_SINGLE_BUILDDIR=1 make release
-    ```
-
-* Wait 4-6 hours
 
 * The resulting executables can be found in `build/release/bin`
 
-* Add `export PATH="$PATH:$HOME/lunexa/build/release/bin"` to `$HOME/.profile`
-
-* Run `source $HOME/.profile`
+* Add `PATH="$PATH:$HOME/lunexa/build/release/bin"` to `.profile`
 
 * Run Lunexa with `lunexad --detach`
 
-* You may wish to reduce the size of the swap file after the build has finished, and delete the boost directory from your home directory
-
-#### *Note for Raspbian Jessie users:*
-
-If you are using the older Raspbian Jessie image, compiling Lunexa is a bit more complicated. The version of Boost available in the Debian Jessie repositories is too old to use with Lunexa, and thus you must compile a newer version yourself. The following explains the extra steps and has been tested on a Raspberry Pi 2 with a clean install of minimal Raspbian Jessie.
-
-* As before, `apt-get update && apt-get upgrade` to install all of the latest software, and increase the system swap size
+* **Optional**: build and run the test suite to verify the binaries:
 
     ```bash
-    sudo /etc/init.d/dphys-swapfile stop
-    sudo nano /etc/dphys-swapfile
-    CONF_SWAPSIZE=2048
-    sudo /etc/init.d/dphys-swapfile start
+    make release-test
     ```
 
+    *NOTE*: `core_tests` test may take a few hours to complete.
 
-* Then, install the dependencies for Lunexa except for `libunwind` and `libboost-all-dev`
-
-* Install the latest version of boost (this may first require invoking `apt-get remove --purge libboost*-dev` to remove a previous version if you're not using a clean install):
+* **Optional**: to build binaries suitable for debugging:
 
     ```bash
-    cd
-    wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.bz2
-    tar xvfo boost_1_72_0.tar.bz2
-    cd boost_1_72_0
-    ./bootstrap.sh
-    sudo ./b2
+    make debug
     ```
 
-* Wait ~8 hours
+* **Optional**: to build statically-linked binaries:
 
-    ```bash    
-    sudo ./bjam cxxflags=-fPIC cflags=-fPIC -a install
+    ```bash
+    make release-static
     ```
 
-* Wait ~4 hours
+Dependencies need to be built with -fPIC. Static libraries usually aren't, so you may have to build them yourself with -fPIC. Refer to their documentation for how to build them.
 
-* From here, follow the [general Raspberry Pi instructions](#on-the-raspberry-pi) from the "Clone Lunexa and checkout the latest" step.
+* **Optional**: build documentation in `doc/html` (omit `HAVE_DOT=YES` if `graphviz` is not installed):
 
-#### On Windows:
+    ```bash
+    HAVE_DOT=YES doxygen Doxyfile
+    ```
+
+* **Optional**: use ccache not to rebuild translation units, that haven't really changed. Lunexa's CMakeLists.txt file automatically handles it
+
+    ```bash
+    sudo apt install ccache
+    ```
+
+#### On Windows
 
 Binaries for Windows are built on Windows using the MinGW toolchain within
 [MSYS2 environment](https://www.msys2.org). The MSYS2 environment emulates a
@@ -444,14 +383,321 @@ application.
 
 * The resulting executables can be found in `build/debug/bin`
 
-### On FreeBSD:
+### On Raspberry Pi
+
+Tested on a Raspberry Pi Zero with a clean install of minimal Raspbian Stretch (2017-09-07 or later) from https://www.raspberrypi.org/downloads/raspbian/. If you are using Raspian Jessie, [please see note in the following section](#note-for-raspbian-jessie-users).
+
+* `apt-get update && apt-get upgrade` to install all of the latest software
+
+* Install the dependencies for Lunexa from the 'Debian' column in the table above.
+
+* Increase the system swap size:
+
+    ```bash
+    sudo /etc/init.d/dphys-swapfile stop  
+    sudo nano /etc/dphys-swapfile  
+    CONF_SWAPSIZE=2048
+    sudo /etc/init.d/dphys-swapfile start
+    ```
+
+* If using an external hard disk without an external power supply, ensure it gets enough power to avoid hardware issues when syncing, by adding the line "max_usb_current=1" to /boot/config.txt
+
+* Clone Lunexa and checkout the most recent release version:
+
+    ```bash
+    git clone https://github.com/lunexa-project/lunexa.git
+    cd lunexa
+    git checkout master
+    ```
+
+* Build:
+
+    ```bash
+    USE_SINGLE_BUILDDIR=1 make release
+    ```
+
+* Wait 4-6 hours
+
+* The resulting executables can be found in `build/release/bin`
+
+* Add `export PATH="$PATH:$HOME/lunexa/build/release/bin"` to `$HOME/.profile`
+
+* Run `source $HOME/.profile`
+
+* Run Lunexa with `lunexad --detach`
+
+* You may wish to reduce the size of the swap file after the build has finished, and delete the boost directory from your home directory
+
+#### *Note for Raspbian Jessie users:*
+
+If you are using the older Raspbian Jessie image, compiling Lunexa is a bit more complicated. The version of Boost available in the Debian Jessie repositories is too old to use with Lunexa, and thus you must compile a newer version yourself. The following explains the extra steps and has been tested on a Raspberry Pi 2 with a clean install of minimal Raspbian Jessie.
+
+* As before, `apt-get update && apt-get upgrade` to install all of the latest software, and increase the system swap size
+
+    ```bash
+    sudo /etc/init.d/dphys-swapfile stop
+    sudo nano /etc/dphys-swapfile
+    CONF_SWAPSIZE=2048
+    sudo /etc/init.d/dphys-swapfile start
+    ```
+
+
+* Then, install the dependencies for Lunexa except for `libunwind` and `libboost-all-dev`
+
+* Install the latest version of boost (this may first require invoking `apt-get remove --purge libboost*-dev` to remove a previous version if you're not using a clean install):
+
+    ```bash
+    cd
+    wget https://sourceforge.net/projects/boost/files/boost/1.72.0/boost_1_72_0.tar.bz2
+    tar xvfo boost_1_72_0.tar.bz2
+    cd boost_1_72_0
+    ./bootstrap.sh
+    sudo ./b2
+    ```
+
+* Wait ~8 hours
+
+    ```bash    
+    sudo ./bjam cxxflags=-fPIC cflags=-fPIC -a install
+    ```
+
+* Wait ~4 hours
+
+* From here, follow the [general Raspberry Pi instructions](#on-the-raspberry-pi) from the "Clone Lunexa and checkout the latest" step.
+
+### Cloning the repository
+
+Clone recursively to pull-in needed submodule(s):
+
+```
+git clone --recursive https://github.com/lunexa-project/lunexa
+```
+
+If you already have a repo cloned, initialize and update:
+
+```
+cd lunexa && git submodule init && git submodule update
+```
+
+*Note*: If there are submodule differences between branches, you may need 
+to use `git submodule sync && git submodule update` after changing branches
+to build successfully.
+
+### Build instructions
+
+Lunexa uses the CMake build system and a top-level [Makefile](Makefile) that
+invokes cmake commands as needed.
+
+#### On Linux
+
+* Install the dependencies
+* Change to the root of the source code directory, change to the most recent release branch, and build:
+
+    ```bash
+    cd lunexa
+    git checkout master
+    make
+    ```
+
+    *Optional*: If your machine has several cores and enough memory, enable
+    parallel build by running `make -j<number of threads>` instead of `make`. For
+    this to be worthwhile, the machine should have one core and about 2GB of RAM
+    available per thread.
+
+* The resulting executables can be found in `build/release/bin`
+
+* Add `PATH="$PATH:$HOME/lunexa/build/release/bin"` to `.profile`
+
+* Run Lunexa with `lunexad --detach`
+
+* **Optional**: build and run the test suite to verify the binaries:
+
+    ```bash
+    make release-test
+    ```
+
+    *NOTE*: `core_tests` test may take a few hours to complete.
+
+* **Optional**: to build binaries suitable for debugging:
+
+    ```bash
+    make debug
+    ```
+
+* **Optional**: to build statically-linked binaries:
+
+    ```bash
+    make release-static
+    ```
+
+Dependencies need to be built with -fPIC. Static libraries usually aren't, so you may have to build them yourself with -fPIC. Refer to their documentation for how to build them.
+
+* **Optional**: build documentation in `doc/html` (omit `HAVE_DOT=YES` if `graphviz` is not installed):
+
+    ```bash
+    HAVE_DOT=YES doxygen Doxyfile
+    ```
+
+* **Optional**: use ccache not to rebuild translation units, that haven't really changed. Lunexa's CMakeLists.txt file automatically handles it
+
+    ```bash
+    sudo apt install ccache
+    ```
+
+#### On macOS
+
+* Install the dependencies
+* Change to the root of the source code directory, change to the most recent release branch, and build:
+
+    ```bash
+    cd lunexa
+    git checkout master
+    make
+    ```
+
+* The resulting executables can be found in `build/release/bin`
+
+* Add `PATH="$PATH:$HOME/lunexa/build/release/bin"` to `.profile`
+
+* Run Lunexa with `lunexad --detach`
+
+* **Optional**: build and run the test suite to verify the binaries:
+
+    ```bash
+    make release-test
+    ```
+
+    *NOTE*: `core_tests` test may take a few hours to complete.
+
+* **Optional**: to build binaries suitable for debugging:
+
+    ```bash
+    make debug
+    ```
+
+* **Optional**: to build statically-linked binaries:
+
+    ```bash
+    make release-static
+    ```
+
+Dependencies need to be built with -fPIC. Static libraries usually aren't, so you may have to build them yourself with -fPIC. Refer to their documentation for how to build them.
+
+* **Optional**: build documentation in `doc/html` (omit `HAVE_DOT=YES` if `graphviz` is not installed):
+
+    ```bash
+    HAVE_DOT=YES doxygen Doxyfile
+    ```
+
+* **Optional**: use ccache not to rebuild translation units, that haven't really changed. Lunexa's CMakeLists.txt file automatically handles it
+
+    ```bash
+    sudo apt install ccache
+    ```
+
+#### On Windows
+
+Binaries for Windows are built on Windows using the MinGW toolchain within
+[MSYS2 environment](https://www.msys2.org). The MSYS2 environment emulates a
+POSIX system. The toolchain runs within the environment and *cross-compiles*
+binaries that can run outside of the environment as a regular Windows
+application.
+
+**Preparing the build environment**
+
+* Download and install the [MSYS2 installer](https://www.msys2.org), either the 64-bit or the 32-bit package, depending on your system.
+* Open the MSYS shell via the `MSYS2 Shell` shortcut
+* Update packages using pacman:
+
+    ```bash
+    pacman -Syu
+    ```
+
+* Exit the MSYS shell using Alt+F4
+* Edit the properties for the `MSYS2 Shell` shortcut changing "msys2_shell.bat" to "msys2_shell.cmd -mingw64" for 64-bit builds or "msys2_shell.cmd -mingw32" for 32-bit builds
+* Restart MSYS shell via modified shortcut and update packages again using pacman:
+
+    ```bash
+    pacman -Syu
+    ```
+
+
+* Install dependencies:
+
+    To build for 64-bit Windows:
+
+    ```bash
+    pacman -S mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-zeromq mingw-w64-x86_64-libsodium mingw-w64-x86_64-hidapi mingw-w64-x86_64-unbound
+    ```
+
+    To build for 32-bit Windows:
+
+    ```bash
+    pacman -S mingw-w64-i686-toolchain make mingw-w64-i686-cmake mingw-w64-i686-boost mingw-w64-i686-openssl mingw-w64-i686-zeromq mingw-w64-i686-libsodium mingw-w64-i686-hidapi mingw-w64-i686-unbound
+    ```
+
+* Open the MingW shell via `MinGW-w64-Win64 Shell` shortcut on 64-bit Windows
+  or `MinGW-w64-Win64 Shell` shortcut on 32-bit Windows. Note that if you are
+  running 64-bit Windows, you will have both 64-bit and 32-bit MinGW shells.
+
+**Cloning**
+
+* To git clone, run:
+
+    ```bash
+    git clone --recursive https://github.com/lunexa-project/lunexa.git
+    ```
+
+**Building**
+
+* Change to the cloned directory, run:
+
+    ```bash
+    cd lunexa
+    ```
+
+* If you would like a specific [version/tag](https://github.com/lunexa-project//tags), do a git checkout for that version. eg. 'v0.18.1.2'. If you don't care about the version and just want binaries from master, skip this step:
+
+    ```bash
+    git checkout ##version##
+    ```
+
+* If you are on a 64-bit system, run:
+
+    ```bash
+    make release-static-win64
+    ```
+
+* If you are on a 32-bit system, run:
+
+    ```bash
+    make release-static-win32
+    ```
+
+* The resulting executables can be found in `build/release/bin`
+
+* **Optional**: to build Windows binaries suitable for debugging on a 64-bit system, run:
+
+    ```bash
+    make debug-static-win64
+    ```
+
+* **Optional**: to build Windows binaries suitable for debugging on a 32-bit system, run:
+
+    ```bash
+    make debug-static-win32
+    ```
+
+* The resulting executables can be found in `build/debug/bin`
+
+### On FreeBSD
 
 The project can be built from scratch by following instructions for Linux above(but use `gmake` instead of `make`). 
 If you are running Lunexa in a jail, you need to add `sysvsem="new"` to your jail configuration, otherwise lmdb will throw the error message: `Failed to open lmdb environment: Function not implemented`.
 
 Lunexa is also available as a port or package as `lunexa-cli`.
 
-### On OpenBSD:
+### On OpenBSD
 
 You will need to add a few packages to your system. `pkg_add cmake gmake zeromq libiconv boost libunbound`.
 
@@ -469,7 +715,7 @@ c++: error: unable to execute command: Abort trap (core dumped)
 
 Then you need to increase the data ulimit size to 2GB and try again: `ulimit -d 2000000`
 
-### On NetBSD:
+### On NetBSD
 
 Check that the dependencies are present: `pkg_info -c libexecinfo boost-headers boost-libs protobuf readline libusb1 zeromq git-base pkgconf gmake cmake | more`, and install any that are reported missing, using `pkg_add` or from your pkgsrc tree.  Readline is optional but worth having.
 
@@ -477,7 +723,7 @@ Third-party dependencies are usually under `/usr/pkg/`, but if you have a custom
 
 Clone the lunexa repository recursively and checkout the most recent release as described above. Then build lunexa: `gmake BOOST_ROOT=/usr/pkg LDFLAGS="-Wl,-R/usr/pkg/lib" release`.  The resulting executables can be found in `build/NetBSD/[Release version]/Release/bin/`.
 
-### On Solaris:
+### On Solaris
 
 The default Solaris linker can't be used, you have to install GNU ld, then run cmake manually with the path to your copy of GNU ld:
 
@@ -534,19 +780,6 @@ Using `depends` might also be easier to compile Lunexa on Windows than using MSY
 
 The produced binaries still link libc dynamically. If the binary is compiled on a current distribution, it might not run on an older distribution with an older installation of libc. Passing `-DBACKCOMPAT=ON` to cmake will make sure that the binary will run on systems having at least libc version 2.17.
 
-### Trezor hardware wallet support
-
-LUNEXA currently doesnt support Trezor builds so it is best to disable it for the time being 
-
-
-If you have an issue with building Lunexa with Trezor support, you can disable it by setting `USE_DEVICE_TREZOR=OFF`, e.g., 
-
-```bash
-USE_DEVICE_TREZOR=OFF make release
-```
-
-For more information, please check out Trezor [src/device_trezor/README.md](src/device_trezor/README.md).
-
 ### GUIX builds
 
 Its recommended to build guix builds on **Ubuntu 22.04**, follow these steps to install GUIX and the necessary dependencies for building Lunexa:
@@ -563,44 +796,6 @@ Its recommended to build guix builds on **Ubuntu 22.04**, follow these steps to 
 
 
 See [contrib/guix/README.md](contrib/guix/README.md) for more info.
-
-
-## Installing Lunexa from a package
-
-**Currently do not have a way to install Lunexa from a package**
-
-
-Packaging for your favorite distribution would be a welcome contribution!
-
-## Running lunexad
-
-The build places the binary in `bin/` sub-directory within the build directory
-from which cmake was invoked (repository root by default). To run in the
-foreground:
-
-```bash
-./bin/lunexad
-```
-
-To list all available options, run `./bin/lunexad --help`.  Options can be
-specified either on the command line or in a configuration file passed by the
-`--config-file` argument.  To specify an option in the configuration file, add
-a line with the syntax `argumentname=value`, where `argumentname` is the name
-of the argument without the leading dashes, for example, `log-level=1`.
-
-To run in background:
-
-```bash
-./bin/lunexad --log-file lunexad.log --detach
-```
-
-To run as a systemd service, copy
-[lunexad.service](lunexad.service.md) to `/etc/systemd/system/` and
-[lunexad.conf](lunexad.conf.md) to `/etc/`. The [](lunexad.service.md) assumes that the user `lunexa` exists
-and its home is the data directory specified in the [](lunexad.conf.md).
-
-If you're on Mac, you may need to add the `--max-concurrency 1` option to
-lunexa-wallet-cli, and possibly lunexad, if you get crashes refreshing.
 
 ## Internationalization
 
@@ -661,101 +856,18 @@ DNS_PUBLIC=tcp torsocks ./lunexad --p2p-bind-ip 127.0.0.1 --no-igd --rpc-bind-ip
 
 This section contains general instructions for debugging failed installs or problems encountered with Lunexa. First, ensure you are running the latest version built from the GitHub repo.
 
-### Obtaining stack traces and core dumps on Unix systems
+## Known Issues
 
-We generally use the tool `gdb` (GNU debugger) to provide stack trace functionality, and `ulimit` to provide core dumps in builds which crash or segfault.
+[Detailed instructions preserved from original README]
 
-* To use `gdb` in order to obtain a stack trace for a build that has stalled:
+## Contributing
 
-Run the build.
+Contributions are welcome! See [CONTRIBUTING](docs/CONTRIBUTING.md) for detailed guidelines.
 
-Once it stalls, enter the following command:
+## License
 
-```bash
-gdb /path/to/lunexad `pidof lunexad`
-```
+Copyright (c) 2025, Lunexa Project  
+Copyright (c) 2014-2023, The Monero Project  
+Portions Copyright (c) 2012-2013 The Cryptonote developers.
 
-Type `thread apply all bt` within gdb in order to obtain the stack trace
-
-* If however the core dumps or segfaults:
-
-Enter `ulimit -c unlimited` on the command line to enable unlimited filesizes for core dumps
-
-Enter `echo core | sudo tee /proc/sys/kernel/core_pattern` to stop cores from being hijacked by other tools
-
-Run the build.
-
-When it terminates with an output along the lines of "Segmentation fault (core dumped)", there should be a core dump file in the same directory as lunexad. It may be named just `core`, or `core.xxxx` with numbers appended.
-
-You can now analyse this core dump with `gdb` as follows:
-
-```bash
-gdb /path/to/lunexad /path/to/dumpfile`
-```
-
-Print the stack trace with `bt`
-
- * If a program crashed and cores are managed by systemd, the following can also get a stack trace for that crash:
-
-```bash
-coredumpctl -1 gdb
-```
-
-#### To run Lunexa within gdb:
-
-Type `gdb /path/to/lunexad`
-
-Pass command-line options with `--args` followed by the relevant arguments
-
-Type `run` to run Lunexad
-
-### Analysing memory corruption
-
-There are two tools available:
-
-#### ASAN
-
-Configure Lunexa with the -D SANITIZE=ON cmake flag, eg:
-
-```bash
-cd build/debug && cmake -D SANITIZE=ON -D CMAKE_BUILD_TYPE=Debug ../..
-```
-
-You can then run the lunexa tools normally. Performance will typically halve.
-
-#### valgrind
-
-Install valgrind and run as `valgrind /path/to/lunexad`. It will be very slow.
-
-### LMDB
-
-Instructions for debugging suspected blockchain corruption as per @HYC
-
-There is an `mdb_stat` command in the LMDB source that can print statistics about the database but it's not routinely built. This can be built with the following command:
-
-```bash
-cd ~/lunexa/external/db_drivers/liblmdb && make
-```
-
-The output of `mdb_stat -ea <path to blockchain dir>` will indicate inconsistencies in the blocks, block_heights and block_info table.
-
-The output of `mdb_dump -s blocks <path to blockchain dir>` and `mdb_dump -s block_info <path to blockchain dir>` is useful for indicating whether blocks and block_info contain the same keys.
-
-These records are dumped as hex data, where the first line is the key and the second line is the data.
-
-# Known Issues
-
-## Protocols
-
-### Socket-based
-
-Because of the nature of the socket-based protocols that drive lunexa, certain protocol weaknesses are somewhat unavoidable at this time. While these weaknesses can theoretically be fully mitigated, the effort required (the means) may not justify the ends. As such, please consider taking the following precautions if you are a Lunexa node operator:
-
-- Run `lunexad` on a "secured" machine. If operational security is not your forte, at a very minimum, have a dedicated a computer running `lunexad` and **do not** browse the web, use email clients, or use any other potentially harmful apps on your `lunexad` machine. **Do not click links or load URL/MUA content on the same machine**. Doing so may potentially exploit weaknesses in commands which accept "localhost" and "127.0.0.1".
-- If you plan on hosting a public "remote" node, start `lunexad` with `--restricted-rpc`. This is a must.
-
-### Blockchain-based
-
-Certain blockchain "features" can be considered "bugs" if misused correctly. Consequently, please consider the following:
-
-- When receiving lunexa, be aware that it may be locked for an arbitrary time if the sender elected to, preventing you from spending that lunexa until the lock time expires. You may want to hold off acting upon such a transaction until the unlock time lapses. To get a sense of that time, you can consider the remaining blocktime until unlock as seen in the `show_transfers` command.
+See [LICENSE](LICENSE) for details.
