@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -696,6 +696,16 @@ bool t_command_parser_executor::ban(const std::vector<std::string>& args)
       std::ifstream ifs(ban_list_path.string());
       for (std::string line; std::getline(ifs, line); )
       {
+        // ignore comments after '#' character
+        const size_t pound_idx = line.find('#');
+        if (pound_idx != std::string::npos)
+          line.resize(pound_idx);
+
+        // trim whitespace and ignore empty lines
+        boost::trim(line);
+        if (line.empty())
+          continue;
+
         auto subnet = net::get_ipv4_subnet_address(line);
         if (subnet)
         {
@@ -1053,7 +1063,7 @@ bool t_command_parser_executor::set_bootstrap_daemon(const std::vector<std::stri
 
 bool t_command_parser_executor::flush_cache(const std::vector<std::string>& args)
 {
-  bool bad_txs = false, bad_blocks = false;
+  bool bad_blocks = false;
   std::string arg;
 
   if (args.empty())
@@ -1062,18 +1072,16 @@ bool t_command_parser_executor::flush_cache(const std::vector<std::string>& args
   for (size_t i = 0; i < args.size(); ++i)
   {
     arg = args[i];
-    if (arg == "bad-txs")
-      bad_txs = true;
-    else if (arg == "bad-blocks")
+    if (arg == "bad-blocks")
       bad_blocks = true;
     else
       goto show_list;
   }
-  return m_executor.flush_cache(bad_txs, bad_blocks);
+  return m_executor.flush_cache(bad_blocks);
 
 show_list:
   std::cout << "Invalid cache type: " << arg << std::endl;
-  std::cout << "Cache types: bad-txs bad-blocks" << std::endl;
+  std::cout << "Cache types: bad-blocks" << std::endl;
   return true;
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -39,6 +39,9 @@
 #include <queue>
 #include <boost/serialization/version.hpp>
 #include <boost/utility.hpp>
+#include <boost/bimap.hpp>
+#include <boost/bimap/set_of.hpp>
+#include <boost/bimap/multiset_of.hpp>
 
 #include "span.h"
 #include "string_tools.h"
@@ -62,24 +65,33 @@ namespace cryptonote
   //! pair of <transaction fee, transaction hash> for organization
   typedef std::pair<std::pair<double, std::time_t>, crypto::hash> tx_by_fee_and_receive_time_entry;
 
-  class txCompare
+  class txFeeCompare
   {
   public:
-    bool operator()(const tx_by_fee_and_receive_time_entry& a, const tx_by_fee_and_receive_time_entry& b) const
+    bool operator()(const std::pair<double, std::time_t>& a, const std::pair<double, std::time_t>& b) const
     {
       // sort by greatest first, not least
-      if (a.first.first > b.first.first) return true;
-      if (a.first.first < b.first.first) return false;
+      if (a.first > b.first) return true;
+      if (a.first < b.first) return false;
 
-      if (a.first.second < b.first.second) return true;
-      if (a.first.second > b.first.second) return false;
+      if (a.second < b.second) return true;
+      return false;
+    }
+  }; 
 
-      return memcmp(a.second.data, b.second.data, sizeof(crypto::hash)) < 0;
+  class hashCompare
+  {
+  public:
+    bool operator()(const crypto::hash& a, const crypto::hash& b) const
+    {
+      return memcmp(a.data, b.data, sizeof(crypto::hash)) < 0;
     }
   };
 
   //! container for sorting transactions by fee per unit size
-  typedef std::set<tx_by_fee_and_receive_time_entry, txCompare> sorted_tx_container;
+  typedef boost::bimap<boost::bimaps::multiset_of<std::pair<double, std::time_t>, txFeeCompare>,
+                       boost::bimaps::set_of<crypto::hash, hashCompare>> sorted_tx_container;
+  
 
   /**
    * @brief Transaction pool, handles transactions which are not part of a block
@@ -105,7 +117,9 @@ namespace cryptonote
      * @tx_relay how the transaction was received
      * @param tx_weight the transaction's weight
      */
-    bool add_tx(transaction &tx, const crypto::hash &id, const cryptonote::blobdata &blob, size_t tx_weight, tx_verification_context& tvc, relay_method tx_relay, bool relayed, uint8_t version);
+    bool add_tx(transaction &tx, const crypto::hash &id, const cryptonote::blobdata &blob,
+      size_t tx_weight, tx_verification_context& tvc, relay_method tx_relay, bool relayed,
+      uint8_t version, uint8_t nic_verified_hf_version = 0);
 
     /**
      * @brief add a transaction to the transaction pool
@@ -120,10 +134,18 @@ namespace cryptonote
      * @tx_relay how the transaction was received
      * @param relayed was this transaction from the network or a local client?
      * @param version the version used to create the transaction
+     * @param nic_verified_hf_version hard fork which "tx" is known to pass non-input consensus test
+     *
+     * If "nic_verified_hf_version" parameter is equal to "version" parameter, then we skip the
+     * asserting `ver_non_input_consensus(tx)`, which greatly speeds up block popping and returning
+     * txs to mempool for txs which we know will pass the test. If nothing is known about how "tx"
+     * passes the non-input consensus tests (e.g. for newly received relayed txs), then leave
+     * "nic_verified_hf_version" as its default value of 0 (there is no v0 fork).
      *
      * @return true if the transaction passes validations, otherwise false
      */
-    bool add_tx(transaction &tx, tx_verification_context& tvc, relay_method tx_relay, bool relayed, uint8_t version);
+    bool add_tx(transaction &tx, tx_verification_context& tvc, relay_method tx_relay, bool relayed,
+      uint8_t version, uint8_t nic_verified_hf_version = 0);
 
     /**
      * @brief takes a transaction with the given hash from the pool
@@ -137,10 +159,11 @@ namespace cryptonote
      * @param do_not_relay return-by-reference is transaction not to be relayed to the network?
      * @param double_spend_seen return-by-reference was a double spend seen for that transaction?
      * @param pruned return-by-reference is the tx pruned
+     * @param suppress_missing_msgs suppress warning msgs when txid is missing (optional, defaults to `false`)
      *
      * @return true unless the transaction cannot be found in the pool
      */
-    bool take_tx(const crypto::hash &id, transaction &tx, cryptonote::blobdata &txblob, size_t& tx_weight, uint64_t& fee, bool &relayed, bool &do_not_relay, bool &double_spend_seen, bool &pruned);
+    bool take_tx(const crypto::hash &id, transaction &tx, cryptonote::blobdata &txblob, size_t& tx_weight, uint64_t& fee, bool &relayed, bool &do_not_relay, bool &double_spend_seen, bool &pruned, bool suppress_missing_msgs = false);
 
     /**
      * @brief checks if the pool has a transaction with the given hash
@@ -653,7 +676,7 @@ private:
      *
      * @return an iterator, possibly to the end of the container if not found
      */
-    sorted_tx_container::iterator find_tx_in_sorted_container(const crypto::hash& id) const;
+    sorted_tx_container::iterator find_tx_in_sorted_container(const crypto::hash& id);
 
     //! cache/call Blockchain::check_tx_inputs results
     bool check_tx_inputs(const std::function<cryptonote::transaction&(void)> &get_tx, const crypto::hash &txid, uint64_t &max_used_block_height, crypto::hash &max_used_block_id, tx_verification_context &tvc, bool kept_by_block = false) const;
@@ -712,6 +735,3 @@ namespace boost
 }
 BOOST_CLASS_VERSION(cryptonote::tx_memory_pool, CURRENT_MEMPOOL_ARCHIVE_VER)
 BOOST_CLASS_VERSION(cryptonote::tx_memory_pool::tx_details, CURRENT_MEMPOOL_TX_DETAILS_ARCHIVE_VER)
-
-
-

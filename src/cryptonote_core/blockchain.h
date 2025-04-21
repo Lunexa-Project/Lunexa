@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -29,7 +29,8 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
 #pragma once
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/executor_work_guard.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/function/function_fwd.hpp>
 #if BOOST_VERSION >= 107400
 #include <boost/serialization/library_version_type.hpp>
@@ -91,6 +92,7 @@ namespace cryptonote
    */
   typedef std::function<const epee::span<const unsigned char>(cryptonote::network_type network)> GetCheckpointsCallback;
 
+  typedef boost::function<void(std::vector<txpool_event>)> TxpoolNotifyCallback;
   typedef boost::function<void(uint64_t /* height */, epee::span<const block> /* blocks */)> BlockNotifyCallback;
   typedef boost::function<void(uint8_t /* major_version */, uint64_t /* height */, const crypto::hash& /* prev_id */, const crypto::hash& /* seed_hash */, difficulty_type /* diff */, uint64_t /* median_weight */, uint64_t /* already_generated_coins */, const std::vector<tx_block_template_backlog_entry>& /* tx_backlog */)> MinerNotifyCallback;
 
@@ -248,6 +250,16 @@ namespace cryptonote
     bool prepare_handle_incoming_blocks(const std::vector<block_complete_entry>  &blocks_entry, std::vector<block> &blocks);
 
     /**
+     * @brief prepare the blockchain for handling an incoming block, without performing preprocessing
+     *
+     * @param block_byte_estimate an estimate of the byte size of the block & its transactions
+     *
+     * This function should *always* be followed up by a call to cleanup_handle_incoming_blocks()
+     * later in the same thread.
+     */
+    void prepare_handle_incoming_block_no_preprocess(const size_t block_byte_estimate);
+
+    /**
      * @brief incoming blocks post-processing, cleanup, and disk sync
      *
      * @param force_sync if true, and Blockchain is handling syncing to disk, always sync
@@ -344,10 +356,14 @@ namespace cryptonote
      *
      * @param bl_ the block to be added
      * @param bvc metadata about the block addition's success/failure
+     * @param extra_block_txs txs belonging to this block that may not be in the mempool
      *
      * @return true on successful addition to the blockchain, else false
      */
     bool add_new_block(const block& bl_, block_verification_context& bvc);
+
+    bool add_new_block(const block& bl_, block_verification_context& bvc,
+      pool_supplement& extra_block_txs);
 
     /**
      * @brief clears the blockchain and starts a new one
@@ -371,8 +387,8 @@ namespace cryptonote
      *
      * @return true if block template filled in successfully, else false
      */
-    bool create_block_template(block& b, const account_public_address& miner_address, difficulty_type& di, uint64_t& height, uint64_t& expected_reward, const blobdata& ex_nonce, uint64_t &seed_height, crypto::hash &seed_hash);
-    bool create_block_template(block& b, const crypto::hash *from_block, const account_public_address& miner_address, difficulty_type& di, uint64_t& height, uint64_t& expected_reward, const blobdata& ex_nonce, uint64_t &seed_height, crypto::hash &seed_hash);
+    bool create_block_template(block& b, const account_public_address& miner_address, difficulty_type& di, uint64_t& height, uint64_t& expected_reward, uint64_t& cumulative_weight, const blobdata& ex_nonce, uint64_t &seed_height, crypto::hash &seed_hash);
+    bool create_block_template(block& b, const crypto::hash *from_block, const account_public_address& miner_address, difficulty_type& di, uint64_t& height, uint64_t& expected_reward, uint64_t& cumulative_weight, const blobdata& ex_nonce, uint64_t &seed_height, crypto::hash &seed_hash);
 
     /**
      * @brief gets data required to create a block template and start mining on it
@@ -485,6 +501,7 @@ namespace cryptonote
      * @param qblock_ids the foreign chain's "short history" (see get_short_chain_history)
      * @param blocks return-by-reference the blocks and their transactions
      * @param total_height return-by-reference our current blockchain height
+     * @param top_hash return-by-reference top block hash
      * @param start_height return-by-reference the height of the first block returned
      * @param pruned whether to return full or pruned tx blobs
      * @param max_block_count the max number of blocks to get
@@ -492,7 +509,7 @@ namespace cryptonote
      *
      * @return true if a block found in common or req_start_block specified, else false
      */
-    bool find_blockchain_supplement(const uint64_t req_start_block, const std::list<crypto::hash>& qblock_ids, std::vector<std::pair<std::pair<cryptonote::blobdata, crypto::hash>, std::vector<std::pair<crypto::hash, cryptonote::blobdata> > > >& blocks, uint64_t& total_height, uint64_t& start_height, bool pruned, bool get_miner_tx_hash, size_t max_block_count, size_t max_tx_count) const;
+    bool find_blockchain_supplement(const uint64_t req_start_block, const std::list<crypto::hash>& qblock_ids, std::vector<std::pair<std::pair<cryptonote::blobdata, crypto::hash>, std::vector<std::pair<crypto::hash, cryptonote::blobdata> > > >& blocks, uint64_t& total_height, crypto::hash& top_hash, uint64_t& start_height, bool pruned, bool get_miner_tx_hash, size_t max_block_count, size_t max_tx_count) const;
 
     /**
      * @brief retrieves a set of blocks and their transactions, and possibly other transactions
@@ -694,10 +711,13 @@ namespace cryptonote
      *
      * @param tx the transaction to check the outputs of
      * @param tvc returned info about tx verification
+     * @param hf_version hard fork version
      *
      * @return false if any outputs do not conform, otherwise true
      */
-    bool check_tx_outputs(const transaction& tx, tx_verification_context &tvc) const;
+    static bool check_tx_outputs(const transaction& tx,
+      tx_verification_context &tvc,
+      std::uint8_t hf_version);
 
     /**
      * @brief gets the block weight limit based on recent blocks
@@ -812,6 +832,13 @@ namespace cryptonote
         blockchain_db_sync_mode sync_mode, bool fast_sync);
 
     /**
+     * @brief sets a txpool notify object to call for every new tx used to add a new block
+     *
+     * @param notify the notify object to call at every new tx used to add a new block
+     */
+    void set_txpool_notify(TxpoolNotifyCallback&& notify);
+
+    /**
      * @brief sets a block notify object to call for every new block
      *
      * @param notify the notify object to call at every new block
@@ -831,6 +858,11 @@ namespace cryptonote
      * @param notify the notify object to call at every reorg
      */
     void set_reorg_notify(const std::shared_ptr<tools::Notify> &notify) { m_reorg_notify = notify; }
+
+    /**
+     * @brief Notify this Blockchain's txpool notifier about a txpool event
+     */
+    void notify_txpool_event(std::vector<txpool_event>&& event);
 
     /**
      * @brief Put DB in safe sync mode
@@ -1066,13 +1098,6 @@ namespace cryptonote
     void cancel();
 
     /**
-     * @brief called when we see a tx originating from a block
-     *
-     * Used for handling txes from historical blocks in a fast way
-     */
-    void on_new_tx_from_block(const cryptonote::transaction &tx);
-
-    /**
      * @brief returns the timestamps of the last N blocks
      */
     std::vector<time_t> get_last_block_timestamps(unsigned int blocks) const;
@@ -1148,7 +1173,6 @@ namespace cryptonote
     // Keccak hashes for each block and for fast pow checking
     std::vector<std::pair<crypto::hash, crypto::hash>> m_blocks_hash_of_hashes;
     std::vector<std::pair<crypto::hash, uint64_t>> m_blocks_hash_check;
-    std::vector<crypto::hash> m_blocks_txs_check;
 
     blockchain_db_sync_mode m_db_sync_mode;
     bool m_fast_sync;
@@ -1174,9 +1198,9 @@ namespace cryptonote
     crypto::hash m_difficulty_for_next_block_top_hash;
     difficulty_type m_difficulty_for_next_block;
 
-    boost::asio::io_service m_async_service;
+    boost::asio::io_context m_async_service;
     boost::thread_group m_async_pool;
-    std::unique_ptr<boost::asio::io_service::work> m_async_work_idle;
+    std::unique_ptr<boost::asio::executor_work_guard<boost::asio::io_context::executor_type>> m_async_work_idle;
 
     // some invalid blocks
     blocks_ext_by_hash m_invalid_blocks;     // crypto::hash -> block_extended_info
@@ -1201,12 +1225,16 @@ namespace cryptonote
     uint64_t m_btc_height;
     uint64_t m_btc_pool_cookie;
     uint64_t m_btc_expected_reward;
+    uint64_t m_btc_cumulative_weight;
     crypto::hash m_btc_seed_hash;
     uint64_t m_btc_seed_height;
     bool m_btc_valid;
 
 
     bool m_batch_success;
+
+    TxpoolNotifyCallback m_txpool_notifier;
+    mutable std::mutex m_txpool_notifier_mutex;
 
     /* `boost::function` is used because the implementation never allocates if
        the callable object has a single `std::shared_ptr` or `std::weap_ptr`
@@ -1328,11 +1356,10 @@ namespace cryptonote
      *
      * @param bl the block to be added
      * @param bvc metadata concerning the block's validity
-     * @param notify if set to true, sends new block notification on success
      *
      * @return true if the block was added successfully, otherwise false
      */
-    bool handle_block_to_main_chain(const block& bl, block_verification_context& bvc, bool notify = true);
+    bool handle_block_to_main_chain(const block& bl, block_verification_context& bvc);
 
     /**
      * @brief validate and add a new block to the end of the blockchain
@@ -1344,11 +1371,12 @@ namespace cryptonote
      * @param bl the block to be added
      * @param id the hash of the block
      * @param bvc metadata concerning the block's validity
-     * @param notify if set to true, sends new block notification on success
+     * @param extra_block_txs txs belonging to this block that may not be in the mempool
      *
      * @return true if the block was added successfully, otherwise false
      */
-    bool handle_block_to_main_chain(const block& bl, const crypto::hash& id, block_verification_context& bvc, bool notify = true);
+    bool handle_block_to_main_chain(const block& bl, const crypto::hash& id,
+      block_verification_context& bvc, pool_supplement& extra_block_txs);
 
     /**
      * @brief validate and add a new block to an alternate blockchain
@@ -1360,10 +1388,12 @@ namespace cryptonote
      * @param b the block to be added
      * @param id the hash of the block
      * @param bvc metadata concerning the block's validity
+     * @param extra_block_txs txs belonging to this block that may not be in the mempool
      *
      * @return true if the block was added successfully, otherwise false
      */
-    bool handle_alternative_block(const block& b, const crypto::hash& id, block_verification_context& bvc);
+    bool handle_alternative_block(const block& b, const crypto::hash& id,
+      block_verification_context& bvc, pool_supplement& extra_block_txs);
 
     /**
      * @brief builds a list of blocks connecting a block to the main chain
@@ -1548,7 +1578,6 @@ namespace cryptonote
      * @return true
      */
     bool update_next_cumulative_weight_limit(uint64_t *long_term_effective_median_block_weight = NULL);
-    void return_tx_to_pool(std::vector<std::pair<transaction, blobdata>> &txs);
 
     /**
      * @brief make sure a transaction isn't attempting a double-spend
@@ -1576,7 +1605,7 @@ namespace cryptonote
      * @brief loads block hashes from compiled-in data set
      *
      * A (possibly empty) set of block hashes can be compiled into the
-     * monero daemon binary.  This function loads those hashes into
+     * lunexa daemon binary.  This function loads those hashes into
      * a useful state.
      * 
      * @param get_checkpoints if set, will be called to get checkpoints data
@@ -1593,7 +1622,7 @@ namespace cryptonote
      *
      * At some point, may be used to push an update to miners
      */
-    void cache_block_template(const block &b, const cryptonote::account_public_address &address, const blobdata &nonce, const difficulty_type &diff, uint64_t height, uint64_t expected_reward, uint64_t seed_height, const crypto::hash &seed_hash, uint64_t pool_cookie);
+    void cache_block_template(const block &b, const cryptonote::account_public_address &address, const blobdata &nonce, const difficulty_type &diff, uint64_t height, uint64_t expected_reward, uint64_t cumulative_weight, uint64_t seed_height, const crypto::hash &seed_hash, uint64_t pool_cookie);
 
     /**
      * @brief sends new block notifications to ZMQ `miner_data` subscribers

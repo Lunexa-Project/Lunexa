@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 // 
 // All rights reserved.
 //
@@ -119,9 +119,9 @@ public:
 
       if (shared)
       {
+        core.get().get_blockchain_storage().set_txpool_notify(cryptonote::listener::zmq_pub::txpool_add{shared});
         core.get().get_blockchain_storage().add_block_notify(cryptonote::listener::zmq_pub::chain_main{shared});
         core.get().get_blockchain_storage().add_miner_notify(cryptonote::listener::zmq_pub::miner_data{shared});
-        core.get().set_txpool_listener(cryptonote::listener::zmq_pub::txpool_add{shared});
       }
     }
     else // if --no-zmq specified

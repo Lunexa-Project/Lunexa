@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -29,6 +29,7 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
 
 #include <algorithm>
+#include <boost/bimap/support/iterator_type_by.hpp>
 #include <boost/filesystem.hpp>
 #include <unordered_set>
 #include <vector>
@@ -36,12 +37,15 @@
 #include "tx_pool.h"
 #include "cryptonote_tx_utils.h"
 #include "cryptonote_basic/cryptonote_boost_serialization.h"
+#include "cryptonote_basic/events.h"
 #include "cryptonote_config.h"
 #include "blockchain.h"
 #include "blockchain_db/locked_txn.h"
 #include "blockchain_db/blockchain_db.h"
 #include "int-util.h"
 #include "misc_language.h"
+#include "misc_log_ex.h"
+#include "tx_verification_utils.h"
 #include "warnings.h"
 #include "common/perf_timer.h"
 #include "crypto/hash.h"
@@ -109,15 +113,6 @@ namespace cryptonote
       return amount * ACCEPT_THRESHOLD;
     }
 
-    uint64_t get_transaction_weight_limit(uint8_t version)
-    {
-      // from v8, limit a tx to 50% of the minimum block weight
-      if (version >= 8)
-        return get_min_block_weight(version) / 2 - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
-      else
-        return get_min_block_weight(version) - CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE;
-    }
-
     // external lock must be held for the comparison+set to work properly
     void set_if_less(std::atomic<time_t>& next_check, const time_t candidate) noexcept
     {
@@ -140,7 +135,10 @@ namespace cryptonote
     // corresponding lists.
   }
   //---------------------------------------------------------------------------------
-  bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_hash,*/ const crypto::hash &id, const cryptonote::blobdata &blob, size_t tx_weight, tx_verification_context& tvc, relay_method tx_relay, bool relayed, uint8_t version)
+  bool tx_memory_pool::add_tx(transaction &tx, /*const crypto::hash& tx_prefix_hash,*/
+    const crypto::hash &id, const cryptonote::blobdata &blob, size_t tx_weight,
+    tx_verification_context& tvc, relay_method tx_relay, bool relayed,
+    uint8_t version, uint8_t nic_verified_hf_version)
   {
     const bool kept_by_block = (tx_relay == relay_method::block);
 
@@ -148,13 +146,6 @@ namespace cryptonote
     CRITICAL_REGION_LOCAL(m_transactions_lock);
 
     PERF_TIMER(add_tx);
-    if (tx.version == 0)
-    {
-      // v0 never accepted
-      LOG_PRINT_L1("transaction version 0 is invalid");
-      tvc.m_verifivation_failed = true;
-      return false;
-    }
 
     // we do not accept transactions that timed out before, unless they're
     // kept_by_block
@@ -166,62 +157,28 @@ namespace cryptonote
       return false;
     }
 
-    if(!check_inputs_types_supported(tx))
+    if (version != nic_verified_hf_version && !cryptonote::ver_non_input_consensus(tx, tvc, version))
     {
-      tvc.m_verifivation_failed = true;
-      tvc.m_invalid_input = true;
+      LOG_PRINT_L1("transaction " << id << " failed non-input consensus rule checks");
+      tvc.m_verifivation_failed = true; // should already be set, but just in case
       return false;
     }
 
-    // fee per kilobyte, size rounded up.
     uint64_t fee;
-
-    if (tx.version == 1)
+    bool fee_good = false;
+    try
     {
-      uint64_t inputs_amount = 0;
-      if(!get_inputs_money_amount(tx, inputs_amount))
-      {
-        tvc.m_verifivation_failed = true;
-        return false;
-      }
-
-      uint64_t outputs_amount = get_outs_money_amount(tx);
-      if(outputs_amount > inputs_amount)
-      {
-        LOG_PRINT_L1("transaction use more money than it has: use " << print_money(outputs_amount) << ", have " << print_money(inputs_amount));
-        tvc.m_verifivation_failed = true;
-        tvc.m_overspend = true;
-        return false;
-      }
-      else if(outputs_amount == inputs_amount)
-      {
-        LOG_PRINT_L1("transaction fee is zero: outputs_amount == inputs_amount, rejecting.");
-        tvc.m_verifivation_failed = true;
-        tvc.m_fee_too_low = true;
-        return false;
-      }
-
-      fee = inputs_amount - outputs_amount;
+      // get_tx_fee() can throw. It shouldn't throw because we check preconditions in
+      // ver_non_input_consensus(), but let's put it in a try block just in case.
+      fee = get_tx_fee(tx);
+      fee_good = kept_by_block || m_blockchain.check_fee(tx_weight, fee);
     }
-    else
-    {
-      fee = tx.rct_signatures.txnFee;
-    }
-
-    if (!kept_by_block && !m_blockchain.check_fee(tx_weight, fee))
+    catch(...) {}
+    if (!fee_good) // if fee calculation failed or fee in relayed tx is too low...
     {
       tvc.m_verifivation_failed = true;
       tvc.m_fee_too_low = true;
       tvc.m_no_drop_offense = true;
-      return false;
-    }
-
-    size_t tx_weight_limit = get_transaction_weight_limit(version);
-    if ((!kept_by_block || version >= HF_VERSION_PER_BYTE_FEE) && tx_weight > tx_weight_limit)
-    {
-      LOG_PRINT_L1("transaction is too heavy: " << tx_weight << " bytes, maximum weight: " << tx_weight_limit);
-      tvc.m_verifivation_failed = true;
-      tvc.m_too_big = true;
       return false;
     }
 
@@ -258,14 +215,6 @@ namespace cryptonote
         tvc.m_no_drop_offense = true;
         return false;
       }
-    }
-
-    if (!m_blockchain.check_tx_outputs(tx, tvc))
-    {
-      LOG_PRINT_L1("Transaction with id= "<< id << " has at least one invalid output");
-      tvc.m_verifivation_failed = true;
-      tvc.m_invalid_output = true;
-      return false;
     }
 
     // assume failure during verification steps until success is certain
@@ -381,13 +330,13 @@ namespace cryptonote
           add_tx_to_transient_lists(id, meta.fee / (double)(tx_weight ? tx_weight : 1), receive_time);
         }
         lock.commit();
+        tvc.m_added_to_pool = !existing_tx;
       }
       catch (const std::exception &e)
       {
         MERROR("internal error: error adding transaction to txpool: " << e.what());
         return false;
       }
-      tvc.m_added_to_pool = true;
 
       static_assert(unsigned(relay_method::none) == 0, "expected relay_method::none value to be zero");
       if(meta.fee > 0 && tx_relay != relay_method::forward)
@@ -406,14 +355,16 @@ namespace cryptonote
     return true;
   }
   //---------------------------------------------------------------------------------
-  bool tx_memory_pool::add_tx(transaction &tx, tx_verification_context& tvc, relay_method tx_relay, bool relayed, uint8_t version)
+  bool tx_memory_pool::add_tx(transaction &tx, tx_verification_context& tvc, relay_method tx_relay,
+    bool relayed, uint8_t version, uint8_t nic_verified_hf_version)
   {
     crypto::hash h = null_hash;
     cryptonote::blobdata bl;
     t_serializable_object_to_blob(tx, bl);
     if (bl.size() == 0 || !get_transaction_hash(tx, h))
       return false;
-    return add_tx(tx, h, bl, get_transaction_weight(tx, bl.size()), tvc, tx_relay, relayed, version);
+    return add_tx(tx, h, bl, get_transaction_weight(tx, bl.size()), tvc, tx_relay, relayed, version,
+      nic_verified_hf_version);
   }
   //---------------------------------------------------------------------------------
   size_t tx_memory_pool::get_txpool_weight() const
@@ -464,7 +415,7 @@ namespace cryptonote
         break;
       try
       {
-        const crypto::hash &txid = it->second;
+        const crypto::hash &txid = it->get_right();
         txpool_tx_meta_t meta;
         if (!m_blockchain.get_txpool_tx_meta(txid, meta))
         {
@@ -491,11 +442,11 @@ namespace cryptonote
           return;
         }
         // remove first, in case this throws, so key images aren't removed
-        MINFO("Pruning tx " << txid << " from txpool: weight: " << meta.weight << ", fee/byte: " << it->first.first);
+        MINFO("Pruning tx " << txid << " from txpool: weight: " << meta.weight << ", fee/byte: " << it->get_left().first);
         m_blockchain.remove_txpool_tx(txid);
         reduce_txpool_weight(meta.weight);
         remove_transaction_keyimages(tx, txid);
-        MINFO("Pruned tx " << txid << " from txpool: weight: " << meta.weight << ", fee/byte: " << it->first.first);
+        MINFO("Pruned tx " << txid << " from txpool: weight: " << meta.weight << ", fee/byte: " << it->get_left().first);
 
         auto it_prev = it;
         --it_prev;
@@ -579,7 +530,7 @@ namespace cryptonote
     return true;
   }
   //---------------------------------------------------------------------------------
-  bool tx_memory_pool::take_tx(const crypto::hash &id, transaction &tx, cryptonote::blobdata &txblob, size_t& tx_weight, uint64_t& fee, bool &relayed, bool &do_not_relay, bool &double_spend_seen, bool &pruned)
+  bool tx_memory_pool::take_tx(const crypto::hash &id, transaction &tx, cryptonote::blobdata &txblob, size_t& tx_weight, uint64_t& fee, bool &relayed, bool &do_not_relay, bool &double_spend_seen, bool &pruned, const bool suppress_missing_msgs)
   {
     CRITICAL_REGION_LOCAL(m_transactions_lock);
     CRITICAL_REGION_LOCAL1(m_blockchain);
@@ -591,7 +542,10 @@ namespace cryptonote
       txpool_tx_meta_t meta;
       if (!m_blockchain.get_txpool_tx_meta(id, meta))
       {
-        MERROR("Failed to find tx_meta in txpool");
+        if (!suppress_missing_msgs)
+        {
+          MERROR("Failed to find tx_meta in txpool");
+        }
         return false;
       }
       txblob = m_blockchain.get_txpool_tx_blob(id, relay_category::all);
@@ -751,13 +705,9 @@ namespace cryptonote
     m_remove_stuck_tx_interval.do_call([this](){return remove_stuck_transactions();});
   }
   //---------------------------------------------------------------------------------
-  sorted_tx_container::iterator tx_memory_pool::find_tx_in_sorted_container(const crypto::hash& id) const
+  sorted_tx_container::iterator tx_memory_pool::find_tx_in_sorted_container(const crypto::hash& id)
   {
-    return std::find_if( m_txs_by_fee_and_receive_time.begin(), m_txs_by_fee_and_receive_time.end()
-                       , [&](const sorted_tx_container::value_type& a){
-                         return a.second == id;
-                       }
-    );
+    return m_txs_by_fee_and_receive_time.project_up(m_txs_by_fee_and_receive_time.right.find(id));
   }
   //---------------------------------------------------------------------------------
   //TODO: investigate whether boolean return is appropriate
@@ -1465,44 +1415,21 @@ namespace cryptonote
       bool parsed;
     } lazy_tx(txblob, txid, tx);
 
-    //not the best implementation at this time, sorry :(
-    //check is ring_signature already checked ?
-    if(txd.max_used_block_id == null_hash)
-    {//not checked, lets try to check
+    const std::uint64_t top_block_height{m_blockchain.get_current_blockchain_height() - 1};
+    const crypto::hash top_block_hash{m_blockchain.get_block_id_by_height(top_block_height)};
 
-      if(txd.last_failed_id != null_hash && m_blockchain.get_current_blockchain_height() > txd.last_failed_height && txd.last_failed_id == m_blockchain.get_block_id_by_height(txd.last_failed_height))
-        return false;//we already sure that this tx is broken for this height
+    if (txd.last_failed_id == top_block_hash)
+      return false; // we are already sure that this tx isn't passing for this exact chain
 
-      tx_verification_context tvc;
-      if(!check_tx_inputs([&lazy_tx]()->cryptonote::transaction&{ return lazy_tx(); }, txid, txd.max_used_block_height, txd.max_used_block_id, tvc))
-      {
-        txd.last_failed_height = m_blockchain.get_current_blockchain_height()-1;
-        txd.last_failed_id = m_blockchain.get_block_id_by_height(txd.last_failed_height);
-        return false;
-      }
-    }else
+    tx_verification_context tvc{};
+    if (!check_tx_inputs([&lazy_tx]()->cryptonote::transaction&{ return lazy_tx(); },
+      txid,
+      txd.max_used_block_height,
+      txd.max_used_block_id,
+      tvc))
     {
-      if(txd.max_used_block_height >= m_blockchain.get_current_blockchain_height())
-        return false;
-      if(true)
-      {
-        //if we already failed on this height and id, skip actual ring signature check
-        if(txd.last_failed_id == m_blockchain.get_block_id_by_height(txd.last_failed_height))
-          return false;
-        //check ring signature again, it is possible (with very small chance) that this transaction become again valid
-        tx_verification_context tvc;
-        if(!check_tx_inputs([&lazy_tx]()->cryptonote::transaction&{ return lazy_tx(); }, txid, txd.max_used_block_height, txd.max_used_block_id, tvc))
-        {
-          txd.last_failed_height = m_blockchain.get_current_blockchain_height()-1;
-          txd.last_failed_id = m_blockchain.get_block_id_by_height(txd.last_failed_height);
-          return false;
-        }
-      }
-    }
-    //if we here, transaction seems valid, but, anyway, check for key_images collisions with blockchain, just to be sure
-    if(m_blockchain.have_tx_keyimges_as_spent(lazy_tx()))
-    {
-      txd.double_spend_seen = true;
+      txd.last_failed_height = top_block_height;
+      txd.last_failed_id = top_block_hash;
       return false;
     }
 
@@ -1644,15 +1571,15 @@ namespace cryptonote
     for (; sorted_it != m_txs_by_fee_and_receive_time.end(); ++sorted_it)
     {
       txpool_tx_meta_t meta;
-      if (!m_blockchain.get_txpool_tx_meta(sorted_it->second, meta))
+      if (!m_blockchain.get_txpool_tx_meta(sorted_it->get_right(), meta))
       {
         static bool warned = false;
         if (!warned)
-          MERROR("  failed to find tx meta: " << sorted_it->second << " (will only print once)");
+          MERROR("  failed to find tx meta: " << sorted_it->get_right() << " (will only print once)");
         warned = true;
         continue;
       }
-      LOG_PRINT_L2("Considering " << sorted_it->second << ", weight " << meta.weight << ", current block weight " << total_weight << "/" << max_total_weight << ", current coinbase " << print_money(best_coinbase) << ", relay method " << (unsigned)meta.get_relay_method());
+      LOG_PRINT_L2("Considering " << sorted_it->get_right() << ", weight " << meta.weight << ", current block weight " << total_weight << "/" << max_total_weight << ", current coinbase " << print_money(best_coinbase) << ", relay method " << (unsigned)meta.get_relay_method());
 
       if (!meta.matches(relay_category::legacy) && !(m_mine_stem_txes && meta.get_relay_method() == relay_method::stem))
       {
@@ -1702,7 +1629,7 @@ namespace cryptonote
       }
 
       // "local" and "stem" txes are filtered above
-      cryptonote::blobdata txblob = m_blockchain.get_txpool_tx_blob(sorted_it->second, relay_category::all);
+      cryptonote::blobdata txblob = m_blockchain.get_txpool_tx_blob(sorted_it->get_right(), relay_category::all);
 
       cryptonote::transaction tx;
 
@@ -1713,7 +1640,7 @@ namespace cryptonote
       bool ready = false;
       try
       {
-        ready = is_transaction_ready_to_go(meta, sorted_it->second, txblob, tx);
+        ready = is_transaction_ready_to_go(meta, sorted_it->get_right(), txblob, tx);
       }
       catch (const std::exception &e)
       {
@@ -1724,7 +1651,7 @@ namespace cryptonote
       {
         try
 	{
-	  m_blockchain.update_txpool_tx(sorted_it->second, meta);
+	  m_blockchain.update_txpool_tx(sorted_it->get_right(), meta);
 	}
         catch (const std::exception &e)
 	{
@@ -1743,7 +1670,7 @@ namespace cryptonote
         continue;
       }
 
-      bl.tx_hashes.push_back(sorted_it->second);
+      bl.tx_hashes.push_back(sorted_it->get_right());
       total_weight += meta.weight;
       fee += meta.fee;
       best_coinbase = coinbase;
@@ -1854,7 +1781,11 @@ namespace cryptonote
         m_txs_by_fee_and_receive_time.erase(sorted_it);
       }
     }
-    m_txs_by_fee_and_receive_time.emplace(std::pair<double, time_t>(fee, receive_time), txid);
+    auto insert_result = m_txs_by_fee_and_receive_time.insert(sorted_tx_container::value_type(std::pair<double, time_t>(fee, receive_time), txid));
+
+    if (!insert_result.second) {
+        MERROR("Failed to add txid " << txid << " to the m_txs_by_fee_and_receive_time");
+    }
 
     // Don't check for "resurrected" txs in case of reorgs i.e. don't check in 'm_removed_txs_by_time'
     // whether we have that txid there and if yes remove it; this results in possible duplicates
