@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Monero Project
+// Copyright (c) 2017-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -27,8 +27,8 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#ifndef LUNEXA_TREZOR_HPP
-#define LUNEXA_TREZOR_HPP
+#ifndef MONERO_TREZOR_HPP
+#define MONERO_TREZOR_HPP
 
 #include "trezor/trezor_defs.hpp"
 
@@ -37,8 +37,8 @@
 #include "trezor/messages/messages.pb.h"
 #include "trezor/messages/messages-common.pb.h"
 #include "trezor/messages/messages-management.pb.h"
-#include "trezor/messages/messages-lunexa.pb.h"
+#include "trezor/messages/messages-monero.pb.h"
 #include "trezor/protocol.hpp"
 #endif
 
-#endif //LUNEXA_TREZOR_HPP
+#endif //MONERO_TREZOR_HPP

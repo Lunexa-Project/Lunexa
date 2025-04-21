@@ -25,6 +25,7 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 # THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
 include_directories(SYSTEM ${OPENSSL_INCLUDE_DIR})
 
 set(common_sources
@@ -49,10 +50,6 @@ set(common_sources
 
 if (STACK_TRACE)
   list(APPEND common_sources stack_trace.cpp)
-endif()
-
-if (BACKCOMPAT)
-  list(APPEND common_sources compat/glibc_compat.cpp)
 endif()
 
 set(common_headers)

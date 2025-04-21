@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -28,6 +28,7 @@
 
 #include "common/dns_utils.h"
 // check local first (in the event of static or in-source compilation of libunbound)
+#include "misc_language.h"
 #include "unbound.h"
 
 #include <deque>
@@ -47,7 +48,6 @@ using namespace epee;
 
 static const char *DEFAULT_DNS_PUBLIC_ADDR[] =
 {
-  "9.9.9.9"             // Quad 9
   "194.150.168.168",    // CCC (Germany)
   "80.67.169.40",       // FDN (France)
   "89.233.43.71",       // http://censurfridns.dk (Denmark)
@@ -196,36 +196,7 @@ boost::optional<std::string> tlsa_to_string(const char* src, size_t len)
     return boost::none;
   return std::string(src, len);
 }
-
-// custom smart pointer.
-// TODO: see if std::auto_ptr and the like support custom destructors
-template<typename type, void (*freefunc)(type*)>
-class scoped_ptr
-{
-public:
-  scoped_ptr():
-    ptr(nullptr)
-  {
-  }
-  scoped_ptr(type *p):
-    ptr(p)
-  {
-  }
-  ~scoped_ptr()
-  {
-    freefunc(ptr);
-  }
-  operator type *() { return ptr; }
-  type **operator &() { return &ptr; }
-  type *operator->() { return ptr; }
-  operator const type*() const { return &ptr; }
-
-private:
-  type* ptr;
-};
-
-typedef class scoped_ptr<ub_result,ub_resolve_free> ub_result_ptr;
-
+  
 struct DNSResolverData
 {
   ub_ctx* m_ub_context;
@@ -328,10 +299,14 @@ std::vector<std::string> DNSResolver::get_record(const std::string& url, int rec
   std::vector<std::string> addresses;
   dnssec_available = false;
   dnssec_valid = false;
-
-  // destructor takes care of cleanup
-  ub_result_ptr result;
-
+  
+  ub_result *result;
+  // Make sure we are cleaning after result.
+  epee::misc_utils::auto_scope_leave_caller scope_exit_handler =
+    epee::misc_utils::create_scope_leave_handler([&](){
+    ub_resolve_free(result);
+  });
+  
   MDEBUG("Performing DNSSEC " << get_record_name(record_type) << " record query for " << url);
 
   // call DNS resolver, blocking.  if return value not zero, something went wrong
@@ -451,7 +426,7 @@ std::string address_from_txt_record(const std::string& s)
  *
  * gets the lunexa address from the TXT record of the DNS entry associated
  * with <url>.  If this lookup fails, or the TXT record does not contain an
- * LXA address in the correct format, returns an empty string.  <dnssec_valid>
+ * XMR address in the correct format, returns an empty string.  <dnssec_valid>
  * will be set true or false according to whether or not the DNS query passes
  * DNSSEC validation.
  *

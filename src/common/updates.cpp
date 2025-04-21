@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Monero Project
+// Copyright (c) 2017-2024, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -32,8 +32,8 @@
 #include "dns_utils.h"
 #include "updates.h"
 
-#undef LUNEXA_DEFAULT_LOG_CATEGORY
-#define LUNEXA_DEFAULT_LOG_CATEGORY "updates"
+#undef MONERO_DEFAULT_LOG_CATEGORY
+#define MONERO_DEFAULT_LOG_CATEGORY "updates"
 
 namespace tools
 {
@@ -46,10 +46,13 @@ namespace tools
 
     // All four MoneroPulse domains have DNSSEC on and valid
     static const std::vector<std::string> dns_urls = {
-        "updates1.lunexa.co",
-        "updates2.lunexa.co",
-        "updates3.lunexa.co",
-        "updates4.lunexa.co",
+        "updates.moneropulse.org",
+        "updates.moneropulse.net",
+        "updates.moneropulse.fr",
+        "updates.moneropulse.de",
+        "updates.moneropulse.no",
+        "updates.moneropulse.ch",
+        "updates.moneropulse.se"
     };
 
     if (!tools::dns_utils::load_txt_records_from_dns(records, dns_urls))
@@ -103,7 +106,7 @@ namespace tools
 #ifdef _WIN32
     static const char *extension = strncmp(buildtag.c_str(), "source", 6) ? (strncmp(buildtag.c_str(), "install-", 8) ? ".zip" : ".exe") : ".tar.bz2";
 #elif defined(__APPLE__)
-    static const char *extension = strncmp(software.c_str(), "lunexa-gui", 10) ? ".tar.bz2" : ".dmg";
+    static const char *extension = strncmp(software.c_str(), "monero-gui", 10) ? ".tar.bz2" : ".dmg";
 #else
     static const char extension[] = ".tar.bz2";
 #endif
