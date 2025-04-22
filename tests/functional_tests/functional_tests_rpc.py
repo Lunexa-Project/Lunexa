@@ -84,11 +84,11 @@ for i in range(N_LUNEXADS):
   ports.append(18180+i)
 
 for i in range(N_WALLETS):
-  command_lines.append([str(18090+i) if x == "wallet_port" else x for x in wallet_base])
+  command_lines.append([str(9029+i) if x == "wallet_port" else x for x in wallet_base])
   if i < len(wallet_extra):
     command_lines[-1] += wallet_extra[i]
   outputs.append(open(FUNCTIONAL_TESTS_DIRECTORY + '/wallet' + str(i) + '.log', 'a+'))
-  ports.append(18090+i)
+  ports.append(9029+i)
 
 print('Starting servers...')
 try:
