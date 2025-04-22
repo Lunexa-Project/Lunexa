@@ -332,44 +332,7 @@ enum MessageType {
     MessageType_MoneroLiveRefreshFinalRequest = 556 [(wire_in) = true];
     MessageType_MoneroLiveRefreshFinalAck = 557 [(wire_out) = true];
 
-    // Lunexa
-    MessageType_LunexaTransactionInitRequest = 501 [(wire_out) = true];
-    MessageType_LunexaTransactionInitAck = 502 [(wire_out) = true];
-    MessageType_LunexaTransactionSetInputRequest = 503 [(wire_out) = true];
-    MessageType_LunexaTransactionSetInputAck = 504 [(wire_out) = true];
-    MessageType_LunexaTransactionInputViniRequest = 507 [(wire_out) = true];
-    MessageType_LunexaTransactionInputViniAck = 508 [(wire_out) = true];
-    MessageType_LunexaTransactionAllInputsSetRequest = 509 [(wire_out) = true];
-    MessageType_LunexaTransactionAllInputsSetAck = 510 [(wire_out) = true];
-    MessageType_LunexaTransactionSetOutputRequest = 511 [(wire_out) = true];
-    MessageType_LunexaTransactionSetOutputAck = 512 [(wire_out) = true];
-    MessageType_LunexaTransactionAllOutSetRequest = 513 [(wire_out) = true];
-    MessageType_LunexaTransactionAllOutSetAck = 514 [(wire_out) = true];
-    MessageType_LunexaTransactionSignInputRequest = 515 [(wire_out) = true];
-    MessageType_LunexaTransactionSignInputAck = 516 [(wire_out) = true];
-    MessageType_LunexaTransactionFinalRequest = 517 [(wire_out) = true];
-    MessageType_LunexaTransactionFinalAck = 518 [(wire_out) = true];
-    MessageType_LunexaKeyImageExportInitRequest = 530 [(wire_out) = true];
-    MessageType_LunexaKeyImageExportInitAck = 531 [(wire_out) = true];
-    MessageType_LunexaKeyImageSyncStepRequest = 532 [(wire_out) = true];
-    MessageType_LunexaKeyImageSyncStepAck = 533 [(wire_out) = true];
-    MessageType_LunexaKeyImageSyncFinalRequest = 534 [(wire_out) = true];
-    MessageType_LunexaKeyImageSyncFinalAck = 535 [(wire_out) = true];
-    MessageType_LunexaGetAddress = 540 [(wire_in) = true];
-    MessageType_LunexaAddress = 541 [(wire_out) = true];
-    MessageType_LunexaGetWatchKey = 542 [(wire_in) = true];
-    MessageType_LunexaWatchKey = 543 [(wire_out) = true];
-    MessageType_DebugLunexaDiagRequest = 546 [(wire_in) = true];
-    MessageType_DebugLunexaDiagAck = 547 [(wire_out) = true];
-    MessageType_LunexaGetTxKeyRequest = 550 [(wire_in) = true];
-    MessageType_LunexaGetTxKeyAck = 551 [(wire_out) = true];
-    MessageType_LunexaLiveRefreshStartRequest = 552 [(wire_in) = true];
-    MessageType_LunexaLiveRefreshStartAck = 553 [(wire_out) = true];
-    MessageType_LunexaLiveRefreshStepRequest = 554 [(wire_in) = true];
-    MessageType_LunexaLiveRefreshStepAck = 555 [(wire_out) = true];
-    MessageType_LunexaLiveRefreshFinalRequest = 556 [(wire_in) = true];
-    MessageType_LunexaLiveRefreshFinalAck = 557 [(wire_out) = true];
-
+   
 
     // EOS
     MessageType_EosGetPublicKey = 600 [(wire_in) = true];
@@ -396,4 +359,43 @@ enum MessageType {
     MessageType_WebAuthnCredentials = 801 [(wire_out) = true];
     MessageType_WebAuthnAddResidentCredential = 802 [(wire_in) = true];
     MessageType_WebAuthnRemoveResidentCredential = 803 [(wire_in) = true];
+
+     // Lunexa
+    MessageType_LunexaTransactionInitRequest = 901 [(wire_out) = true];
+    MessageType_LunexaTransactionInitAck = 902 [(wire_out) = true];
+    MessageType_LunexaTransactionSetInputRequest = 903 [(wire_out) = true];
+    MessageType_LunexaTransactionSetInputAck = 904 [(wire_out) = true];
+    MessageType_LunexaTransactionInputViniRequest = 907 [(wire_out) = true];
+    MessageType_LunexaTransactionInputViniAck = 908 [(wire_out) = true];
+    MessageType_LunexaTransactionAllInputsSetRequest = 909 [(wire_out) = true];
+    MessageType_LunexaTransactionAllInputsSetAck = 910 [(wire_out) = true];
+    MessageType_LunexaTransactionSetOutputRequest = 911 [(wire_out) = true];
+    MessageType_LunexaTransactionSetOutputAck = 912 [(wire_out) = true];
+    MessageType_LunexaTransactionAllOutSetRequest = 913 [(wire_out) = true];
+    MessageType_LunexaTransactionAllOutSetAck = 914 [(wire_out) = true];
+    MessageType_LunexaTransactionSignInputRequest = 915 [(wire_out) = true];
+    MessageType_LunexaTransactionSignInputAck = 916 [(wire_out) = true];
+    MessageType_LunexaTransactionFinalRequest = 917 [(wire_out) = true];
+    MessageType_LunexaTransactionFinalAck = 918 [(wire_out) = true];
+    MessageType_LunexaKeyImageExportInitRequest = 930 [(wire_out) = true];
+    MessageType_LunexaKeyImageExportInitAck = 931 [(wire_out) = true];
+    MessageType_LunexaKeyImageSyncStepRequest = 932 [(wire_out) = true];
+    MessageType_LunexaKeyImageSyncStepAck = 933 [(wire_out) = true];
+    MessageType_LunexaKeyImageSyncFinalRequest = 934 [(wire_out) = true];
+    MessageType_LunexaKeyImageSyncFinalAck = 935 [(wire_out) = true];
+    MessageType_LunexaGetAddress = 940 [(wire_in) = true];
+    MessageType_LunexaAddress = 941 [(wire_out) = true];
+    MessageType_LunexaGetWatchKey = 942 [(wire_in) = true];
+    MessageType_LunexaWatchKey = 943 [(wire_out) = true];
+    MessageType_DebugLunexaDiagRequest = 946 [(wire_in) = true];
+    MessageType_DebugLunexaDiagAck = 947 [(wire_out) = true];
+    MessageType_LunexaGetTxKeyRequest = 950 [(wire_in) = true];
+    MessageType_LunexaGetTxKeyAck = 951 [(wire_out) = true];
+    MessageType_LunexaLiveRefreshStartRequest = 952 [(wire_in) = true];
+    MessageType_LunexaLiveRefreshStartAck = 953 [(wire_out) = true];
+    MessageType_LunexaLiveRefreshStepRequest = 954 [(wire_in) = true];
+    MessageType_LunexaLiveRefreshStepAck = 955 [(wire_out) = true];
+    MessageType_LunexaLiveRefreshFinalRequest = 956 [(wire_in) = true];
+    MessageType_LunexaLiveRefreshFinalAck = 957 [(wire_out) = true];
+
 }
