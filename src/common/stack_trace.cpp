@@ -173,3 +173,5 @@ void log_stack_trace(const char *msg)
     ST_LOG(line);
 #endif
 }
+
+}

@@ -496,4 +496,4 @@ bool BlockchainDB::txpool_tx_matches_category(const crypto::hash& tx_hash, relay
   return false;
 }
 
-} 
+}  // namespace cryptonote
