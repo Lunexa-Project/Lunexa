@@ -23,32 +23,6 @@ OPTION(USE_DEVICE_TREZOR_UDP_RELEASE "Trezor UdpTransport in release mode" $ENV{
 OPTION(USE_DEVICE_TREZOR_DEBUG "Trezor Debugging enabled" $ENV{USE_DEVICE_TREZOR_DEBUG})
 OPTION(TREZOR_DEBUG "Main Trezor debugging switch" $ENV{TREZOR_DEBUG})
 
-# Helper function to fix cmake < 3.6.0 FindProtobuf variables
-function(_trezor_protobuf_fix_vars)
-    if(${CMAKE_VERSION} VERSION_LESS "3.6.0")
-        foreach(UPPER
-                PROTOBUF_SRC_ROOT_FOLDER
-                PROTOBUF_IMPORT_DIRS
-                PROTOBUF_DEBUG
-                PROTOBUF_LIBRARY
-                PROTOBUF_PROTOC_LIBRARY
-                PROTOBUF_INCLUDE_DIR
-                PROTOBUF_PROTOC_EXECUTABLE
-                PROTOBUF_LIBRARY_DEBUG
-                PROTOBUF_PROTOC_LIBRARY_DEBUG
-                PROTOBUF_LITE_LIBRARY
-                PROTOBUF_LITE_LIBRARY_DEBUG
-                )
-            if (DEFINED ${UPPER})
-                string(REPLACE "PROTOBUF_" "Protobuf_" Camel ${UPPER})
-                if (NOT DEFINED ${Camel})
-                    set(${Camel} ${${UPPER}} PARENT_SCOPE)
-                endif()
-            endif()
-        endforeach()
-    endif()
-endfunction()
-
 macro(trezor_fatal_msg msg)
     if ($ENV{USE_DEVICE_TREZOR_MANDATORY})
         message(FATAL_ERROR
@@ -72,40 +46,25 @@ endmacro()
 
 # Use Trezor master switch
 if (USE_DEVICE_TREZOR)
-    # Protobuf is required to build protobuf messages for Trezor
-    include(FindProtobuf OPTIONAL)
+    # Look for protobuf-config.cmake, provided by Protobuf
+    find_package(Protobuf CONFIG)
 
-    # PkgConfig works better with new Protobuf
-    find_package(PkgConfig QUIET)
-    pkg_check_modules(PROTOBUF protobuf)
-
-    if (NOT Protobuf_FOUND)
-        FIND_PACKAGE(Protobuf CONFIG)
+    if (Protobuf_FOUND)
+        # https://github.com/protocolbuffers/protobuf/issues/14576
+        find_program(Protobuf_PROTOC_EXECUTABLE protoc REQUIRED)
+        set(Protobuf_LIBRARY protobuf::libprotobuf) # Compatibility with FindProtobuf.cmake
+    else()
+        # Look for FindProtobuf.cmake, provided by CMake
+        find_package(Protobuf)
     endif()
-    if (NOT Protobuf_FOUND)
-        FIND_PACKAGE(Protobuf)
-    endif()
-
-    _trezor_protobuf_fix_vars()
 
     # Early fail for optional Trezor support
-    if(NOT Protobuf_FOUND AND NOT Protobuf_LIBRARY AND NOT Protobuf_PROTOC_EXECUTABLE AND NOT Protobuf_INCLUDE_DIR)
-        trezor_fatal_msg("Trezor: Could not find Protobuf")
-    elseif(${CMAKE_CXX_STANDARD} LESS 17 AND ${Protobuf_VERSION} GREATER 21)
-        trezor_fatal_msg("Trezor: Unsupported Protobuf version ${Protobuf_VERSION} with C++ ${CMAKE_CXX_STANDARD}. Please, use Protobuf v21.")
-    elseif(NOT Protobuf_LIBRARY)
-        trezor_fatal_msg("Trezor: Protobuf library not found: ${Protobuf_LIBRARY}")
-        unset(Protobuf_FOUND)
-    elseif(NOT Protobuf_PROTOC_EXECUTABLE OR NOT EXISTS "${Protobuf_PROTOC_EXECUTABLE}")
-        trezor_fatal_msg("Trezor: Protobuf executable not found: ${Protobuf_PROTOC_EXECUTABLE}")
-        unset(Protobuf_FOUND)
-    elseif(NOT Protobuf_INCLUDE_DIR OR NOT EXISTS "${Protobuf_INCLUDE_DIR}")
-        trezor_fatal_msg("Trezor: Protobuf include dir not found: ${Protobuf_INCLUDE_DIR}")
-        unset(Protobuf_FOUND)
-    else()
-        message(STATUS "Trezor: Protobuf lib: ${Protobuf_LIBRARY}, inc: ${Protobuf_INCLUDE_DIR}, protoc: ${Protobuf_PROTOC_EXECUTABLE}")
-        set(Protobuf_INCLUDE_DIRS ${Protobuf_INCLUDE_DIR})
-        set(Protobuf_FOUND 1)  # override found if all required info was provided by variables
+    if (NOT Protobuf_FOUND)
+        trezor_fatal_msg("Trezor: protobuf library not found")
+    endif()
+
+    if (Protobuf_VERSION VERSION_GREATER_EQUAL 22.0)
+        add_definitions(-DPROTOBUF_HAS_ABSEIL)
     endif()
 
     if(TREZOR_DEBUG)
@@ -121,30 +80,8 @@ else()
     message(STATUS "Trezor: support disabled by USE_DEVICE_TREZOR")
 endif()
 
-if(Protobuf_FOUND AND USE_DEVICE_TREZOR)
-    if (NOT "$ENV{TREZOR_PYTHON}" STREQUAL "")
-        set(TREZOR_PYTHON "$ENV{TREZOR_PYTHON}" CACHE INTERNAL "Copied from environment variable TREZOR_PYTHON")
-    else()
-        find_package(Python QUIET COMPONENTS Interpreter)  # cmake 3.12+
-        if(Python_Interpreter_FOUND)
-            set(TREZOR_PYTHON "${Python_EXECUTABLE}")
-        endif()
-    endif()
-
-    if(NOT TREZOR_PYTHON)
-        find_package(PythonInterp)
-        if(PYTHONINTERP_FOUND AND PYTHON_EXECUTABLE)
-            set(TREZOR_PYTHON "${PYTHON_EXECUTABLE}")
-        endif()
-    endif()
-
-    if(NOT TREZOR_PYTHON)
-        trezor_fatal_msg("Trezor: Python not found")
-    endif()
-endif()
-
 # Protobuf compilation test
-if(Protobuf_FOUND AND USE_DEVICE_TREZOR AND TREZOR_PYTHON)
+if(Protobuf_FOUND AND USE_DEVICE_TREZOR)
     execute_process(COMMAND ${Protobuf_PROTOC_EXECUTABLE} -I "${CMAKE_CURRENT_LIST_DIR}" -I "${Protobuf_INCLUDE_DIR}" "${CMAKE_CURRENT_LIST_DIR}/test-protobuf.proto" --cpp_out ${CMAKE_BINARY_DIR} RESULT_VARIABLE RET OUTPUT_VARIABLE OUT ERROR_VARIABLE ERR)
     if(RET)
         trezor_fatal_msg("Trezor: Protobuf test generation failed: ${OUT} ${ERR}")
@@ -183,22 +120,39 @@ if(Protobuf_FOUND AND USE_DEVICE_TREZOR AND TREZOR_PYTHON)
 endif()
 
 # Try to build protobuf messages
-if(Protobuf_FOUND AND USE_DEVICE_TREZOR AND TREZOR_PYTHON)
-    set(ENV{PROTOBUF_INCLUDE_DIRS} "${Protobuf_INCLUDE_DIR}")
-    set(ENV{PROTOBUF_PROTOC_EXECUTABLE} "${Protobuf_PROTOC_EXECUTABLE}")
-    set(TREZOR_PROTOBUF_PARAMS "")
-    if (USE_DEVICE_TREZOR_DEBUG)
-        set(TREZOR_PROTOBUF_PARAMS "--debug")
-    endif()
-    
-    execute_process(COMMAND ${TREZOR_PYTHON} tools/build_protob.py ${TREZOR_PROTOBUF_PARAMS} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/../src/device_trezor/trezor RESULT_VARIABLE RET OUTPUT_VARIABLE OUT ERROR_VARIABLE ERR)
+if(Protobuf_FOUND AND USE_DEVICE_TREZOR)
+    # .proto files to compile
+    set(_proto_files "messages.proto"
+                     "messages-common.proto"
+                     "messages-management.proto"
+                     "messages-lunexa.proto")
+    if (TREZOR_DEBUG)
+        list(APPEND _proto_files "messages-debug.proto")
+    endif ()
+
+    set(_proto_include_dir "${CMAKE_CURRENT_LIST_DIR}/../src/device_trezor/trezor/protob")
+    set(_proto_files_absolute)
+    foreach(file IN LISTS _proto_files)
+        list(APPEND _proto_files_absolute "${_proto_include_dir}/${file}")
+    endforeach ()
+
+    set(_proto_out_dir "${CMAKE_CURRENT_LIST_DIR}/../src/device_trezor/trezor/messages")
+    execute_process(COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out "${_proto_out_dir}" "-I${_proto_include_dir}" ${_proto_files_absolute} RESULT_VARIABLE RET OUTPUT_VARIABLE OUT ERROR_VARIABLE ERR)
     if(RET)
-        trezor_fatal_msg("Trezor: protobuf messages could not be regenerated (err=${RET}, python ${PYTHON})."
-                "OUT: ${OUT}, ERR: ${ERR}."
-                "Please read src/device_trezor/trezor/tools/README.md")
+        trezor_fatal_msg("Trezor: protobuf messages could not be (re)generated (err=${RET}). OUT: ${OUT}, ERR: ${ERR}.")
     endif()
 
-    message(STATUS "Trezor: protobuf messages regenerated out: \"${OUT}.\"")
+    if(FREEBSD)
+        # FreeBSD defines `minor` in usr/include/sys/types.h which conflicts with this file
+        # https://github.com/trezor/trezor-firmware/issues/4460
+        file(READ "${_proto_out_dir}/messages-lunexa.pb.h" file_content)
+        string(REPLACE "// @@protoc_insertion_point(includes)"
+                       "// @@protoc_insertion_point(includes)\n#ifdef minor\n#undef minor\n#endif"
+                updated_content "${file_content}")
+        file(WRITE "${_proto_out_dir}/messages-lunexa.pb.h" "${updated_content}")
+    endif()
+
+    message(STATUS "Trezor: protobuf messages regenerated out.")
     set(DEVICE_TREZOR_READY 1)
     add_definitions(-DDEVICE_TREZOR_READY=1)
     add_definitions(-DPROTOBUF_INLINE_NOT_IN_HEADERS=0)
