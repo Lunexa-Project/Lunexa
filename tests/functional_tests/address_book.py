@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 #encoding=utf-8
 
-# Copyright (c) 2019-2023, The Monero Project
+# Copyright (c) 2019-2024, The Monero Project
 # 
 # All rights reserved.
 # 
@@ -32,7 +32,6 @@
 """Test wallet address book RPC
 """
 
-from __future__ import print_function
 from framework.wallet import Wallet
 
 class AddressBookTest():
@@ -140,7 +139,7 @@ class AddressBookTest():
         assert not 'entries' in res or len(res.entries) == 0
 
         # openalias
-        res = wallet.add_address_book('donate@lunexa.co', description = 'dev fund')
+        res = wallet.add_address_book('donate@getmonero.org', description = 'dev fund')
         assert res.index == 0
         res = wallet.get_address_book()
         assert len(res.entries) == 1

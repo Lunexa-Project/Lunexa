@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -40,6 +40,7 @@ using namespace cryptonote;
 #include <cmath>
 #include <boost/regex.hpp>
 #include <common/apply_permutation.h>
+#include <iomanip>
 #include "common/util.h"
 #include "common/command_line.h"
 #include "trezor_tests.h"
@@ -1708,7 +1709,7 @@ tsx_builder * tsx_builder::construct_pending_tx(tools::wallet2::pending_tx &ptx,
   auto sources_copy = m_sources;
   auto change_addr = m_from->get_account().get_keys().m_account_address;
   bool r = construct_tx_and_get_tx_key(m_from->get_account().get_keys(), subaddresses, m_sources, destinations_copy,
-                                       change_addr, extra ? extra.get() : std::vector<uint8_t>(), tx, 0, tx_key,
+                                       change_addr, extra ? extra.get() : std::vector<uint8_t>(), tx, tx_key,
                                        additional_tx_keys, true, m_rct_config, this->m_tester->cur_hf() >= HF_VERSION_VIEW_TAGS);
   CHECK_AND_ASSERT_THROW_MES(r, "Transaction construction failed");
 
@@ -2206,6 +2207,7 @@ bool gen_trezor_wallet_passphrase::generate(std::vector<test_event_entry>& event
 
   const auto wallet_path = (m_wallet_dir / "alice2").string();
   const epee::wipeable_string& password = epee::wipeable_string("test-pass");
+  wallet_accessor_test::set_password(m_wl_alice2.get(), password);
   m_wl_alice2->store_to(wallet_path, password);
 
   // Positive load
