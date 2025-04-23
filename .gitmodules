@@ -17,3 +17,5 @@
 [submodule "external/randomx"]
 	path = external/randomx
 	url = https://github.com/Lunexa-Project/RandomX
+[submodule "external/gtest"]
+	path = external/gtest
