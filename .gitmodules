@@ -19,3 +19,4 @@
 	url = https://github.com/Lunexa-Project/RandomX
 [submodule "external/gtest"]
 	path = external/gtest
+	url = https://github.com/google/googletest
