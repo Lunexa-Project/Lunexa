@@ -129,20 +129,20 @@ int main(int argc, char* argv[])
   mlog_configure("", true);
   mlog_set_categories("+" LUNEXA_DEFAULT_LOG_CATEGORY ":INFO");
 
-  lookup(LOOKUP_A, {"seeds1.lunexa.co", "seeds2.lunexa.co", "seeds3.lunexa.co", "seeds4.lunexa.co"});
+  lookup(LOOKUP_A, {"seed1.lunexa.co", "seed2.lunexa.co", "seed3.lunexa.co"});
 
-  lookup(LOOKUP_TXT, {"updates1.lunexa.co", "updates2.lunexa.co", "updates3.lunexa.co", "updates4.lunexa.co"});
+  lookup(LOOKUP_TXT, {"updates1.lunexa.co", "updates2.lunexa.co", "updates.lunexalabs.co"});
 
-  lookup(LOOKUP_TXT, {"checkpoints1.lunexa.co", "checkpoints2.lunexa.co", "checkpoints3.lunexa.co", "checkpoints4.lunexa.co"});
+  lookup(LOOKUP_TXT, {"checkpoints.lunexapoint.co", "checkpoints.lunexa.co", "checkpoints.lunexalabs.co"});
 
   // those are in the code, but don't seem to actually exist
 #if 0
-  lookup(LOOKUP_TXT, {"testpoints.moneropulse.org", "testpoints.moneropulse.net", "testpoints.moneropulse.co", "testpoints.moneropulse.se");
+  lookup(LOOKUP_TXT, {"testpoints.lunexa.co", "testpoints.lunexa.cc", "testpoints.lunexa.xyz", "testpoints.lunexa.se"});
 
-  lookup(LOOKUP_TXT, {"stagenetpoints.moneropulse.org", "stagenetpoints.moneropulse.net", "stagenetpoints.moneropulse.co", "stagenetpoints.moneropulse.se"});
+  lookup(LOOKUP_TXT, {"stagenetpoints.lunexa.co", "stagenetpoints.lunexa.cc", "stagenetpoints.lunexa.xyz", "stagenetpoints.lunexa.se"});
 #endif
 
-  lookup(LOOKUP_TXT, {"segheights.moneropulse.org", "segheights.moneropulse.net", "segheights.moneropulse.co", "segheights.moneropulse.se"});
+  lookup(LOOKUP_TXT, {"segheights.lunexa.co", "segheights.lunexa.cc", "segheights.lunexa.xyz", "segheights.lunexa.se"});
 
   return 0;
   CATCH_ENTRY_L0("main", 1);
