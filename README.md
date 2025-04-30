@@ -37,17 +37,19 @@ Lunexa is a privacy-centric decentralized cryptocurrency based on Monero, design
 
 ## Introduction
 
-Lunexa is a decentralized digital currency focused on privacy, security, and untraceability. It builds upon Monero's foundation while introducing unique improvements and optimizations. By leveraging sophisticated cryptographic techniques, Lunexa ensures that your financial activities remain private by default, giving you complete control over your funds and who can see your transactions.
+Lunexa is a decentralized digital currency designed with privacy, security, and untraceability at its core. Built on the foundation of Monero, Lunexa is going to introduces unique enhancements and optimizations to elevate user privacy and transaction efficiency.
 
-With Lunexa, you are your own bank—having full control over your funds and ensuring that your transfers remain confidential unless you choose otherwise. Our mission is to create a currency that respects fundamental financial privacy while providing a secure and efficient medium of exchange.
+By employing advanced cryptographic techniques, Lunexa ensures your financial activity remains private by default—putting you in complete control of your funds and who has access to your transaction history. With Lunexa, you are your own bank.
+
+Our mission is to provide a secure, decentralized medium of exchange that upholds the fundamental right to financial privacy.
 
 ## About this Project
 
-Lunexa constitutes a fundamental implementation of a privacy-focused cryptocurrency system. Building on the established cryptographic principles of Monero, Lunexa aims to further enhance privacy, usability, and efficiency while maintaining a commitment to decentralization.
+Lunexa is a privacy-first cryptocurrency project, grounded in the proven cryptographic principles of Monero. It aims to further improve privacy, usability, and performance while remaining fully decentralized and community-driven.
 
-The project is open-source, free to use, and welcomes contributions from developers who share our vision for financial privacy. Our development efforts focus on continuous improvement.
+This open-source initiative is free to use and welcomes contributions from developers aligned with our vision of financial sovereignty. Our ongoing development efforts are focused on thoughtful, continual improvement.
 
-While we draw inspiration from Monero's approach to privacy and security, Lunexa is establishing its own ecosystem with unique features and improvements tailored to our community's needs.
+While Lunexa draws inspiration from Monero’s approach, it is building a distinct ecosystem—featuring innovations tailored to the evolving needs of our users.
 
 ## Project Status
 
@@ -858,7 +860,7 @@ This section contains general instructions for debugging failed installs or prob
 
 ## Known Issues
 
-[Detailed instructions preserved from original README]
+at the moment there are currently no known issues 
 
 ## Contributing
 
