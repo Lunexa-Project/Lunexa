@@ -10,7 +10,7 @@
 	branch = main
 [submodule "external/miniupnp"]
 	path = external/miniupnp
-	url = https://github.com/lunexa-project/miniupnp
+	url = https://github.com/miniupnp/miniupnp
 [submodule "external/RandomX"]
 	path = external/RandomX
 	url = https://github.com/Lunexa-Project/RandomX
