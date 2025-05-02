@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Monero Project
+// Copyright (c) 2017-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -82,7 +82,7 @@ namespace trezor {
     t_serialize(out_struct, req_param);
 
     http::fields_list additional_params;
-    additional_params.push_back(std::make_pair("Origin","https://monero.trezor.io"));
+    additional_params.push_back(std::make_pair("Origin","https://lunexa.trezor.io"));
     additional_params.push_back(std::make_pair("Content-Type","application/json; charset=utf-8"));
 
     const http::http_response_info* pri = nullptr;
@@ -244,7 +244,7 @@ namespace trezor {
     int m_device_port;
 
     std::unique_ptr<udp::socket> m_socket;
-    boost::asio::io_service m_io_service;
+    boost::asio::io_context m_io_service;
     boost::asio::deadline_timer m_deadline;
     udp::endpoint m_endpoint;
   };

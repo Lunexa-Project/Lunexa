@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Monero Project
+// Copyright (c) 2017-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -511,7 +511,7 @@ namespace trezor {
                                 tools::wallet2::signed_tx_set & signed_tx,
                                 hw::tx_aux_data & aux_data)
     {
-      CHECK_AND_ASSERT_THROW_MES(std::get<0>(unsigned_tx.transfers) == 0, "Unsuported non zero offset");
+      CHECK_AND_ASSERT_THROW_MES(std::get<0>(unsigned_tx.transfers) == 0, "Unsupported non zero offset");
 
       TREZOR_AUTO_LOCK_CMD();
       require_connected();
@@ -705,7 +705,7 @@ namespace trezor {
       if ((env_trezor_client_version = getenv("TREZOR_CLIENT_VERSION")) != nullptr){
         auto succ = epee::string_tools::get_xtype_from_string(client_version, env_trezor_client_version);
         if (succ){
-          MINFO("Trezor client version overriden by TREZOR_CLIENT_VERSION to: " << client_version);
+          MINFO("Trezor client version overridden by TREZOR_CLIENT_VERSION to: " << client_version);
         }
       }
 #endif

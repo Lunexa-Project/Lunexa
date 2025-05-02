@@ -27,116 +27,76 @@
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
-#include "messages_map.hpp"
-#include "messages/messages.pb.h"
-#include "messages/messages-common.pb.h"
-#include "messages/messages-management.pb.h"
-#include "messages/messages-lunexa.pb.h"
+#ifndef LUNEXA_MESSAGES_MAP_H
+#define LUNEXA_MESSAGES_MAP_H
 
-#ifdef WITH_TREZOR_DEBUGGING
-#include "messages/messages-debug.pb.h"
-#endif
+#include <string>
+#include <type_traits>
+#include <memory>
+#include "exceptions.hpp"
 
-using namespace std;
-using namespace hw::trezor;
+#include "trezor_defs.hpp"
 
-namespace hw{
-namespace trezor
-{
-
-  const char * TYPE_PREFIX = "MessageType_";
-  const char * PACKAGES[] = {
-      "hw.trezor.messages.",
-      "hw.trezor.messages.common.",
-      "hw.trezor.messages.management.",
-#ifdef WITH_TREZOR_DEBUGGING
-      "hw.trezor.messages.debug.",
-#endif
-      "hw.trezor.messages.lunexa."
-  };
-
-  google::protobuf::Message * MessageMapper::get_message(int wire_number) {
-    return MessageMapper::get_message(static_cast<messages::MessageType>(wire_number));
-  }
-
-  google::protobuf::Message * MessageMapper::get_message(messages::MessageType wire_number) {
-    const string &messageTypeName = hw::trezor::messages::MessageType_Name(wire_number);
-    if (messageTypeName.empty()) {
-      throw exc::EncodingException(std::string("Message descriptor not found: ") + std::to_string(wire_number));
-    }
-
-    string messageName = messageTypeName.substr(strlen(TYPE_PREFIX));
-    return MessageMapper::get_message(messageName);
-  }
-
-  google::protobuf::Message * MessageMapper::get_message(const std::string & msg_name) {
-    // Each package instantiation so lookup works
-    hw::trezor::messages::common::Success::default_instance();
-    hw::trezor::messages::management::Cancel::default_instance();
-    hw::trezor::messages::lunexa::LunexaGetAddress::default_instance();
-
-#ifdef WITH_TREZOR_DEBUGGING
-    hw::trezor::messages::debug::DebugLinkDecision::default_instance();
-#endif
-
-    google::protobuf::Descriptor const * desc = nullptr;
-    for(const string &text : PACKAGES){
-      desc = google::protobuf::DescriptorPool::generated_pool()
-          ->FindMessageTypeByName(text + msg_name);
-      if (desc != nullptr){
-        break;
-      }
-    }
-
-    if (desc == nullptr){
-      throw exc::EncodingException(std::string("Message not found: ") + msg_name);
-    }
-
-    google::protobuf::Message* message =
-        google::protobuf::MessageFactory::generated_factory()
-            ->GetPrototype(desc)->New();
-
-    return message;
-
-//    // CODEGEN way, fast
-//    switch(wire_number){
-//      case 501:
-//        return new messages::lunexa::LunexaTransactionSignRequest();
-//      default:
-//        throw std::runtime_error("not implemented");
-//    }
-//
-//    // CODEGEN message -> number: specification
-//    //    messages::MessageType get_message_wire_number(const messages::lunexa::LunexaTransactionSignRequest * msg) { return 501; }
-//    //    messages::MessageType get_message_wire_number(const messages::management::ping * msg)
-//
-  }
-
-  messages::MessageType MessageMapper::get_message_wire_number(const google::protobuf::Message * msg){
-    return MessageMapper::get_message_wire_number(msg->GetDescriptor()->name());
-  }
-
-  messages::MessageType MessageMapper::get_message_wire_number(const google::protobuf::Message & msg){
-    return MessageMapper::get_message_wire_number(msg.GetDescriptor()->name());
-  }
-
-  messages::MessageType MessageMapper::get_message_wire_number(const std::string & msg_name){
-    string enumMessageName = std::string(TYPE_PREFIX) + msg_name;
-
-    messages::MessageType res;
-    bool r = hw::trezor::messages::MessageType_Parse(enumMessageName, &res);
-    if (!r){
-      throw exc::EncodingException(std::string("Message ") + msg_name + " not found");
-    }
-
-    return res;
-  }
+#include <google/protobuf/stubs/common.h>
+#include <google/protobuf/generated_message_util.h>
+#include <google/protobuf/repeated_field.h>
+#include <google/protobuf/extension_set.h>
+#include <google/protobuf/generated_enum_reflection.h>
+#include "google/protobuf/descriptor.pb.h"
 
 #ifdef PROTOBUF_HAS_ABSEIL
-  messages::MessageType MessageMapper::get_message_wire_number(const absl::string_view& msg_name) {
-    return MessageMapper::get_message_wire_number(std::string{msg_name});
-  }
+#include <absl/strings/string_view.h>
 #endif
 
-}
-}
+#include "messages/messages.pb.h"
+
+namespace hw {
+namespace trezor {
+
+  class MessageMapper{
+    public:
+      MessageMapper() {
+
+      }
+
+    static ::google::protobuf::Message * get_message(int wire_number);
+    static ::google::protobuf::Message * get_message(messages::MessageType);
+    static ::google::protobuf::Message * get_message(const std::string & msg_name);
+    static messages::MessageType get_message_wire_number(const google::protobuf::Message * msg);
+    static messages::MessageType get_message_wire_number(const google::protobuf::Message & msg);
+    static messages::MessageType get_message_wire_number(const std::string & msg_name);
+
+#ifdef PROTOBUF_HAS_ABSEIL
+    static messages::MessageType get_message_wire_number(const absl::string_view & msg_name); // Protobuf 30 and up
+#endif
+
+    template<class t_message=google::protobuf::Message>
+    static messages::MessageType get_message_wire_number() {
+      BOOST_STATIC_ASSERT(boost::is_base_of<google::protobuf::Message, t_message>::value);
+      return get_message_wire_number(t_message::default_instance().GetDescriptor()->name());
+    }
+  };
+
+  template<class t_message=google::protobuf::Message>
+  std::shared_ptr<t_message> message_ptr_retype(std::shared_ptr<google::protobuf::Message> & in){
+    BOOST_STATIC_ASSERT(boost::is_base_of<google::protobuf::Message, t_message>::value);
+    if (!in){
+      return nullptr;
+    }
+
+    return std::dynamic_pointer_cast<t_message>(in);
+  }
+
+  template<class t_message=google::protobuf::Message>
+  std::shared_ptr<t_message> message_ptr_retype_static(std::shared_ptr<google::protobuf::Message> & in){
+    BOOST_STATIC_ASSERT(boost::is_base_of<google::protobuf::Message, t_message>::value);
+    if (!in){
+      return nullptr;
+    }
+
+    return std::static_pointer_cast<t_message>(in);
+  }
+
+}}
+
+#endif //LUNEXA_MESSAGES_MAP_H

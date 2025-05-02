@@ -1,208 +1,142 @@
-# Function for setting default options default values via env vars
-function(_trezor_default_val val_name val_default)
-    if(NOT DEFINED ENV{${val_name}})
-        set(ENV{${val_name}} ${val_default})
-    endif()
-endfunction()
+// Copyright (c) 2017-2024, The Monero Project
+//
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without modification, are
+// permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice, this list of
+//    conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright notice, this list
+//    of conditions and the following disclaimer in the documentation and/or other
+//    materials provided with the distribution.
+//
+// 3. Neither the name of the copyright holder nor the names of its contributors may be
+//    used to endorse or promote products derived from this software without specific
+//    prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+// EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+// THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+// THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
 
-# Define default options via env vars
-_trezor_default_val(USE_DEVICE_TREZOR ON)
-_trezor_default_val(USE_DEVICE_TREZOR_MANDATORY OFF)
-_trezor_default_val(USE_DEVICE_TREZOR_PROTOBUF_TEST ON)
-_trezor_default_val(USE_DEVICE_TREZOR_LIBUSB ON)
-_trezor_default_val(USE_DEVICE_TREZOR_UDP_RELEASE OFF)
-_trezor_default_val(USE_DEVICE_TREZOR_DEBUG OFF)
-_trezor_default_val(TREZOR_DEBUG OFF)
+#include "messages_map.hpp"
+#include "messages/messages.pb.h"
+#include "messages/messages-common.pb.h"
+#include "messages/messages-management.pb.h"
+#include "messages/messages-lunexa.pb.h"
 
-# Main options
-OPTION(USE_DEVICE_TREZOR "Trezor support compilation" $ENV{USE_DEVICE_TREZOR})
-OPTION(USE_DEVICE_TREZOR_MANDATORY "Trezor compilation is mandatory, fail build if Trezor support cannot be compiled" $ENV{USE_DEVICE_TREZOR_MANDATORY})
-OPTION(USE_DEVICE_TREZOR_PROTOBUF_TEST "Trezor Protobuf test" $ENV{USE_DEVICE_TREZOR_PROTOBUF_TEST})
-OPTION(USE_DEVICE_TREZOR_LIBUSB "Trezor LibUSB compilation" $ENV{USE_DEVICE_TREZOR_LIBUSB})
-OPTION(USE_DEVICE_TREZOR_UDP_RELEASE "Trezor UdpTransport in release mode" $ENV{USE_DEVICE_TREZOR_UDP_RELEASE})
-OPTION(USE_DEVICE_TREZOR_DEBUG "Trezor Debugging enabled" $ENV{USE_DEVICE_TREZOR_DEBUG})
-OPTION(TREZOR_DEBUG "Main Trezor debugging switch" $ENV{TREZOR_DEBUG})
+#ifdef WITH_TREZOR_DEBUGGING
+#include "messages/messages-debug.pb.h"
+#endif
 
-macro(trezor_fatal_msg msg)
-    if ($ENV{USE_DEVICE_TREZOR_MANDATORY})
-        message(FATAL_ERROR
-                "${msg}\n"
-                "==========================================================================\n"
-                "[ERROR] To compile without Trezor support, set USE_DEVICE_TREZOR=OFF. "
-                "It is possible both via cmake variable and environment variable, e.g., "
-                "`USE_DEVICE_TREZOR=OFF make release`\n"
-                "For more information, please check src/device_trezor/README.md\n"
-        )
-    else()
-        message(WARNING
-                "${msg}\n"
-                "==========================================================================\n"
-                "[WARNING] Trezor support cannot be compiled! Skipping Trezor compilation. \n"
-                "For more information, please check src/device_trezor/README.md\n")
-        set(USE_DEVICE_TREZOR OFF)
-        return()  # finish this cmake file processing (as this is macro).
-    endif()
-endmacro()
+using namespace std;
+using namespace hw::trezor;
 
-# Use Trezor master switch
-if (USE_DEVICE_TREZOR)
-    # Look for protobuf-config.cmake, provided by Protobuf
-    find_package(Protobuf CONFIG)
+namespace hw{
+namespace trezor
+{
 
-    if (Protobuf_FOUND)
-        # https://github.com/protocolbuffers/protobuf/issues/14576
-        find_program(Protobuf_PROTOC_EXECUTABLE protoc REQUIRED)
-        set(Protobuf_LIBRARY protobuf::libprotobuf) # Compatibility with FindProtobuf.cmake
-    else()
-        # Look for FindProtobuf.cmake, provided by CMake
-        find_package(Protobuf)
-    endif()
+  const char * TYPE_PREFIX = "MessageType_";
+  const char * PACKAGES[] = {
+      "hw.trezor.messages.",
+      "hw.trezor.messages.common.",
+      "hw.trezor.messages.management.",
+#ifdef WITH_TREZOR_DEBUGGING
+      "hw.trezor.messages.debug.",
+#endif
+      "hw.trezor.messages.lunexa."
+  };
 
-    # Early fail for optional Trezor support
-    if (NOT Protobuf_FOUND)
-        trezor_fatal_msg("Trezor: protobuf library not found")
-    endif()
+  google::protobuf::Message * MessageMapper::get_message(int wire_number) {
+    return MessageMapper::get_message(static_cast<messages::MessageType>(wire_number));
+  }
 
-    if (Protobuf_VERSION VERSION_GREATER_EQUAL 22.0)
-        add_definitions(-DPROTOBUF_HAS_ABSEIL)
-    endif()
+  google::protobuf::Message * MessageMapper::get_message(messages::MessageType wire_number) {
+    const string &messageTypeName = hw::trezor::messages::MessageType_Name(wire_number);
+    if (messageTypeName.empty()) {
+      throw exc::EncodingException(std::string("Message descriptor not found: ") + std::to_string(wire_number));
+    }
 
-    if(TREZOR_DEBUG)
-        set(USE_DEVICE_TREZOR_DEBUG 1)
-        message(STATUS "Trezor: debug build enabled")
-    endif()
+    string messageName = messageTypeName.substr(strlen(TYPE_PREFIX));
+    return MessageMapper::get_message(messageName);
+  }
 
-    # Compile debugging support (for tests)
-    if (USE_DEVICE_TREZOR_DEBUG)
-        add_definitions(-DWITH_TREZOR_DEBUGGING=1)
-    endif()
-else()
-    message(STATUS "Trezor: support disabled by USE_DEVICE_TREZOR")
-endif()
+  google::protobuf::Message * MessageMapper::get_message(const std::string & msg_name) {
+    // Each package instantiation so lookup works
+    hw::trezor::messages::common::Success::default_instance();
+    hw::trezor::messages::management::Cancel::default_instance();
+    hw::trezor::messages::lunexa::LunexaGetAddress::default_instance();
 
-# Protobuf compilation test
-if(Protobuf_FOUND AND USE_DEVICE_TREZOR)
-    execute_process(COMMAND ${Protobuf_PROTOC_EXECUTABLE} -I "${CMAKE_CURRENT_LIST_DIR}" -I "${Protobuf_INCLUDE_DIR}" "${CMAKE_CURRENT_LIST_DIR}/test-protobuf.proto" --cpp_out ${CMAKE_BINARY_DIR} RESULT_VARIABLE RET OUTPUT_VARIABLE OUT ERROR_VARIABLE ERR)
-    if(RET)
-        trezor_fatal_msg("Trezor: Protobuf test generation failed: ${OUT} ${ERR}")
-    endif()
+#ifdef WITH_TREZOR_DEBUGGING
+    hw::trezor::messages::debug::DebugLinkDecision::default_instance();
+#endif
 
-    if(ANDROID)
-        set(CMAKE_TRY_COMPILE_LINKER_FLAGS "${CMAKE_TRY_COMPILE_LINKER_FLAGS} -llog")
-        set(CMAKE_TRY_COMPILE_LINK_LIBRARIES "${CMAKE_TRY_COMPILE_LINK_LIBRARIES} log")
-    endif()
+    google::protobuf::Descriptor const * desc = nullptr;
+    for(const string &text : PACKAGES){
+      desc = google::protobuf::DescriptorPool::generated_pool()
+          ->FindMessageTypeByName(text + msg_name);
+      if (desc != nullptr){
+        break;
+      }
+    }
 
-    if(USE_DEVICE_TREZOR_PROTOBUF_TEST)
-        if(PROTOBUF_LDFLAGS)
-            set(PROTOBUF_TRYCOMPILE_LINKER "${PROTOBUF_LDFLAGS}")
-        else()
-            set(PROTOBUF_TRYCOMPILE_LINKER "${Protobuf_LIBRARY}")
-        endif()
-        
-        try_compile(Protobuf_COMPILE_TEST_PASSED
-            "${CMAKE_BINARY_DIR}"
-            SOURCES
-            "${CMAKE_BINARY_DIR}/test-protobuf.pb.cc"
-            "${CMAKE_CURRENT_LIST_DIR}/test-protobuf.cpp"
-            CMAKE_FLAGS
-            CMAKE_EXE_LINKER_FLAGS ${CMAKE_TRY_COMPILE_LINKER_FLAGS}
-            "-DINCLUDE_DIRECTORIES=${Protobuf_INCLUDE_DIR};${CMAKE_BINARY_DIR}"
-            "-DCMAKE_CXX_STANDARD=${CMAKE_CXX_STANDARD}"
-            LINK_LIBRARIES "${PROTOBUF_TRYCOMPILE_LINKER}" ${CMAKE_TRY_COMPILE_LINK_LIBRARIES}
-            OUTPUT_VARIABLE OUTPUT
-        )
-        if(NOT Protobuf_COMPILE_TEST_PASSED)
-            trezor_fatal_msg("Trezor: Protobuf Compilation test failed: ${OUTPUT}.")
-        endif()
-    else ()
-        message(STATUS "Trezor: Protobuf Compilation test skipped, build may fail later")
-    endif()
-endif()
+    if (desc == nullptr){
+      throw exc::EncodingException(std::string("Message not found: ") + msg_name);
+    }
 
-# Try to build protobuf messages
-if(Protobuf_FOUND AND USE_DEVICE_TREZOR)
-    # .proto files to compile
-    set(_proto_files "messages.proto"
-                     "messages-common.proto"
-                     "messages-management.proto"
-                     "messages-lunexa.proto")
-    if (TREZOR_DEBUG)
-        list(APPEND _proto_files "messages-debug.proto")
-    endif ()
+    google::protobuf::Message* message =
+        google::protobuf::MessageFactory::generated_factory()
+            ->GetPrototype(desc)->New();
 
-    set(_proto_include_dir "${CMAKE_SOURCE_DIR}/src/device_trezor/trezor/protob")
-    set(_proto_files_absolute)
-    foreach(file IN LISTS _proto_files)
-        list(APPEND _proto_files_absolute "${_proto_include_dir}/${file}")
-    endforeach ()
+    return message;
 
-    set(_proto_out_dir "${CMAKE_SOURCE_DIR}/src/device_trezor/trezor/messages")
-    execute_process(COMMAND ${Protobuf_PROTOC_EXECUTABLE} --cpp_out "${_proto_out_dir}" "-I${_proto_include_dir}" ${_proto_files_absolute} RESULT_VARIABLE RET OUTPUT_VARIABLE OUT ERROR_VARIABLE ERR)
-    if(RET)
-        trezor_fatal_msg("Trezor: protobuf messages could not be (re)generated (err=${RET}). OUT: ${OUT}, ERR: ${ERR}.")
-    endif()
+//    // CODEGEN way, fast
+//    switch(wire_number){
+//      case 501:
+//        return new messages::lunexa::LunexaTransactionSignRequest();
+//      default:
+//        throw std::runtime_error("not implemented");
+//    }
+//
+//    // CODEGEN message -> number: specification
+//    //    messages::MessageType get_message_wire_number(const messages::lunexa::LunexaTransactionSignRequest * msg) { return 501; }
+//    //    messages::MessageType get_message_wire_number(const messages::management::ping * msg)
+//
+  }
 
-    if(FREEBSD)
-        # FreeBSD defines `minor` in usr/include/sys/types.h which conflicts with this file
-        # https://github.com/trezor/trezor-firmware/issues/4460
-        file(READ "${_proto_out_dir}/messages-lunexa.pb.h" file_content)
-        string(REPLACE "// @@protoc_insertion_point(includes)"
-                       "// @@protoc_insertion_point(includes)\n#ifdef minor\n#undef minor\n#endif"
-                updated_content "${file_content}")
-        file(WRITE "${_proto_out_dir}/messages-lunexa.pb.h" "${updated_content}")
-    endif()
+  messages::MessageType MessageMapper::get_message_wire_number(const google::protobuf::Message * msg){
+    return MessageMapper::get_message_wire_number(msg->GetDescriptor()->name());
+  }
 
-    message(STATUS "Trezor: protobuf messages regenerated out.")
-    set(DEVICE_TREZOR_READY 1)
-    add_definitions(-DDEVICE_TREZOR_READY=1)
-    add_definitions(-DPROTOBUF_INLINE_NOT_IN_HEADERS=0)
+  messages::MessageType MessageMapper::get_message_wire_number(const google::protobuf::Message & msg){
+    return MessageMapper::get_message_wire_number(msg.GetDescriptor()->name());
+  }
 
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_definitions(-DTREZOR_DEBUG=1)
-    endif()
+  messages::MessageType MessageMapper::get_message_wire_number(const std::string & msg_name){
+    string enumMessageName = std::string(TYPE_PREFIX) + msg_name;
 
-    if(USE_DEVICE_TREZOR_UDP_RELEASE)
-        message(STATUS "Trezor: UDP transport enabled (emulator)")
-        add_definitions(-DUSE_DEVICE_TREZOR_UDP_RELEASE=1)
-    endif()
+    messages::MessageType res;
+    bool r = hw::trezor::messages::MessageType_Parse(enumMessageName, &res);
+    if (!r){
+      throw exc::EncodingException(std::string("Message ") + msg_name + " not found");
+    }
 
-    if (Protobuf_INCLUDE_DIR)
-        include_directories(${Protobuf_INCLUDE_DIR})
-    endif()
+    return res;
+  }
 
-    # LibUSB support, check for particular version
-    # Include support only if compilation test passes
-    if (USE_DEVICE_TREZOR_LIBUSB)
-        find_package(LibUSB)
-    endif()
+#ifdef PROTOBUF_HAS_ABSEIL
+  messages::MessageType MessageMapper::get_message_wire_number(const absl::string_view& msg_name) {
+    return MessageMapper::get_message_wire_number(std::string{msg_name});
+  }
+#endif
 
-    if (LibUSB_COMPILE_TEST_PASSED)
-        add_definitions(-DHAVE_TREZOR_LIBUSB=1)
-        if(LibUSB_INCLUDE_DIRS)
-            include_directories(${LibUSB_INCLUDE_DIRS})
-        endif()
-    endif()
-
-    set(TREZOR_LIBUSB_LIBRARIES "")
-    if(LibUSB_COMPILE_TEST_PASSED)
-        list(APPEND TREZOR_LIBUSB_LIBRARIES ${LibUSB_LIBRARIES} ${LIBUSB_DEP_LINKER})
-        message(STATUS "Trezor: compatible LibUSB found at: ${LibUSB_INCLUDE_DIRS}")
-    elseif(USE_DEVICE_TREZOR_LIBUSB AND NOT ANDROID)
-        trezor_fatal_msg("Trezor: LibUSB not found or test failed, please install libusb-1.0.26")
-    endif()
-
-    if (BUILD_GUI_DEPS)
-        set(TREZOR_DEP_LIBS "")
-        set(TREZOR_DEP_LINKER "")
-
-        if (Protobuf_LIBRARY)
-            list(APPEND TREZOR_DEP_LIBS ${Protobuf_LIBRARY})
-            string(APPEND TREZOR_DEP_LINKER " -lprotobuf")
-        endif()
-
-        if (TREZOR_LIBUSB_LIBRARIES)
-            list(APPEND TREZOR_DEP_LIBS ${TREZOR_LIBUSB_LIBRARIES})
-            string(APPEND TREZOR_DEP_LINKER " -lusb-1.0 ${LIBUSB_DEP_LINKER}")
-        endif()
-    endif()
-endif()
+}
+}

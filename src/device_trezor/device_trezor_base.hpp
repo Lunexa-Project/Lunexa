@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, The Monero Project
+// Copyright (c) 2017-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -225,6 +225,7 @@ namespace trezor {
           }
         }
 
+        // Network type
         if (network_type){
           msg->set_network_type(static_cast<messages::lunexa::LunexaNetworkType>(network_type.get()));
         } else {
