@@ -380,7 +380,7 @@ namespace trezor{
 #ifdef _WIN32
       auto element = itr->operator[]("device");
 #else
-      auto element = itr->GetObject();
+      auto element = (*itr); 
 #endif
       auto t = std::make_shared<BridgeTransport>(boost::make_optional(json_get_string(element["path"])));
 
