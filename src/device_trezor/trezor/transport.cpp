@@ -44,6 +44,9 @@
 
 #undef LUNEXA_DEFAULT_LOG_CATEGORY
 #define LUNEXA_DEFAULT_LOG_CATEGORY "device.trezor.transport"
+#ifdef _WIN32
+#undef GetObject
+#endif
 
 using namespace std;
 using json = rapidjson::Document;
@@ -380,7 +383,7 @@ namespace trezor{
 #ifdef _WIN32
       auto element = itr->operator[]("device");
 #else
-      auto element = (*itr); 
+      auto element = itr->GetObject();
 #endif
       auto t = std::make_shared<BridgeTransport>(boost::make_optional(json_get_string(element["path"])));
 
