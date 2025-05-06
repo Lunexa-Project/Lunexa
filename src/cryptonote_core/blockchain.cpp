@@ -2656,8 +2656,8 @@ bool Blockchain::get_transactions(const t_ids_container& txs_ids, t_tx_container
       bool res = pruned ? m_db->get_pruned_tx_blob(tx_hash, tx) : m_db->get_tx_blob(tx_hash, tx);
       if (res)
       {
-        txs.push_back(transaction());
-        res = pruned ? parse_and_validate_tx_base_from_blob(tx, txs.back()) : parse_and_validate_tx_from_blob(tx, txs.back());
+        auto& added_tx = txs.emplace_back();
+        res = pruned ? parse_and_validate_tx_base_from_blob(tx, added_tx) : parse_and_validate_tx_from_blob(tx, added_tx);
         if (!res)
         {
           LOG_ERROR("Invalid transaction");
@@ -4660,7 +4660,7 @@ void Blockchain::check_against_checkpoints(const checkpoints& points, bool enfor
       }
       else
       {
-        LOG_ERROR("WARNING: local blockchain failed to pass a Lunexa checkpoint, and you could be on a fork. You should either sync up from scratch, OR download a fresh blockchain bootstrap, OR enable checkpoint enforcing with the --enforce-dns-checkpointing command-line option");
+        LOG_ERROR("WARNING: local blockchain failed to pass a LunexaPoint checkpoint, and you could be on a fork. You should either sync up from scratch, OR download a fresh blockchain bootstrap, OR enable checkpoint enforcing with the --enforce-dns-checkpointing command-line option");
       }
     }
   }
