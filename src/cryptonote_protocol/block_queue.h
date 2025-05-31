@@ -37,6 +37,7 @@
 #include <boost/thread/recursive_mutex.hpp>
 #include <boost/uuid/uuid.hpp>
 #include "net/net_utils_base.h"
+#include "crypto/crypto.h"
 
 #undef LUNEXA_DEFAULT_LOG_CATEGORY
 #define LUNEXA_DEFAULT_LOG_CATEGORY "cn.block_queue"

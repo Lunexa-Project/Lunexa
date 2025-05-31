@@ -53,7 +53,7 @@
 #undef LUNEXA_DEFAULT_LOG_CATEGORY
 #define LUNEXA_DEFAULT_LOG_CATEGORY "wallet.simplewallet"
 // Hardcode Lunexa's donation address (see #1447)
-constexpr const char LUNEXA_DONATION_ADDR[] = "";
+constexpr const char LUNEXA_DONATION_ADDR[] = "9CZwYLXbbKzAqbDdDX3vLn2NghGuknsAxcpR17KxZcrTF6pEfmzhYvsgVDdzaHon6DheAqi9eJzCYLL9cBjJsmBbBUqv4W3";
 
 /*!
  * \namespace cryptonote

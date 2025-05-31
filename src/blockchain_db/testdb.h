@@ -34,6 +34,7 @@
 #include <vector>
 #include <map>
 
+#include <cryptonote_basic/cryptonote_format_utils.h>
 #include "blockchain_db.h"
 
 namespace cryptonote
