@@ -35,14 +35,15 @@ const hardfork_t mainnet_hard_forks[] = {
   // version 1 from the start of the blockchain 20 April 2025 14:42:28 GMT
   { 1, 1, 0, 1745131326 },
 
-  // version 2 starts from block 2 RandomX intergration time stamp put as this as placeholder until it reaches the day it needs to be changed
-  { 10, 3, 0, 1745131326},
-  
+  // version 2 starts from block 3 - all features enabled
+  { 2, 10, 0, 1745131326 },
 
+  // version 3 starts from block 10 - future changes (difficulty, etc)
+  { 3, 20, 0, 1745131326 + 86400 }, // 1 day after genesis
 };
 
 const size_t num_mainnet_hard_forks = sizeof(mainnet_hard_forks) / sizeof(mainnet_hard_forks[0]);
-const uint64_t mainnet_hard_fork_version_1_till = 10;
+const uint64_t mainnet_hard_fork_version_1_till = 2;
 
 
 const hardfork_t testnet_hard_forks[] = {

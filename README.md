@@ -3,13 +3,13 @@ Lunexa is a privacy-centric decentralized cryptocurrency based on Monero, design
 
 ## Table of Contents
 
-- [Introduction](#introduction)
+  - [Introduction](#introduction)
 - [About this Project](#about-this-project)
 - [Project Status](#project-status)
 - [Features](#features)
 - [Quick Links](#quick-links)
 - [Getting Started](#getting-started)
-  - [Dependencies](#dependencies)
+    - [Dependencies](#dependencies)
     - [On Linux](#on-linux)
     - [On macOS](#on-macos)
     - [On Windows](#on-windows)
@@ -29,7 +29,7 @@ Lunexa is a privacy-centric decentralized cryptocurrency based on Monero, design
 - [Installing Lunexa from packages](#installing-lunexa-from-packages)
 - [Running lunexad](#running-lunexad)
 - [Internationalization](#internationalization)
-- [Using Tor](#using-tor)
+  - [Using Tor](#using-tor)
 - [Debugging](#debugging)
 - [Known Issues](#known-issues)
 - [Contributing](#contributing)
@@ -67,6 +67,7 @@ Thank you!
 - **Security**: Cryptographically secure through a distributed peer-to-peer consensus network
 - **Untraceability**: Ring signatures ensure transactions remain untraceable
 - **Decentralization**: Designed to run on standard consumer hardware to maintain network decentralization
+- **RandomX**: Exclusively uses RandomX For Mining
 
 ## Quick Links
 
