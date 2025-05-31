@@ -52,13 +52,13 @@
 
 // MONEY_SUPPLY - total number coins to be generated
 #define MONEY_SUPPLY                                    ((uint64_t)(21000000000000000)) // 21 million with 12 decimals
-#define EMISSION_SPEED_FACTOR_PER_MINUTE                (18)
-#define FINAL_SUBSIDY_PER_MINUTE                        ((uint64_t)300000000000) // 3 * pow(10, 11)
+#define EMISSION_SPEED_FACTOR_PER_MINUTE                (20)
+#define FINAL_SUBSIDY_PER_MINUTE                        ((uint64_t)500000000000) // 0.5 LXA per minute
 
-#define CRYPTONOTE_REWARD_BLOCKS_WINDOW                 100
+#define CRYPTONOTE_REWARD_BLOCKS_WINDOW                 200
+#define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1    30000 //size of block (bytes) after which reward for block calculated using block size - before first fork
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2    60000 //size of block (bytes) after which reward for block calculated using block size
-#define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1    20000 //size of block (bytes) after which reward for block calculated using block size - before first fork
-#define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V5    300000 //size of block (bytes) after which reward for block calculated using block size - second change, from v5
+#define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V3    300000 //size of block (bytes) after which reward for block calculated using block size 
 #define CRYPTONOTE_LONG_TERM_BLOCK_WEIGHT_WINDOW_SIZE   100000 // size in blocks of the long term block weight median window
 #define CRYPTONOTE_SHORT_TERM_BLOCK_WEIGHT_SURGE_FACTOR 50
 #define CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE          600
@@ -67,11 +67,11 @@
 #define COIN                                            ((uint64_t)1000000000000) // pow(10, 12)
 
 #define FEE_PER_KB_OLD                                  ((uint64_t)10000000000) // pow(10, 10)
-#define FEE_PER_KB                                      ((uint64_t)2000000000) // 2 * pow(10, 9)
-#define FEE_PER_BYTE                                    ((uint64_t)300000)
-#define DYNAMIC_FEE_PER_KB_BASE_FEE                     ((uint64_t)2000000000) // 2 * pow(10,9)
+#define FEE_PER_KB                                      ((uint64_t)2000000000)  // 0.002 LXA
+#define FEE_PER_BYTE                                    ((uint64_t)300000)      // 0.0000003
+#define DYNAMIC_FEE_PER_KB_BASE_FEE                     ((uint64_t)2000000000)  // 0.002 LXA
 #define DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD            ((uint64_t)10000000000000) // 10 * pow(10,12)
-#define DYNAMIC_FEE_PER_KB_BASE_FEE_V5                  ((uint64_t)2000000000 * (uint64_t)CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2 / CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V5)
+#define DYNAMIC_FEE_PER_KB_BASE_FEE_V5                  ((uint64_t)2000000000 * (uint64_t)CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2 / CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V3)
 #define DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT         ((uint64_t)3000)
 
 #define ORPHANED_BLOCKS_MAX_COUNT                       100
@@ -127,31 +127,35 @@
 
 #define COMMAND_RPC_GET_BLOCKS_FAST_MAX_BLOCK_COUNT     1000
 #define COMMAND_RPC_GET_BLOCKS_FAST_MAX_TX_COUNT        20000
+#define DEFAULT_RPC_MAX_CONNECTIONS_PER_PUBLIC_IP       3
+#define DEFAULT_RPC_MAX_CONNECTIONS_PER_PRIVATE_IP      25
+#define DEFAULT_RPC_MAX_CONNECTIONS                     100
+#define DEFAULT_RPC_SOFT_LIMIT_SIZE                     25 * 1024 * 1024 // 25 MiB
 #define MAX_RPC_CONTENT_LENGTH                          1048576 // 1 MB
 
 #define P2P_LOCAL_WHITE_PEERLIST_LIMIT                  1000
 #define P2P_LOCAL_GRAY_PEERLIST_LIMIT                   5000
 
-#define P2P_DEFAULT_CONNECTIONS_COUNT                   8             // made smaller as this is a smaller network
-#define P2P_DEFAULT_HANDSHAKE_INTERVAL                  30           //seconds
-#define P2P_DEFAULT_PACKET_MAX_SIZE                     50000000     //50000000 bytes maximum packet size
+#define P2P_DEFAULT_CONNECTIONS_COUNT                   10         
+#define P2P_DEFAULT_HANDSHAKE_INTERVAL                  60         // seconds
+#define P2P_DEFAULT_PACKET_MAX_SIZE                     50000000   // 50000000 bytes maximum packet size
 #define P2P_DEFAULT_PEERS_IN_HANDSHAKE                  250
 #define P2P_MAX_PEERS_IN_HANDSHAKE                      250
 #define P2P_DEFAULT_CONNECTION_TIMEOUT                  5000       //5 seconds
 #define P2P_DEFAULT_SOCKS_CONNECT_TIMEOUT               45         // seconds
-#define P2P_DEFAULT_PING_CONNECTION_TIMEOUT             2000       //2 seconds
-#define P2P_DEFAULT_INVOKE_TIMEOUT                      60*2*1000  //2 minutes
-#define P2P_DEFAULT_HANDSHAKE_INVOKE_TIMEOUT            5000       //5 seconds
+#define P2P_DEFAULT_PING_CONNECTION_TIMEOUT             2000       // 2 seconds
+#define P2P_DEFAULT_INVOKE_TIMEOUT                      60*2*1000  // 2 minutes
+#define P2P_DEFAULT_HANDSHAKE_INVOKE_TIMEOUT            5000       // 5 seconds
 #define P2P_DEFAULT_WHITELIST_CONNECTIONS_PERCENT       70
 #define P2P_DEFAULT_ANCHOR_CONNECTIONS_COUNT            2
 #define P2P_DEFAULT_SYNC_SEARCH_CONNECTIONS_COUNT       2
 #define P2P_DEFAULT_LIMIT_RATE_UP                       2048       // kB/s
 #define P2P_DEFAULT_LIMIT_RATE_DOWN                     8192       // kB/s
 
-#define P2P_FAILED_ADDR_FORGET_SECONDS                  (60*60)     //1 hour
-#define P2P_IP_BLOCKTIME                                (60*60*24)  //24 hour
-#define P2P_IP_FAILS_BEFORE_BLOCK                       10
-#define P2P_IDLE_CONNECTION_KILL_INTERVAL               (5*60) //5 minutes
+#define P2P_FAILED_ADDR_FORGET_SECONDS                  (60*60)    // 1 hour
+#define P2P_IP_BLOCKTIME                                (60*60*24) // 24 hour
+#define P2P_IP_FAILS_BEFORE_BLOCK                       10          // 
+#define P2P_IDLE_CONNECTION_KILL_INTERVAL               (5*60)     // 5 minutes
 
 #define P2P_SUPPORT_FLAG_FLUFFY_BLOCKS                  0x01
 #define P2P_SUPPORT_FLAGS                               P2P_SUPPORT_FLAG_FLUFFY_BLOCKS
@@ -167,27 +171,29 @@
 
 #define THREAD_STACK_SIZE                       5 * 1024 * 1024
 
-#define HF_VERSION_DYNAMIC_FEE                  4
-#define HF_VERSION_MIN_MIXIN_4                  6
-#define HF_VERSION_MIN_MIXIN_6                  7
-#define HF_VERSION_MIN_MIXIN_10                 8
-#define HF_VERSION_MIN_MIXIN_15                 15
-#define HF_VERSION_ENFORCE_RCT                  6
-#define HF_VERSION_PER_BYTE_FEE                 8
-#define HF_VERSION_SMALLER_BP                   10
-#define HF_VERSION_LONG_TERM_BLOCK_WEIGHT       10
-#define HF_VERSION_MIN_2_OUTPUTS                12
-#define HF_VERSION_MIN_V2_COINBASE_TX           12
-#define HF_VERSION_SAME_MIXIN                   12
-#define HF_VERSION_REJECT_SIGS_IN_COINBASE      12
-#define HF_VERSION_ENFORCE_MIN_AGE              12
-#define HF_VERSION_EFFECTIVE_SHORT_TERM_MEDIAN_IN_PENALTY 12
-#define HF_VERSION_EXACT_COINBASE               13
-#define HF_VERSION_CLSAG                        13
-#define HF_VERSION_DETERMINISTIC_UNLOCK_TIME    13
-#define HF_VERSION_BULLETPROOF_PLUS             15
-#define HF_VERSION_VIEW_TAGS                    15
-#define HF_VERSION_2021_SCALING                 15
+#define HF_VERSION_DYNAMIC_FEE                  1
+#define HF_VERSION_MIN_MIXIN_4                  1
+#define HF_VERSION_ENFORCE_RCT                  1
+#define HF_VERSION_PER_BYTE_FEE                 1
+#define HF_VERSION_MIN_MIXIN_6                  1
+#define HF_VERSION_MIN_MIXIN_10                 1
+#define HF_VERSION_MIN_MIXIN_15                 1
+
+#define HF_VERSION_SMALLER_BP                   2
+#define HF_VERSION_LONG_TERM_BLOCK_WEIGHT       2
+#define HF_VERSION_MIN_2_OUTPUTS                2
+#define HF_VERSION_MIN_V2_COINBASE_TX           2
+#define HF_VERSION_SAME_MIXIN                   2
+#define HF_VERSION_REJECT_SIGS_IN_COINBASE      2
+#define HF_VERSION_ENFORCE_MIN_AGE              2
+#define HF_VERSION_EFFECTIVE_SHORT_TERM_MEDIAN_IN_PENALTY 2
+
+#define HF_VERSION_EXACT_COINBASE               3
+#define HF_VERSION_CLSAG                        3
+#define HF_VERSION_DETERMINISTIC_UNLOCK_TIME    3
+#define HF_VERSION_BULLETPROOF_PLUS             3
+#define HF_VERSION_VIEW_TAGS                    3
+#define HF_VERSION_2021_SCALING                 3
 
 #define PER_KB_FEE_QUANTIZATION_DECIMALS        8
 #define CRYPTONOTE_SCALING_2021_FEE_ROUNDING_PLACES 2
@@ -215,7 +221,7 @@
 // New constants are intended to go here
 namespace config
 {
-  uint64_t const DEFAULT_FEE_ATOMIC_LXA_PER_KB = 100; // Just a placeholder!  Change me!
+  uint64_t const DEFAULT_FEE_ATOMIC_LXA_PER_KB = 90; // slightly reduced for better adoption
   uint8_t const FEE_CALCULATION_MAX_RETRIES = 10;
   uint64_t const DEFAULT_DUST_THRESHOLD = ((uint64_t)2000000000); // 2 * pow(10, 9)
   uint64_t const BASE_REWARD_CLAMP_THRESHOLD = ((uint64_t)100000000); // pow(10, 8)
@@ -243,6 +249,8 @@ namespace config
   const unsigned char HASH_KEY_WALLET_CACHE = 0x8d;
   const unsigned char HASH_KEY_RPC_PAYMENT_NONCE = 0x58;
   const unsigned char HASH_KEY_MEMORY = 'k';
+  const unsigned char HASH_KEY_BACKGROUND_KEYS_FILE = 0x9a;
+  const unsigned char HASH_KEY_BACKGROUND_CACHE = 0x9b;
   const unsigned char HASH_KEY_MULTISIG[] = {'M', 'u', 'l', 't' , 'i', 's', 'i', 'g', 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
   const unsigned char HASH_KEY_MULTISIG_KEY_AGGREGATION[] = "Multisig_key_agg";
   const unsigned char HASH_KEY_CLSAG_ROUND_MULTISIG[] = "CLSAG_round_ms_merge_factor";

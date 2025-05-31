@@ -723,7 +723,7 @@ namespace nodetool
     return true;
   }
 
-  //-----------------------------------------------------------------------------------
+  //-----------------------------------Public Node-------------------------------
   template<class t_payload_net_handler>
   std::set<std::string> node_server<t_payload_net_handler>::get_ip_seed_nodes() const
   {
