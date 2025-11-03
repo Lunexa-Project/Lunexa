@@ -31,6 +31,7 @@
 // 
 
 #pragma once
+
 #include <boost/asio/post.hpp>
 #include <boost/foreach.hpp>
 #include <boost/uuid/random_generator.hpp>
@@ -46,6 +47,7 @@
 #include "string_tools_lexical.h"
 #include "misc_language.h"
 #include "net/abstract_tcp_server2.h"
+
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
@@ -973,14 +975,16 @@ namespace net_utils
     io_context_t &io_context,
     std::shared_ptr<shared_state> shared_state,
     t_connection_type connection_type,
-    ssl_support_t ssl_support
+    ssl_support_t ssl_support,
+    t_connection_context&& initial
   ):
     connection(
       io_context,
       socket_t{io_context},
       std::move(shared_state),
       connection_type,
-      ssl_support
+      ssl_support,
+      std::move(initial)
     )
   {
   }
@@ -991,12 +995,14 @@ namespace net_utils
     socket_t &&socket,
     std::shared_ptr<shared_state> shared_state,
     t_connection_type connection_type,
-    ssl_support_t ssl_support
+    ssl_support_t ssl_support,
+    t_connection_context&& initial
   ):
     connection_basic(io_context, std::move(socket), shared_state, ssl_support),
     m_handler(this, *shared_state, m_conn_context),
     m_connection_type(connection_type),
     m_io_context{io_context},
+    m_conn_context(std::move(initial)),
     m_strand{m_io_context},
     m_timers{m_io_context}
   {
@@ -1540,6 +1546,7 @@ namespace net_utils
       accept_function_pointer = &boosted_tcp_server<t_protocol_handler>::handle_accept_ipv6;
     }
 
+    bool accept_started = false;
     try
     {
     if (!e)
@@ -1560,6 +1567,7 @@ namespace net_utils
       current_acceptor->async_accept((*current_new_connection)->socket(),
           boost::bind(accept_function_pointer, this,
             boost::asio::placeholders::error));
+      accept_started = true;
 
       boost::asio::socket_base::keep_alive opt(true);
       conn->socket().set_option(opt);
@@ -1585,6 +1593,8 @@ namespace net_utils
     catch (const std::exception &e)
     {
       MERROR("Exception in boosted_tcp_server<t_protocol_handler>::handle_accept: " << e.what());
+      if (accept_started)
+        return;
     }
 
     // error path, if e or exception
@@ -1844,10 +1854,10 @@ namespace net_utils
   }
   //---------------------------------------------------------------------------------
   template<class t_protocol_handler> template<class t_callback>
-  bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string& adr, const std::string& port, uint32_t conn_timeout, const t_callback &cb, const std::string& bind_ip, epee::net_utils::ssl_support_t ssl_support)
+  bool boosted_tcp_server<t_protocol_handler>::connect_async(const std::string& adr, const std::string& port, uint32_t conn_timeout, const t_callback &cb, const std::string& bind_ip, epee::net_utils::ssl_support_t ssl_support, t_connection_context&& initial)
   {
     TRY_ENTRY();    
-    connection_ptr new_connection_l(new connection<t_protocol_handler>(io_context_, m_state, m_connection_type, ssl_support) );
+    connection_ptr new_connection_l(new connection<t_protocol_handler>(io_context_, m_state, m_connection_type, ssl_support, std::move(initial)) );
     connections_mutex.lock();
     connections_.insert(new_connection_l);
     MDEBUG("connections_ size now " << connections_.size());

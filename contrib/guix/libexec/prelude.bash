@@ -2,9 +2,6 @@
 export LC_ALL=C
 set -e -o pipefail
 
-# shellcheck source=contrib/shell/realpath.bash
-source contrib/shell/realpath.bash
-
 # shellcheck source=contrib/shell/git-utils.bash
 source contrib/shell/git-utils.bash
 
@@ -21,7 +18,7 @@ check_tools() {
     done
 }
 
-check_tools cat env readlink dirname basename git
+check_tools cat env git realpath
 
 ################
 # We should be at the top directory of the repository
@@ -29,8 +26,8 @@ check_tools cat env readlink dirname basename git
 
 same_dir() {
     local resolved1 resolved2
-    resolved1="$(bash_realpath "${1}")"
-    resolved2="$(bash_realpath "${2}")"
+    resolved1="$(realpath -e "${1}")"
+    resolved2="$(realpath -e "${2}")"
     [ "$resolved1" = "$resolved2" ]
 }
 
@@ -54,24 +51,14 @@ fi
 #
 # Before updating the pinned hash:
 #
-# - Push new commits to lunexa-project/guix from upstream. Do not forget to update
-#   the keyring branch as well. Guix uses this branch to authenticate commits.
-#
-#   The repository is set to lunexa-project/guix because fetching from the official
-#   repo at https://git.savannah.gnu.org/git/guix.git is unreliable in CI jobs.
-#
-#   Do not attempt to push custom changes to lunexa-project/guix, it will not work!
-#   If a change is necessary to Guix, submit a patch to https://issues.guix.gnu.org/
-#   New packages can be defined in manifest.scm until they are available upstream.
-#
 # - Make sure a bootstrapped build works with the new commit using a fresh Guix install:
 #   $ export ADDITIONAL_GUIX_COMMON_FLAGS='--no-substitutes'
 #
 # - Check how the update affects our build graph and which packages have been updated.
 time-machine() {
     # shellcheck disable=SC2086
-    guix time-machine --url=https://github.com/monero-project/guix.git \
-                      --commit=7bf1d7aeaffba15c4f680f93ae88fbef25427252 \
+    guix time-machine --url=https://codeberg.org/guix/guix.git \
+                      --commit=9d09b0cf841fb657a1aec12e9bab68e00c2b493c \
                       --cores="$JOBS" \
                       --keep-failed \
                       --fallback \
