@@ -33,7 +33,6 @@
 #include "common/command_line.h"
 #include "common/varint.h"
 #include "serialization/crypto.h"
-#include "cryptonote_basic/cryptonote_boost_serialization.h"
 #include "cryptonote_core/tx_pool.h"
 #include "cryptonote_core/cryptonote_core.h"
 #include "cryptonote_core/blockchain.h"
@@ -1219,7 +1218,7 @@ int main(int argc, char* argv[])
 
   if (command_line::get_arg(vm, command_line::arg_help))
   {
-    std::cout << "lunexa '" << LUNEXA_RELEASE_NAME << "' (v" << LUNEXA_VERSION_FULL << ")" << ENDL << ENDL;
+    std::cout << "Lunexa '" << LUNEXA_RELEASE_NAME << "' (v" << LUNEXA_VERSION_FULL << ")" << ENDL << ENDL;
     std::cout << desc_options << std::endl;
     return 1;
   }
