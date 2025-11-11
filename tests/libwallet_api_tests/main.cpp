@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -51,7 +51,6 @@
 
 
 using namespace std;
-//unsigned int epee::g_test_dbg_lock_sleep = 0;
 
 namespace Consts
 {
@@ -88,7 +87,7 @@ const uint64_t AMOUNT_1LXA  =  1000000000000L;
 const std::string PAYMENT_ID_EMPTY = "";
 
 std::string TESTNET_DAEMON_ADDRESS = "localhost:38081";
-std::string MAINNET_DAEMON_ADDRESS = "localhost:9029";
+std::string MAINNET_DAEMON_ADDRESS = "localhost:18081";
 
 
 }

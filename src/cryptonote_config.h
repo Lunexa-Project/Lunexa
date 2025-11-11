@@ -189,7 +189,6 @@
 #define HF_VERSION_ENFORCE_RCT                  2
 #define HF_VERSION_SMALLER_BP                   2
 #define HF_VERSION_LONG_TERM_BLOCK_WEIGHT       2
-#define HF_VERSION_MIN_2_OUTPUTS                3
 #define HF_VERSION_MIN_V2_COINBASE_TX           2
 #define HF_VERSION_SAME_MIXIN                   2
 #define HF_VERSION_REJECT_SIGS_IN_COINBASE      2
@@ -198,7 +197,8 @@
 #define HF_VERSION_MULTI_OUTPUT_BULLETPROOFS    2  // NEW: replaces hardcoded 8
 #define HF_VERSION_FORBID_BORROMEAN             2  // NEW: when borromean forbidden
 
-// VERSION 2 (or 3 if you prefer) - Modern privacy features
+// VERSION 3 - Modern privacy features
+#define HF_VERSION_MIN_2_OUTPUTS                3
 #define HF_VERSION_EXACT_COINBASE               3  // Changed from 3 to 2
 #define HF_VERSION_CLSAG                        3  // Changed from 3 to 2
 #define HF_VERSION_DETERMINISTIC_UNLOCK_TIME    3  // Changed from 3 to 2

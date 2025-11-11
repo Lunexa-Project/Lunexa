@@ -11,11 +11,11 @@ To test a release build, replace `debug-test` with `release-test` in the previou
 
 # Core tests
 
-Core tests take longer than any other lunexa tests, due to the high amount of computational work involved in validating core components.
+Core tests take longer than any other Lunexa tests, due to the high amount of computational work involved in validating core components.
 
 Tests are located in `tests/core_tests/`, and follow a straightforward naming convention. Most cases cover core functionality (`block_reward.cpp`, `chaingen.cpp`, `rct.cpp`, etc.), while some cover basic security tests (`double_spend.cpp` & `integer_overflow.cpp`).
 
-To run only lunexa's core tests (after building):
+To run only Lunexa's core tests (after building):
 
 ```bash
 cd build/debug/tests/core_tests
@@ -34,7 +34,7 @@ Crypto tests are located under the `tests/crypto` directory.
 
 Tests correspond to components under `src/crypto/`. A quick comparison reveals the pattern, and new tests should continue the naming convention.
 
-To run only lunexa's crypto tests (after building):
+To run only Lunexa's crypto tests (after building):
 
 ```bash
 cd build/debug/tests/crypto
@@ -91,11 +91,76 @@ Fuzz tests are written using American Fuzzy Lop (AFL), and located under the `te
 
 An additional helper utility is provided `contrib/fuzz_testing/fuzz.sh`. AFL must be installed, and some additional setup may be necessary for the script to run properly.
 
+## OSS-Fuzz
+
+Lunexa is integrated into [OSS-Fuzz](https://github.com/google/oss-fuzz) and the project integration
+is available [here](https://github.com/google/oss-fuzz/tree/master/projects/lunexa). OSS-Fuzz builds
+and runs the fuzzers continuously, so long as Lunexa's OSS-Fuzz [build script](https://github.com/google/oss-fuzz/blob/master/projects/lunexa/build.sh) builds them.
+
+Issues found by OSS-Fuzz are publicly available (following a disclosure deadline) on the OSS-Fuzz issue tracker [here](https://issues.oss-fuzz.com/issues?q=project%3Dlunexa).
+The issue tracker only displays limited information, and only maintainers with emails listed in the [project.yaml](https://github.com/google/oss-fuzz/blob/master/projects/lunexa/project.yaml) have access to full details.
+
+Coverage reports are built on a daily basis and data about this can be found at [introspector.oss-fuzz.com](https://introspector.oss-fuzz.com) [here](https://introspector.oss-fuzz.com/project-profile?project=lunexa).
+
+### Build and run fuzzers by way of OSS-Fuzz
+
+**Building Lunexa's fuzzers with OSS-Fuzz**
+
+```sh
+$ git clone https://github.com/google/oss-fuzz
+$ cd oss-fuzz
+$ python3 infra/helper.py build_fuzzers lunexa
+
+# Display what was build
+$ ls build/out/lunexa/
+base58_fuzz_tests                       cold-outputs_fuzz_tests_seed_corpus.zip      llvm-symbolizer                              signature_fuzz_tests
+base58_fuzz_tests_seed_corpus.zip       cold-transaction_fuzz_tests                  load-from-binary_fuzz_tests                  signature_fuzz_tests_seed_corpus.zip
+block_fuzz_tests                        cold-transaction_fuzz_tests_seed_corpus.zip  load-from-binary_fuzz_tests_seed_corpus.zip  transaction_fuzz_tests
+block_fuzz_tests_seed_corpus.zip        http-client_fuzz_tests                       load-from-json_fuzz_tests                    transaction_fuzz_tests_seed_corpus.zip
+bulletproof_fuzz_tests                  http-client_fuzz_tests_seed_corpus.zip       load-from-json_fuzz_tests_seed_corpus.zip    tx-extra_fuzz_tests
+bulletproof_fuzz_tests_seed_corpus.zip  levin_fuzz_tests                             parse-url_fuzz_tests                         tx-extra_fuzz_tests_seed_corpus.zip
+cold-outputs_fuzz_tests                 levin_fuzz_tests_seed_corpus.zip             parse-url_fuzz_tests_seed_corpus.zip
+```
+
+**Run fuzzing harness with OSS-Fuzz**
+
+Assuming you performed the above steps for building the fuzzers and are in the OSS-Fuzz root directory:
+
+```sh
+$ python3 infra/helper.py run_fuzzer lunexa base58_fuzz_tests
+...
+...
+INFO: Loaded 1 modules   (9075 inline 8-bit counters): 9075 [0x55d1c3d6cfd8, 0x55d1c3d6f34b),
+INFO: Loaded 1 PC tables (9075 PCs): 9075 [0x55d1c3d6f350,0x55d1c3d92a80),
+INFO:        1 files found in /tmp/base58_fuzz_tests_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 95b max: 95b total: 95b rss: 33Mb
+#2      INITED cov: 18 ft: 19 corp: 1/95b exec/s: 0 rss: 33Mb
+#3      NEW    cov: 19 ft: 23 corp: 2/190b lim: 95 exec/s: 0 rss: 34Mb L: 95/95 MS: 1 ChangeByte-
+#4      NEW    cov: 20 ft: 24 corp: 3/285b lim: 95 exec/s: 0 rss: 34Mb L: 95/95 MS: 1 ChangeByte-
+#5      NEW    cov: 22 ft: 26 corp: 4/359b lim: 95 exec/s: 0 rss: 34Mb L: 74/95 MS: 1 EraseBytes-
+#6      NEW    cov: 23 ft: 29 corp: 5/454b lim: 95 exec/s: 0 rss: 34Mb L: 95/95 MS: 1 ChangeByte-
+#8      NEW    cov: 24 ft: 30 corp: 6/549b lim: 95 exec/s: 0 rss: 34Mb L: 95/95 MS: 2 CrossOver-ChangeBit-
+#12     NEW    cov: 25 ft: 35 corp: 7/606b lim: 95 exec/s: 0 rss: 34Mb L: 57/95 MS: 4 ChangeBinInt-ShuffleBytes-ShuffleBytes-EraseBytes-
+#14     NEW    cov: 26 ft: 38 corp: 8/655b lim: 95 exec/s: 0 rss: 34Mb L: 49/95 MS: 2 ChangeBinInt-EraseBytes-
+#17     NEW    cov: 27 ft: 40 corp: 9/708b lim: 95 exec/s: 0 rss: 34Mb L: 53/95 MS: 3 ChangeASCIIInt-ChangeBit-EraseBytes-
+#18     NEW    cov: 28 ft: 41 corp: 10/803b lim: 95 exec/s: 0 rss: 34Mb L: 95/95 MS: 1 ChangeByte-
+#20     NEW    cov: 28 ft: 42 corp: 11/852b lim: 95 exec/s: 0 rss: 34Mb L: 49/95 MS: 2 ChangeASCIIInt-ShuffleBytes-
+#22     REDUCE cov: 28 ft: 42 corp: 11/847b lim: 95 exec/s: 0 rss: 34Mb L: 90/95 MS: 2 ChangeBinInt-CrossOver-
+#25     NEW    cov: 29 ft: 47 corp: 12/942b lim: 95 exec/s: 0 rss: 34Mb L: 95/95 MS: 3 ChangeBit-ChangeBit-CopyPart-
+#39     REDUCE cov: 29 ft: 47 corp: 12/941b lim: 95 exec/s: 0 rss: 34Mb L: 94/95 MS: 4 ChangeByte-CopyPart-ChangeASCIIInt-EraseBytes-
+#41     NEW    cov: 30 ft: 48 corp: 13/991b lim: 95 exec/s: 0 rss: 34Mb L: 50/95 MS: 2 CopyPart-CrossOver-
+#57     NEW    cov: 31 ft: 49 corp: 14/1068b lim: 95 exec/s: 0 rss: 34Mb L: 77/95 MS: 1 InsertRepeatedBytes-
+#63     NEW    cov: 32 ft: 50 corp: 15/1147b lim: 95 exec/s: 0 rss: 34Mb L: 79/95 MS: 1 CrossOver-
+...
+```
+
+
 # Hash tests
 
 Hash tests exist under `tests/hash`, and include a set of target hashes in text files.
 
-To run only lunexa's hash tests (after building):
+To run only Lunexa's hash tests (after building):
 
 ```bash
 cd build/debug/tests/hash
@@ -104,7 +169,7 @@ ctest
 
 To run the same tests on a release build, replace `debug` with `release`.
 
-To run specific hash test, you can use `ctest` `-R` parameter. For exmaple to run only `blake2b` hash tests:
+To run specific hash test, you can use `ctest` `-R` parameter. For example to run only `blake2b` hash tests:
 
 ```
 ctest -R hash-blake2b
@@ -122,7 +187,7 @@ ctest -R hash-blake2b
 
 Performance tests are located in `tests/performance_tests`, and test features for performance metrics on the host machine.
 
-To run only lunexa's performance tests (after building):
+To run only Lunexa's performance tests (after building):
 
 ```bash
 cd build/debug/tests/performance_tests
@@ -139,7 +204,7 @@ To run the same tests on a release build, replace `debug` with `release`.
 
 Unit tests are defined under the `tests/unit_tests` directory. Independent components are tested individually to ensure they work properly on their own.
 
-To run only lunexa's unit tests (after building):
+To run only Lunexa's unit tests (after building):
 
 ```bash
 cd build/debug/tests/unit_tests
