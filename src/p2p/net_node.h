@@ -109,15 +109,17 @@ namespace nodetool
   template<class base_type>
   struct p2p_connection_context_t: base_type //t_payload_net_handler::connection_context //public net_utils::connection_context_base
   {
-    p2p_connection_context_t()
+    explicit p2p_connection_context_t(bool is_ping = false)
       : peer_id(0),
         support_flags(0),
+        is_ping(is_ping),
         m_in_timedsync(false)
     {}
 
     peerid_type peer_id;
     uint32_t support_flags;
     bool m_in_timedsync;
+    bool is_ping;
     std::set<epee::net_utils::network_address> sent_addresses;
   };
 
@@ -297,8 +299,7 @@ namespace nodetool
     virtual void add_used_stripe_peer(const typename t_payload_net_handler::connection_context &context);
     virtual void remove_used_stripe_peer(const typename t_payload_net_handler::connection_context &context);
     virtual void clear_used_stripe_peers();
-    
-//seed_nodes
+
   private:
     const std::vector<std::string> m_seed_nodes_list =
     { "seed1.lunexa.co"
@@ -558,4 +559,3 @@ namespace nodetool
 }
 
 POP_WARNINGS
-

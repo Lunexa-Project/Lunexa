@@ -55,7 +55,7 @@
 #define EMISSION_SPEED_FACTOR_PER_MINUTE                (20)
 #define FINAL_SUBSIDY_PER_MINUTE                        ((uint64_t)500000000000) // 0.5 LXA per minute
 
-#define CRYPTONOTE_REWARD_BLOCKS_WINDOW                 200
+#define CRYPTONOTE_REWARD_BLOCKS_WINDOW                 100
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1    30000 //size of block (bytes) after which reward for block calculated using block size - before first fork
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V2    60000 //size of block (bytes) after which reward for block calculated using block size
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V3    300000 //size of block (bytes) after which reward for block calculated using block size 
@@ -79,7 +79,7 @@
 
 #define DIFFICULTY_TARGET_V2                            120  // seconds
 #define DIFFICULTY_TARGET_V1                            60  // seconds - before first fork
-#define DIFFICULTY_WINDOW                               340 // blocks  
+#define DIFFICULTY_WINDOW                               720  // blocks  
 #define DIFFICULTY_LAG                                  15  // !!!
 #define DIFFICULTY_CUT                                  60  // timestamps to cut after sorting
 #define DIFFICULTY_BLOCKS_COUNT                         DIFFICULTY_WINDOW + DIFFICULTY_LAG
@@ -149,8 +149,8 @@
 #define P2P_DEFAULT_WHITELIST_CONNECTIONS_PERCENT       70
 #define P2P_DEFAULT_ANCHOR_CONNECTIONS_COUNT            2
 #define P2P_DEFAULT_SYNC_SEARCH_CONNECTIONS_COUNT       2
-#define P2P_DEFAULT_LIMIT_RATE_UP                       2048       // kB/s
-#define P2P_DEFAULT_LIMIT_RATE_DOWN                     8192       // kB/s
+#define P2P_DEFAULT_LIMIT_RATE_UP                       8192       // kB/s
+#define P2P_DEFAULT_LIMIT_RATE_DOWN                     32768       // kB/s
 
 #define P2P_FAILED_ADDR_FORGET_SECONDS                  (60*60)    // 1 hour
 #define P2P_IP_BLOCKTIME                                (60*60*24) // 24 hour
@@ -171,29 +171,40 @@
 
 #define THREAD_STACK_SIZE                       5 * 1024 * 1024
 
+
+// ============================================================================
+// LUNEXA HARD FORK VERSION DEFINITIONS
+// ============================================================================
+// Organized by activation version for easy reference
+
+// VERSION 1 - Core privacy and consensus features
 #define HF_VERSION_DYNAMIC_FEE                  1
 #define HF_VERSION_MIN_MIXIN_4                  1
-#define HF_VERSION_ENFORCE_RCT                  1
 #define HF_VERSION_PER_BYTE_FEE                 1
 #define HF_VERSION_MIN_MIXIN_6                  1
 #define HF_VERSION_MIN_MIXIN_10                 1
 #define HF_VERSION_MIN_MIXIN_15                 1
 
+// VERSION 2 - Bulletproofs v1/v2 and improved protocols
+#define HF_VERSION_ENFORCE_RCT                  2
 #define HF_VERSION_SMALLER_BP                   2
 #define HF_VERSION_LONG_TERM_BLOCK_WEIGHT       2
-#define HF_VERSION_MIN_2_OUTPUTS                2
+#define HF_VERSION_MIN_2_OUTPUTS                3
 #define HF_VERSION_MIN_V2_COINBASE_TX           2
 #define HF_VERSION_SAME_MIXIN                   2
 #define HF_VERSION_REJECT_SIGS_IN_COINBASE      2
 #define HF_VERSION_ENFORCE_MIN_AGE              2
 #define HF_VERSION_EFFECTIVE_SHORT_TERM_MEDIAN_IN_PENALTY 2
+#define HF_VERSION_MULTI_OUTPUT_BULLETPROOFS    2  // NEW: replaces hardcoded 8
+#define HF_VERSION_FORBID_BORROMEAN             2  // NEW: when borromean forbidden
 
-#define HF_VERSION_EXACT_COINBASE               3
-#define HF_VERSION_CLSAG                        3
-#define HF_VERSION_DETERMINISTIC_UNLOCK_TIME    3
-#define HF_VERSION_BULLETPROOF_PLUS             3
-#define HF_VERSION_VIEW_TAGS                    3
-#define HF_VERSION_2021_SCALING                 3
+// VERSION 2 (or 3 if you prefer) - Modern privacy features
+#define HF_VERSION_EXACT_COINBASE               3  // Changed from 3 to 2
+#define HF_VERSION_CLSAG                        3  // Changed from 3 to 2
+#define HF_VERSION_DETERMINISTIC_UNLOCK_TIME    3  // Changed from 3 to 2
+#define HF_VERSION_BULLETPROOF_PLUS             3  // Changed from 3 to 2
+#define HF_VERSION_VIEW_TAGS                    3  // Changed from 3 to 2
+#define HF_VERSION_2021_SCALING                 3  // Changed from 3 to 2
 
 #define PER_KB_FEE_QUANTIZATION_DECIMALS        8
 #define CRYPTONOTE_SCALING_2021_FEE_ROUNDING_PLACES 2
@@ -233,9 +244,9 @@ namespace config
   uint16_t const RPC_DEFAULT_PORT = 9029;
   uint16_t const ZMQ_RPC_DEFAULT_PORT = 19092;
   boost::uuids::uuid const NETWORK_ID = { {
-      0xA1, 0x42, 0x61, 0x15, 0x31, 0x05, 0x22, 0x00, 0x41, 0x10, 0x51, 0xF7, 0x59, 0x25, 0xA1, 0x89
+      0xA1, 0x42, 0x61, 0x15, 0x31, 0x10, 0x22, 0x00, 0x41, 0x10, 0x51, 0xF7, 0x59, 0x25, 0xA1, 0x89
     } }; // Bender's nightmare
-  std::string const GENESIS_TX = "013c01ff0001ffffffffffff03029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd08807121017767aafcde9be00dcfd098715ebcf7f410daebc582fda69d24a28e9d0bc890d1";
+  std::string const GENESIS_TX = "013c01ff00018090cad2c60e029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd0880712101dedff0e0ee8e9223dd75a265405d5eaf4e14e9bdf3952b92d192401d11b6d63e";
   uint32_t const GENESIS_NONCE = 10000;
 
   // Hash domain separators
@@ -269,9 +280,9 @@ namespace config
 
   namespace testnet
   {
-    uint64_t const CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX = 33;
-    uint64_t const CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX = 34;
-    uint64_t const CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX = 35;
+    uint64_t const CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX = 50;
+    uint64_t const CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX = 53;
+    uint64_t const CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX = 55;
     uint16_t const P2P_DEFAULT_PORT = 29029;
     uint16_t const RPC_DEFAULT_PORT = 29028;
     uint16_t const ZMQ_RPC_DEFAULT_PORT = 28082;

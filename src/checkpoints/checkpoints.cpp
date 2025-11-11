@@ -158,6 +158,19 @@ namespace cryptonote
     return m_points.rbegin()->first;
   }
   //---------------------------------------------------------------------------
+  uint64_t checkpoints::get_nearest_checkpoint_height(uint64_t block_height) const
+  {
+    if (m_points.empty())
+      return 0;
+
+    auto it = m_points.upper_bound(block_height);
+    if (it == m_points.begin())
+      return 0;
+
+    --it;
+    return it->first;
+  }
+  //---------------------------------------------------------------------------
   const std::map<uint64_t, crypto::hash>& checkpoints::get_points() const
   {
     return m_points;
@@ -184,7 +197,6 @@ namespace cryptonote
   {
     if (nettype == TESTNET)
     {
-
       ADD_CHECKPOINT2(0,     "48ca7cd3c8de5b6a4d53d2861fbdaedca141553559f9be9520068053cda8430b", "0x1");
       // ADD_CHECKPOINT2(1000000, "46b690b710a07ea051bc4a6b6842ac37be691089c0f7758cfeec4d5fc0b4a258", "0x7aaad7153");
       // ADD_CHECKPOINT2(1058600, "12904f6b4d9e60fd875674e07147d2c83d6716253f046af7b894c3e81da7e1bd", "0x971efd119");
@@ -200,7 +212,7 @@ namespace cryptonote
       return true;
     }
 
-      ADD_CHECKPOINT2(0,     "418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3",  "0x1");
+      ADD_CHECKPOINT2(0,     "08da5d7037a7b00d0a355a67280ce47b5b3ea1a4d6691231764ae3db20a50c02",  "0x1");
       //ADD_CHECKPOINT2(802,   "98c3c3f207004f9ce64daa4a322664b1622fcbbaac5f224105e701da436cebe1", "")
     return true;
   }

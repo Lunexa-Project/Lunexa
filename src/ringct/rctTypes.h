@@ -62,7 +62,7 @@ extern "C" {
 #define DP(x)
 #endif
 
-//atomic units of lunexa's
+//atomic units of lunexas
 #define ATOMS 64
 
 //for printing large ints

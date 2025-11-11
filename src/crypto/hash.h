@@ -30,8 +30,9 @@
 
 #pragma once
 
-#include <stddef.h>
 #include <iostream>
+#include <stddef.h>
+#include <stdexcept>
 
 #include "common/pod-class.h"
 #include "generic-ops.h"

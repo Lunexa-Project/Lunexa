@@ -165,10 +165,10 @@ namespace cryptonote
 
     CHECK_AND_ASSERT_MES(summary_amounts == block_reward, false, "Failed to construct miner tx, summary_amounts = " << summary_amounts << " not equal block_reward = " << block_reward);
 
-    if (hard_fork_version >= 4)
-      tx.version = 2;
+    if (hard_fork_version >= HF_VERSION_MIN_V2_COINBASE_TX)
+     tx.version = 2;
     else
-      tx.version = 1;
+    tx.version = 1;
 
     //lock
     tx.unlock_time = height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW;
@@ -610,7 +610,10 @@ namespace cryptonote
   {
     hw::device &hwdev = sender_account_keys.get_device();
     hwdev.open_tx(tx_key);
-    try {
+    const auto auto_close_tx = epee::misc_utils::create_scope_leave_handler([&hwdev](){
+      hwdev.close_tx();
+    });
+    {
       // figure out if we need to make additional tx pubkeys
       size_t num_stdaddresses = 0;
       size_t num_subaddresses = 0;
@@ -628,11 +631,7 @@ namespace cryptonote
 
       bool shuffle_outs = true;
       bool r = construct_tx_with_tx_key(sender_account_keys, subaddresses, sources, destinations, change_addr, extra, tx, tx_key, additional_tx_keys, rct, rct_config, shuffle_outs, use_view_tags);
-      hwdev.close_tx();
       return r;
-    } catch(...) {
-      hwdev.close_tx();
-      throw;
     }
   }
   //---------------------------------------------------------------

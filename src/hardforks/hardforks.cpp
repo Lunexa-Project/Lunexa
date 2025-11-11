@@ -32,19 +32,18 @@
 #define LUNEXA_DEFAULT_LOG_CATEGORY "blockchain.hardforks"
 
 const hardfork_t mainnet_hard_forks[] = {
-  // version 1 from the start of the blockchain 20 April 2025 14:42:28 GMT
+  // version 1 from genesis (2025-04-20 14:42:28 GMT)
   { 1, 1, 0, 1745131326 },
-
-  // version 2 starts from block 3 - all features enabled
-  { 2, 10, 0, 1745131326 },
-
-  // version 3 starts from block 10 - future changes (difficulty, etc)
-  { 3, 20, 0, 1745131326 + 86400 }, // 1 day after genesis
+  // version 2 starts from block 10
+  { 2, 10, 0, 1745131327 },
+  // version 3 starts from block 20
+  { 3, 20, 0, 1745217726 }, // +1 day
+  // version 4 starts from block 30
+  { 4, 30, 0, 1745217727 }, // +1 day +1s
 };
 
 const size_t num_mainnet_hard_forks = sizeof(mainnet_hard_forks) / sizeof(mainnet_hard_forks[0]);
-const uint64_t mainnet_hard_fork_version_1_till = 2;
-
+const uint64_t mainnet_hard_fork_version_1_till = 9;
 
 const hardfork_t testnet_hard_forks[] = {
   // version 1 from the start of the blockchain

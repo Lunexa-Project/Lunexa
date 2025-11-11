@@ -40,7 +40,6 @@
 #include "tx_pool.h"
 #include "blockchain.h"
 #include "blockchain_db/blockchain_db.h"
-#include "cryptonote_basic/cryptonote_boost_serialization.h"
 #include "cryptonote_basic/events.h"
 #include "cryptonote_config.h"
 #include "cryptonote_basic/miner.h"
@@ -1312,7 +1311,7 @@ bool Blockchain::prevalidate_miner_transaction(const block& b, uint64_t height, 
     return false;
   }
   MDEBUG("Miner tx hash: " << get_transaction_hash(b.miner_tx));
-  CHECK_AND_ASSERT_MES(b.miner_tx.unlock_time == height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW, false, "coinbase transaction transaction has the wrong unlock time=" << b.miner_tx.unlock_time << ", expected " << height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW);
+  CHECK_AND_ASSERT_MES(b.miner_tx.unlock_time == height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW, false, "coinbase transaction has the wrong unlock time=" << b.miner_tx.unlock_time << ", expected " << height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW);
 
   //check outs overflow
   if(!check_outs_overflow(b.miner_tx))
@@ -2994,8 +2993,8 @@ bool Blockchain::check_tx_outputs(const transaction& tx, tx_verification_context
 {
   LOG_PRINT_L3("Blockchain::" << __func__);
 
-  // from hard fork 2, we forbid dust and compound outputs
-  if (hf_version >= 2) {
+  // For v1 transactions, check decomposed amounts (only at HF v1 before RCT is enforced)
+  if (hf_version < HF_VERSION_ENFORCE_RCT) {
     for (auto &o: tx.vout) {
       if (tx.version == 1)
       {
@@ -3007,8 +3006,9 @@ bool Blockchain::check_tx_outputs(const transaction& tx, tx_verification_context
     }
   }
 
-  // in a v2 tx, all outputs must have 0 amount
-  if (hf_version >= 3) {
+
+  // in a v2 tx, all outputs must have 0 amount (enforce RCT)
+  if (hf_version >= HF_VERSION_ENFORCE_RCT) {
     if (tx.version >= 2) {
       for (auto &o: tx.vout) {
         if (o.amount != 0) {
@@ -3019,134 +3019,109 @@ bool Blockchain::check_tx_outputs(const transaction& tx, tx_verification_context
     }
   }
 
-  // from v4, forbid invalid pubkeys
-  if (hf_version >= 4) {
-    for (const auto &o: tx.vout) {
-      crypto::public_key output_public_key;
-      if (!get_output_public_key(o, output_public_key)) {
-        tvc.m_invalid_output = true;
-        return false;
-      }
-      if (!crypto::check_key(output_public_key)) {
-        tvc.m_invalid_output = true;
-        return false;
-      }
-    }
-  }
-
-  // from v8, allow bulletproofs
-  if (hf_version < 8) {
+  // allow bulletproofs v1
+  if (hf_version < HF_VERSION_SMALLER_BP) {
     if (tx.version >= 2) {
       const bool bulletproof = rct::is_rct_bulletproof(tx.rct_signatures.type);
       if (bulletproof || !tx.rct_signatures.p.bulletproofs.empty())
       {
-        MERROR_VER("Bulletproofs are not allowed before v8");
+        MERROR_VER("Bulletproofs are not allowed before v" << (unsigned)HF_VERSION_SMALLER_BP);
         tvc.m_invalid_output = true;
         return false;
       }
     }
   }
 
-  // from v9, forbid borromean range proofs
-  if (hf_version > 8) {
+  // forbid borromean range proofs
+  if (hf_version >= HF_VERSION_SMALLER_BP) {
     if (tx.version >= 2) {
       const bool borromean = rct::is_rct_borromean(tx.rct_signatures.type);
       if (borromean)
       {
-        MERROR_VER("Borromean range proofs are not allowed after v8");
+        MERROR_VER("Borromean range proofs are not allowed after v" << (unsigned)(HF_VERSION_SMALLER_BP - 1));
         tvc.m_invalid_output = true;
         return false;
       }
     }
   }
 
-  // from v10, allow bulletproofs v2
+  // allow bulletproofs v2
   if (hf_version < HF_VERSION_SMALLER_BP) {
     if (tx.version >= 2) {
       if (tx.rct_signatures.type == rct::RCTTypeBulletproof2)
       {
-        MERROR_VER("Ringct type " << (unsigned)rct::RCTTypeBulletproof2 << " is not allowed before v" << HF_VERSION_SMALLER_BP);
+        MERROR_VER("Ringct type " << (unsigned)rct::RCTTypeBulletproof2 << " is not allowed before v" << (unsigned)HF_VERSION_SMALLER_BP);
         tvc.m_invalid_output = true;
         return false;
       }
     }
   }
 
-  // from v11, allow only bulletproofs v2
+  // allow only bulletproofs v2 (forbid v1)
   if (hf_version > HF_VERSION_SMALLER_BP) {
     if (tx.version >= 2) {
       if (tx.rct_signatures.type == rct::RCTTypeBulletproof)
       {
-        MERROR_VER("Ringct type " << (unsigned)rct::RCTTypeBulletproof << " is not allowed from v" << (HF_VERSION_SMALLER_BP + 1));
+        MERROR_VER("Ringct type " << (unsigned)rct::RCTTypeBulletproof << " is not allowed from v" << (unsigned)(HF_VERSION_SMALLER_BP + 1));
         tvc.m_invalid_output = true;
         return false;
       }
     }
   }
 
-  // from v13, allow CLSAGs
+  // allow CLSAGs
   if (hf_version < HF_VERSION_CLSAG) {
     if (tx.version >= 2) {
       if (tx.rct_signatures.type == rct::RCTTypeCLSAG)
       {
-        MERROR_VER("Ringct type " << (unsigned)rct::RCTTypeCLSAG << " is not allowed before v" << HF_VERSION_CLSAG);
+        MERROR_VER("Ringct type " << (unsigned)rct::RCTTypeCLSAG << " is not allowed before v" << (unsigned)HF_VERSION_CLSAG);
         tvc.m_invalid_output = true;
         return false;
       }
     }
   }
 
-  // from v14, allow only CLSAGs
+  // allow only CLSAGs (forbid older MLSAG-based types)
   if (hf_version > HF_VERSION_CLSAG) {
     if (tx.version >= 2) {
       if (tx.rct_signatures.type <= rct::RCTTypeBulletproof2)
       {
-        // two MLSAG txes went in due to a bug with txes that went into the txpool before the fork, grandfather them in
-        static const char * grandfathered[2] = { "c5151944f0583097ba0c88cd0f43e7fabb3881278aa2f73b3b0a007c5d34e910", "6f2f117cde6fbcf8d4a6ef8974fcac744726574ac38cf25d3322c996b21edd4c" };
-        crypto::hash h0, h1;
-        epee::string_tools::hex_to_pod(grandfathered[0], h0);
-        epee::string_tools::hex_to_pod(grandfathered[1], h1);
-        if (cryptonote::get_transaction_hash(tx) == h0 || cryptonote::get_transaction_hash(tx) == h1)
-        {
-          MDEBUG("Grandfathering cryptonote::get_transaction_hash(tx) in");
-        }
-        else
-        {
-          MERROR_VER("Ringct type " << (unsigned)tx.rct_signatures.type << " is not allowed from v" << (HF_VERSION_CLSAG + 1));
-          tvc.m_invalid_output = true;
-          return false;
-        }
+        // NOTE: Remove this grandfathering for your new network
+        // These are Monero-specific legacy transactions
+        MERROR_VER("Ringct type " << (unsigned)tx.rct_signatures.type << " is not allowed from v" << (unsigned)(HF_VERSION_CLSAG + 1));
+        tvc.m_invalid_output = true;
+        return false;
       }
     }
   }
 
-  // from v15, allow bulletproofs plus
+  // allow bulletproofs plus
   if (hf_version < HF_VERSION_BULLETPROOF_PLUS) {
     if (tx.version >= 2) {
       const bool bulletproof_plus = rct::is_rct_bulletproof_plus(tx.rct_signatures.type);
       if (bulletproof_plus || !tx.rct_signatures.p.bulletproofs_plus.empty())
       {
-        MERROR_VER("Bulletproofs plus are not allowed before v" << std::to_string(HF_VERSION_BULLETPROOF_PLUS));
+        MERROR_VER("Bulletproofs plus are not allowed before v" << (unsigned)HF_VERSION_BULLETPROOF_PLUS);
         tvc.m_invalid_output = true;
         return false;
       }
     }
   }
 
-  // from v16, forbid bulletproofs
+  // forbid old bulletproofs (require bulletproofs plus only)
   if (hf_version > HF_VERSION_BULLETPROOF_PLUS) {
     if (tx.version >= 2) {
       const bool bulletproof = rct::is_rct_bulletproof(tx.rct_signatures.type);
       if (bulletproof)
       {
-        MERROR_VER("Bulletproof range proofs are not allowed after v" + std::to_string(HF_VERSION_BULLETPROOF_PLUS));
+        MERROR_VER("Bulletproof range proofs are not allowed after v" << (unsigned)HF_VERSION_BULLETPROOF_PLUS);
         tvc.m_invalid_output = true;
         return false;
       }
     }
   }
 
-  // from v15, require view tags on outputs
+  // require view tags on outputs
   if (!check_output_types(tx, hf_version))
   {
     tvc.m_invalid_output = true;
@@ -3611,13 +3586,13 @@ bool Blockchain::check_tx_inputs(transaction& tx, tx_verification_context &tvc, 
     // for bulletproofs, check they're only multi-output after v8
     if (rct::is_rct_bulletproof(rv.type))
     {
-      if (hf_version < 8)
+      if (hf_version < HF_VERSION_MULTI_OUTPUT_BULLETPROOFS)  // ← FIXED!
       {
         for (const rct::Bulletproof &proof: rv.p.bulletproofs)
         {
           if (proof.V.size() > 1)
           {
-            MERROR_VER("Multi output bulletproofs are invalid before v8");
+            MERROR_VER("Multi output bulletproofs are invalid before v" << (unsigned)HF_VERSION_MULTI_OUTPUT_BULLETPROOFS);
             return false;
           }
         }
@@ -4453,11 +4428,14 @@ leave:
   }
 
   const crypto::hash seedhash = get_block_id_by_height(crypto::rx_seedheight(new_height));
-  send_miner_notifications(new_height, seedhash, id, already_generated_coins);
 
-  // Make sure that txpool notifications happen BEFORE block notifications
+  // Make sure that txpool notifications happen BEFORE block and miner data notifications
   notify_txpool_event(std::move(txpool_events));
 
+  // send miner notifications to switch as soon as possible
+  send_miner_notifications(new_height, seedhash, id, already_generated_coins);
+
+  // then send block notifications
   for (const auto& notifier: m_block_notifiers)
     notifier(new_height - 1, {std::addressof(bl), 1});
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2024, The Monero Project
 //
 // All rights reserved.
 //
@@ -42,10 +42,6 @@
 
 #undef LUNEXA_DEFAULT_LOG_CATEGORY
 #define LUNEXA_DEFAULT_LOG_CATEGORY "WalletAPI"
-
-namespace epee {
-    unsigned int g_test_dbg_lock_sleep = 0;
-}
 
 namespace Lunexa {
 

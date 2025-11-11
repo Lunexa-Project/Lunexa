@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2023, The Monero Project
+// Copyright (c) 2018-2024, The Monero Project
 
 //
 // All rights reserved.
@@ -30,8 +30,6 @@
 #pragma once
 #include "serialization/keyvalue_serialization.h"
 #include "cryptonote_basic/cryptonote_basic.h"
-#include "cryptonote_basic/cryptonote_boost_serialization.h"
-#include "cryptonote_basic/account_boost_serialization.h"
 #include "net/http_server_impl_base.h"
 #include "net/http_client.h"
 #include "net/abstract_http_client.h"

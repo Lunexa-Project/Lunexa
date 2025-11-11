@@ -1623,7 +1623,7 @@ PendingTransaction *WalletImpl::createTransactionMultDest(const std::vector<stri
       
     cryptonote::address_parse_info info;
 
-    uint32_t adjusted_priority = m_wallet->adjust_priority(static_cast<uint32_t>(priority));
+    const auto adjusted_priority = m_wallet->adjust_priority(static_cast<uint32_t>(priority));
 
     PendingTransactionImpl * transaction = new PendingTransactionImpl(*this);
 
@@ -1896,7 +1896,7 @@ uint64_t WalletImpl::estimateTransactionFee(const std::vector<std::pair<std::str
         m_wallet->use_fork_rules(HF_VERSION_CLSAG, 0),
         m_wallet->use_fork_rules(HF_VERSION_BULLETPROOF_PLUS, 0),
         m_wallet->use_fork_rules(HF_VERSION_VIEW_TAGS, 0),
-        m_wallet->get_base_fee(priority),
+        m_wallet->get_base_fee(static_cast<uint32_t>(priority)),
         m_wallet->get_fee_quantization_mask());
 }
 
@@ -2434,7 +2434,6 @@ void WalletImpl::doRefresh()
             if (m_history->count() == 0) {
                 m_history->refresh();
             }
-            m_wallet->find_and_save_rings(false);
         } else {
            LOG_PRINT_L3(__FUNCTION__ << ": skipping refresh - daemon is not synced");
         }

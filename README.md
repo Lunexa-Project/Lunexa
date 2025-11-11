@@ -37,19 +37,19 @@ Lunexa is a privacy-centric decentralized cryptocurrency based on Monero, design
 
 ## Introduction
 
-Lunexa is a decentralized digital currency designed with privacy, security, and untraceability at its core. Built on the foundation of Monero, Lunexa is going to introduces unique enhancements and optimizations to elevate user privacy and transaction efficiency.
+Lunexa is a decentralized digital currency focused on privacy, security, and fair mining. Built on the trusted Monero codebase, Lunexa refines its architecture to make mining more accessible and efficient while maintaining strong cryptographic privacy by default.
 
-By employing advanced cryptographic techniques, Lunexa ensures your financial activity remains private by default—putting you in complete control of your funds and who has access to your transaction history. With Lunexa, you are your own bank.
+Through advanced privacy-preserving technologies, Lunexa hides transaction details to protect users’ financial activity while rewarding miners for securing the network. Anyone with computing power can participate—helping keep Lunexa decentralized, private, and resistant to control.
 
-Our mission is to provide a secure, decentralized medium of exchange that upholds the fundamental right to financial privacy.
+Our mission is to provide a secure and private cryptocurrency that empowers individuals to mine, transact, and grow the network freely and fairly.
 
 ## About this Project
 
-Lunexa is a privacy-first cryptocurrency project, grounded in the proven cryptographic principles of Monero. It aims to further improve privacy, usability, and performance while remaining fully decentralized and community-driven.
+Lunexa is a privacy-first, mineable cryptocurrency derived from the Monero codebase and designed for community participation. The project’s primary goal is to create a fair, energy-efficient mining ecosystem that strengthens decentralization while maintaining Monero-grade privacy.
 
-This open-source initiative is free to use and welcomes contributions from developers aligned with our vision of financial sovereignty. Our ongoing development efforts are focused on thoughtful, continual improvement.
+As an open-source initiative, Lunexa invites miners and developers alike to contribute to the network’s growth. Current development efforts are centered on improving mining performance, refining block reward distribution, and optimizing network efficiency for all participants.
 
-While Lunexa draws inspiration from Monero’s approach, it is building a distinct ecosystem—featuring innovations tailored to the evolving needs of our users.
+By building upon Monero’s proven foundation, Lunexa focuses its innovation on what matters most—empowering miners, protecting privacy, and sustaining a truly decentralized network.
 
 ## Project Status
 
@@ -293,7 +293,7 @@ Dependencies need to be built with -fPIC. Static libraries usually aren't, so yo
 
 #### On Windows
 
-Binaries for Windows are built on Windows using the MinGW toolchain within
+Binaries for Windows can be built on Windows using the MinGW toolchain within
 [MSYS2 environment](https://www.msys2.org). The MSYS2 environment emulates a
 POSIX system. The toolchain runs within the environment and *cross-compiles*
 binaries that can run outside of the environment as a regular Windows
@@ -301,40 +301,21 @@ application.
 
 **Preparing the build environment**
 
-* Download and install the [MSYS2 installer](https://www.msys2.org), either the 64-bit or the 32-bit package, depending on your system.
-* Open the MSYS shell via the `MSYS2 Shell` shortcut
+* Download and install the [MSYS2 installer](https://www.msys2.org). Installing MSYS2 requires 64-bit Windows 10 or newer.
+* Open the MSYS shell via the `MSYS2 MSYS` shortcut
 * Update packages using pacman:
 
     ```bash
     pacman -Syu
     ```
 
-* Exit the MSYS shell using Alt+F4
-* Edit the properties for the `MSYS2 Shell` shortcut changing "msys2_shell.bat" to "msys2_shell.cmd -mingw64" for 64-bit builds or "msys2_shell.cmd -mingw32" for 32-bit builds
-* Restart MSYS shell via modified shortcut and update packages again using pacman:
-
-    ```bash
-    pacman -Syu
-    ```
-
-
 * Install dependencies:
-
-    To build for 64-bit Windows:
 
     ```bash
     pacman -S mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-zeromq mingw-w64-x86_64-libsodium mingw-w64-x86_64-hidapi mingw-w64-x86_64-unbound
     ```
 
-    To build for 32-bit Windows:
-
-    ```bash
-    pacman -S mingw-w64-i686-toolchain make mingw-w64-i686-cmake mingw-w64-i686-boost mingw-w64-i686-openssl mingw-w64-i686-zeromq mingw-w64-i686-libsodium mingw-w64-i686-hidapi mingw-w64-i686-unbound
-    ```
-
-* Open the MingW shell via `MinGW-w64-Win64 Shell` shortcut on 64-bit Windows
-  or `MinGW-w64-Win64 Shell` shortcut on 32-bit Windows. Note that if you are
-  running 64-bit Windows, you will have both 64-bit and 32-bit MinGW shells.
+* Open the MingW shell via `MSYS2 MINGW64` shortcut.
 
 **Cloning**
 
@@ -357,34 +338,22 @@ application.
     ```bash
     git checkout ##version##
     ```
-
-* If you are on a 64-bit system, run:
-
+* To build Lunexa
     ```bash
-    make release-static-win64
+    make release-static -j $(nproc)
     ```
 
-* If you are on a 32-bit system, run:
+   The resulting executables can be found in `build/release/bin`
+
+
+* **Optional**: to build Windows binaries suitable for debugging, run:
 
     ```bash
-    make release-static-win32
+    make debug -j $(nproc)
     ```
 
-* The resulting executables can be found in `build/release/bin`
+   The resulting executables can be found in `build/debug/bin`
 
-* **Optional**: to build Windows binaries suitable for debugging on a 64-bit system, run:
-
-    ```bash
-    make debug-static-win64
-    ```
-
-* **Optional**: to build Windows binaries suitable for debugging on a 32-bit system, run:
-
-    ```bash
-    make debug-static-win32
-    ```
-
-* The resulting executables can be found in `build/debug/bin`
 
 ### On Raspberry Pi
 
@@ -468,237 +437,11 @@ If you are using the older Raspbian Jessie image, compiling Lunexa is a bit more
 
 * From here, follow the [general Raspberry Pi instructions](#on-the-raspberry-pi) from the "Clone Lunexa and checkout the latest" step.
 
-### Cloning the repository
-
-Clone recursively to pull-in needed submodule(s):
-
-```
-git clone --recursive https://github.com/lunexa-project/lunexa
-```
-
-If you already have a repo cloned, initialize and update:
-
-```
-cd lunexa && git submodule init && git submodule update
-```
-
-*Note*: If there are submodule differences between branches, you may need 
-to use `git submodule sync && git submodule update` after changing branches
-to build successfully.
-
-### Build instructions
-
-Lunexa uses the CMake build system and a top-level [Makefile](Makefile) that
-invokes cmake commands as needed.
-
-#### On Linux
-
-* Install the dependencies
-* Change to the root of the source code directory, change to the most recent release branch, and build:
-
-    ```bash
-    cd lunexa
-    git checkout master
-    make
-    ```
-
-    *Optional*: If your machine has several cores and enough memory, enable
-    parallel build by running `make -j<number of threads>` instead of `make`. For
-    this to be worthwhile, the machine should have one core and about 2GB of RAM
-    available per thread.
-
-* The resulting executables can be found in `build/release/bin`
-
-* Add `PATH="$PATH:$HOME/lunexa/build/release/bin"` to `.profile`
-
-* Run Lunexa with `lunexad --detach`
-
-* **Optional**: build and run the test suite to verify the binaries:
-
-    ```bash
-    make release-test
-    ```
-
-    *NOTE*: `core_tests` test may take a few hours to complete.
-
-* **Optional**: to build binaries suitable for debugging:
-
-    ```bash
-    make debug
-    ```
-
-* **Optional**: to build statically-linked binaries:
-
-    ```bash
-    make release-static
-    ```
-
-Dependencies need to be built with -fPIC. Static libraries usually aren't, so you may have to build them yourself with -fPIC. Refer to their documentation for how to build them.
-
-* **Optional**: build documentation in `doc/html` (omit `HAVE_DOT=YES` if `graphviz` is not installed):
-
-    ```bash
-    HAVE_DOT=YES doxygen Doxyfile
-    ```
-
-* **Optional**: use ccache not to rebuild translation units, that haven't really changed. Lunexa's CMakeLists.txt file automatically handles it
-
-    ```bash
-    sudo apt install ccache
-    ```
-
-#### On macOS
-
-* Install the dependencies
-* Change to the root of the source code directory, change to the most recent release branch, and build:
-
-    ```bash
-    cd lunexa
-    git checkout master
-    make
-    ```
-
-* The resulting executables can be found in `build/release/bin`
-
-* Add `PATH="$PATH:$HOME/lunexa/build/release/bin"` to `.profile`
-
-* Run Lunexa with `lunexad --detach`
-
-* **Optional**: build and run the test suite to verify the binaries:
-
-    ```bash
-    make release-test
-    ```
-
-    *NOTE*: `core_tests` test may take a few hours to complete.
-
-* **Optional**: to build binaries suitable for debugging:
-
-    ```bash
-    make debug
-    ```
-
-* **Optional**: to build statically-linked binaries:
-
-    ```bash
-    make release-static
-    ```
-
-Dependencies need to be built with -fPIC. Static libraries usually aren't, so you may have to build them yourself with -fPIC. Refer to their documentation for how to build them.
-
-* **Optional**: build documentation in `doc/html` (omit `HAVE_DOT=YES` if `graphviz` is not installed):
-
-    ```bash
-    HAVE_DOT=YES doxygen Doxyfile
-    ```
-
-* **Optional**: use ccache not to rebuild translation units, that haven't really changed. Lunexa's CMakeLists.txt file automatically handles it
-
-    ```bash
-    sudo apt install ccache
-    ```
-
-#### On Windows
-
-Binaries for Windows are built on Windows using the MinGW toolchain within
-[MSYS2 environment](https://www.msys2.org). The MSYS2 environment emulates a
-POSIX system. The toolchain runs within the environment and *cross-compiles*
-binaries that can run outside of the environment as a regular Windows
-application.
-
-**Preparing the build environment**
-
-* Download and install the [MSYS2 installer](https://www.msys2.org), either the 64-bit or the 32-bit package, depending on your system.
-* Open the MSYS shell via the `MSYS2 Shell` shortcut
-* Update packages using pacman:
-
-    ```bash
-    pacman -Syu
-    ```
-
-* Exit the MSYS shell using Alt+F4
-* Edit the properties for the `MSYS2 Shell` shortcut changing "msys2_shell.bat" to "msys2_shell.cmd -mingw64" for 64-bit builds or "msys2_shell.cmd -mingw32" for 32-bit builds
-* Restart MSYS shell via modified shortcut and update packages again using pacman:
-
-    ```bash
-    pacman -Syu
-    ```
-
-
-* Install dependencies:
-
-    To build for 64-bit Windows:
-
-    ```bash
-    pacman -S mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-zeromq mingw-w64-x86_64-libsodium mingw-w64-x86_64-hidapi mingw-w64-x86_64-unbound
-    ```
-
-    To build for 32-bit Windows:
-
-    ```bash
-    pacman -S mingw-w64-i686-toolchain make mingw-w64-i686-cmake mingw-w64-i686-boost mingw-w64-i686-openssl mingw-w64-i686-zeromq mingw-w64-i686-libsodium mingw-w64-i686-hidapi mingw-w64-i686-unbound
-    ```
-
-* Open the MingW shell via `MinGW-w64-Win64 Shell` shortcut on 64-bit Windows
-  or `MinGW-w64-Win64 Shell` shortcut on 32-bit Windows. Note that if you are
-  running 64-bit Windows, you will have both 64-bit and 32-bit MinGW shells.
-
-**Cloning**
-
-* To git clone, run:
-
-    ```bash
-    git clone --recursive https://github.com/lunexa-project/lunexa.git
-    ```
-
-**Building**
-
-* Change to the cloned directory, run:
-
-    ```bash
-    cd lunexa
-    ```
-
-* If you would like a specific [version/tag](https://github.com/lunexa-project//tags), do a git checkout for that version. eg. 'v0.18.1.2'. If you don't care about the version and just want binaries from master, skip this step:
-
-    ```bash
-    git checkout ##version##
-    ```
-
-* If you are on a 64-bit system, run:
-
-    ```bash
-    make release-static-win64
-    ```
-
-* If you are on a 32-bit system, run:
-
-    ```bash
-    make release-static-win32
-    ```
-
-* The resulting executables can be found in `build/release/bin`
-
-* **Optional**: to build Windows binaries suitable for debugging on a 64-bit system, run:
-
-    ```bash
-    make debug-static-win64
-    ```
-
-* **Optional**: to build Windows binaries suitable for debugging on a 32-bit system, run:
-
-    ```bash
-    make debug-static-win32
-    ```
-
-* The resulting executables can be found in `build/debug/bin`
-
 ### On FreeBSD
 
 The project can be built from scratch by following instructions for Linux above(but use `gmake` instead of `make`). 
 If you are running Lunexa in a jail, you need to add `sysvsem="new"` to your jail configuration, otherwise lmdb will throw the error message: `Failed to open lmdb environment: Function not implemented`.
 
-Lunexa is also available as a port or package as `lunexa-cli`.
 
 ### On OpenBSD
 
@@ -739,27 +482,18 @@ cd ../..
 
 Then you can run make as usual.
 
-### Building portable statically linked binaries
-
-By default, in either dynamically or statically linked builds, binaries target the specific host processor on which the build happens and are not portable to other processors. Portable binaries can be built using the following targets:
-
-* ```make release-static-linux-x86_64``` builds binaries on Linux on x86_64 portable across POSIX systems on x86_64 processors
-* ```make release-static-linux-i686``` builds binaries on Linux on x86_64 or i686 portable across POSIX systems on i686 processors
-* ```make release-static-linux-armv8``` builds binaries on Linux portable across POSIX systems on armv8 processors
-* ```make release-static-linux-armv7``` builds binaries on Linux portable across POSIX systems on armv7 processors
-* ```make release-static-linux-armv6``` builds binaries on Linux portable across POSIX systems on armv6 processors
-* ```make release-static-win64``` builds binaries on 64-bit Windows portable across 64-bit Windows systems
-* ```make release-static-win32``` builds binaries on 64-bit or 32-bit Windows portable across 32-bit Windows systems
-
 ### Cross Compiling
 
 You can also cross-compile static binaries on Linux for Windows and macOS with the `depends` system.
 
 * ```make depends target=x86_64-linux-gnu``` for 64-bit linux binaries.
 * ```make depends target=x86_64-w64-mingw32``` for 64-bit windows binaries.
-  * Requires: `python3 g++-mingw-w64-x86-64 wine1.6 bc`
-  * You also need to run:  
-```update-alternatives --set x86_64-w64-mingw32-g++ x86_64-w64-mingw32-g++-posix && update-alternatives --set x86_64-w64-mingw32-gcc x86_64-w64-mingw32-gcc-posix```
+  * Requires: `g++-mingw-w64-x86-64`
+  * You also need to run:
+    ```shell
+    update-alternatives --set x86_64-w64-mingw32-g++ $(which x86_64-w64-mingw32-g++-posix) && \
+    update-alternatives --set x86_64-w64-mingw32-gcc $(which x86_64-w64-mingw32-gcc-posix)
+    ```
 * ```make depends target=x86_64-apple-darwin``` for macOS binaries.
   * Requires: `cmake imagemagick libcap-dev librsvg2-bin libz-dev libbz2-dev libtiff-tools python-dev`
 * ```make depends target=i686-linux-gnu``` for 32-bit linux binaries.
@@ -777,11 +511,12 @@ You can also cross-compile static binaries on Linux for Windows and macOS with t
 * ```make depends target=arm-linux-android``` for 32bit android binaries
 * ```make depends target=aarch64-linux-android``` for 64bit android binaries
 
-The required packages are the names for each toolchain on apt. Depending on your distro, they may have different names. The `depends` system has been tested on Ubuntu 18.04, 20.04 and 22.04
 
-Using `depends` might also be easier to compile Lunexa on Windows than using MSYS. Activate Windows Subsystem for Linux (WSL) with a distro (for example Ubuntu), install the apt build-essentials and follow the `depends` steps as depicted above.
+The required packages are the names for each toolchain on apt. Depending on your distro, they may have different names. The `depends` system has been tested on Ubuntu 18.04 and 20.04.
 
-The produced binaries still link libc dynamically. If the binary is compiled on a current distribution, it might not run on an older distribution with an older installation of libc. Passing `-DBACKCOMPAT=ON` to cmake will make sure that the binary will run on systems having at least libc version 2.17.
+Using `depends` might also be easier to compile Monero on Windows than using MSYS. Activate Windows Subsystem for Linux (WSL) with a distro (for example Ubuntu), install the apt build-essentials and follow the `depends` steps as depicted above.
+
+The produced binaries still link libc dynamically. If the binary is compiled on a current distribution, it might not run on an older distribution with an older installation of libc.
 
 ### GUIX builds
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2023, The Monero Project
+// Copyright (c) 2018-2024, The Monero Project
 
 //
 // All rights reserved.
@@ -215,7 +215,7 @@ void message_store::unpack_signer_config(const multisig_wallet_state &state, con
 void message_store::process_signer_config(const multisig_wallet_state &state, const std::string &signer_config)
 {
   // The signers in "signer_config" and the resident wallet signers are matched not by label, but
-  // by lunexa address, and ALL labels will be set from "signer_config", even the "me" label.
+  // by Lunexa address, and ALL labels will be set from "signer_config", even the "me" label.
   // In the auto-config process as implemented now the auto-config manager is responsible for defining
   // the labels, and right at the end of the process ALL wallets use the SAME labels. The idea behind this
   // is preventing problems like duplicate labels and confusion (Bob choosing a label "IamAliceHonest").
@@ -458,7 +458,7 @@ void message_store::stop_auto_config()
 void message_store::setup_signer_for_auto_config(uint32_t index, const std::string token, bool receiving)
 {
   // It may be a little strange to hash the textual hex digits of the auto config token into
-  // 32 bytes and turn that into a lunexa public/secret key pair, instead of doing something
+  // 32 bytes and turn that into a Lunexa public/secret key pair, instead of doing something
   // much less complicated like directly using the underlying random 40 bits as key for a
   // symmetric cipher, but everything is there already for encrypting and decrypting messages
   // with such key pairs, and furthermore it would be trivial to use tokens with a different
@@ -767,7 +767,7 @@ void message_store::write_to_file(const multisig_wallet_state &state, const std:
   THROW_WALLET_EXCEPTION_IF(!success, tools::error::file_save_error, filename);
 }
 
-void message_store::read_from_file(const multisig_wallet_state &state, const std::string &filename, bool load_deprecated_formats)
+void message_store::read_from_file(const multisig_wallet_state &state, const std::string &filename)
 {
   boost::system::error_code ignored_ec;
   bool file_exists = boost::filesystem::exists(filename, ignored_ec);
@@ -793,22 +793,6 @@ void message_store::read_from_file(const multisig_wallet_state &state, const std
         loaded = true;
   }
   catch (...) {}
-  if (!loaded && load_deprecated_formats)
-  {
-    try
-    {
-      std::stringstream iss;
-      iss << buf;
-      boost::archive::portable_binary_iarchive ar(iss);
-      ar >> read_file_data;
-      loaded = true;
-    }
-    catch (const std::exception &e)
-    {
-      MERROR("MMS file " << filename << " has bad structure <iv,encrypted_data>: " << e.what());
-      THROW_WALLET_EXCEPTION_IF(true, tools::error::file_read_error, filename);
-    }
-  }
   if (!loaded)
   {
     MERROR("MMS file " << filename << " has bad structure <iv,encrypted_data>");
@@ -830,22 +814,6 @@ void message_store::read_from_file(const multisig_wallet_state &state, const std
         loaded = true;
   }
   catch(...) {}
-  if (!loaded && load_deprecated_formats)
-  {
-    try
-    {
-      std::stringstream iss;
-      iss << decrypted_data;
-      boost::archive::portable_binary_iarchive ar(iss);
-      ar >> *this;
-      loaded = true;
-    }
-    catch (const std::exception &e)
-    {
-      MERROR("MMS file " << filename << " has bad structure: " << e.what());
-      THROW_WALLET_EXCEPTION_IF(true, tools::error::file_read_error, filename);
-    }
-  }
   if (!loaded)
   {
     MERROR("MMS file " << filename << " has bad structure");
@@ -1296,7 +1264,7 @@ void message_store::send_message(const multisig_wallet_state &state, uint32_t id
     // transport address likewise derived from that token
     public_key = me.auto_config_public_key;
     dm.destination_transport_address = me.auto_config_transport_address;
-    // The destination lunexa address is not yet known
+    // The destination Lunexa address is not yet known
     memset(&dm.destination_lunexa_address, 0, sizeof(cryptonote::account_public_address));
   }
   else

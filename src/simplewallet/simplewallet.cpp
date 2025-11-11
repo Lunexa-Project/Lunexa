@@ -43,6 +43,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <string_view>
 #include <ctype.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
@@ -71,6 +72,7 @@
 #include "ringct/rctSigs.h"
 #include "multisig/multisig.h"
 #include "wallet/wallet_args.h"
+#include "wallet/fee_priority.h"
 #include "version.h"
 #include <stdexcept>
 #include "wallet/message_store.h"
@@ -92,6 +94,7 @@ using namespace cryptonote;
 using boost::lexical_cast;
 namespace po = boost::program_options;
 typedef cryptonote::simple_wallet sw;
+using tools::fee_priority;
 
 #undef LUNEXA_DEFAULT_LOG_CATEGORY
 #define LUNEXA_DEFAULT_LOG_CATEGORY "wallet.simplewallet"
@@ -117,7 +120,7 @@ typedef cryptonote::simple_wallet sw;
   LOCK_IDLE_SCOPE(); \
   boost::optional<tools::password_container> pwd_container = boost::none; \
   if (m_wallet->ask_password() && !(pwd_container = get_and_verify_password())) { code; } \
-  tools::wallet_keys_unlocker unlocker(*m_wallet, pwd_container);
+  tools::wallet_keys_unlocker unlocker(*m_wallet, pwd_container ? &pwd_container->password() : nullptr);
 
 #define SCOPED_WALLET_UNLOCK() SCOPED_WALLET_UNLOCK_ON_BAD_PASSWORD(return true;)
 
@@ -133,7 +136,7 @@ typedef cryptonote::simple_wallet sw;
 
 #define REFRESH_PERIOD 90 // seconds
 
-#define MAX_MNEW_ADDRESSES 1000
+#define MAX_MNEW_ADDRESSES 65536
 
 #define CHECK_MULTISIG_ENABLED() \
   do \
@@ -164,7 +167,7 @@ static std::string get_human_readable_timespan(uint64_t seconds);
 
 namespace
 {
-  const std::array<const char* const, 5> allowed_priority_strings = {{"default", "unimportant", "normal", "elevated", "priority"}};
+  constexpr std::array<std::string_view, 5> allowed_priority_strings = tools::fee_priority_utilities::fee_priority_strings;
   const auto arg_wallet_file = wallet_args::arg_wallet_file();
   const command_line::arg_descriptor<std::string> arg_generate_new_wallet = {"generate-new-wallet", sw::tr("Generate new wallet and save it to <arg>"), ""};
   const command_line::arg_descriptor<std::string> arg_generate_from_device = {"generate-from-device", sw::tr("Generate new wallet from device and save it to <arg>"), ""};
@@ -763,17 +766,13 @@ namespace
   }
 }
 
-bool parse_priority(const std::string& arg, uint32_t& priority)
+bool parse_priority(const std::string& arg, fee_priority& priority)
 {
-  auto priority_pos = std::find(
-    allowed_priority_strings.begin(),
-    allowed_priority_strings.end(),
-    arg);
-  if(priority_pos != allowed_priority_strings.end()) {
-    priority = std::distance(allowed_priority_strings.begin(), priority_pos);
-    return true;
-  }
-  return false;
+  const auto priority_optional = tools::fee_priority_utilities::from_string(arg);
+  if (!priority_optional.has_value())
+    return false;
+  priority = priority_optional.value();
+  return true;
 }
 
 std::string join_priority_strings(const char *delimiter)
@@ -1004,7 +1003,7 @@ bool simple_wallet::change_password(const std::vector<std::string> &args)
 
   try
   {
-    m_wallet->change_password(m_wallet_file, orig_pwd_container->password(), pwd_container->password());
+    m_wallet->change_password(m_wallet->get_wallet_file(), orig_pwd_container->password(), pwd_container->password());
   }
   catch (const tools::error::wallet_logic_error& e)
   {
@@ -1032,8 +1031,10 @@ bool simple_wallet::print_fee_info(const std::vector<std::string> &args/* = std:
   message_writer() << (boost::format(tr("Current fee is %s %s per %s")) % print_money(base_fee) % cryptonote::get_unit(cryptonote::get_default_decimal_point()) % base).str();
 
   std::vector<uint64_t> fees;
-  for (uint32_t priority = 1; priority <= 4; ++priority)
+  for (const auto priority : tools::fee_priority_utilities::enums)
   {
+    if (priority == fee_priority::Default)
+      continue;
     uint64_t mult = m_wallet->get_fee_multiplier(priority);
     fees.push_back(base_fee * typical_size * mult);
   }
@@ -1054,23 +1055,29 @@ bool simple_wallet::print_fee_info(const std::vector<std::string> &args/* = std:
     return true;
   }
 
-  for (uint32_t priority = 1; priority <= 4; ++priority)
+  for (const auto priority : tools::fee_priority_utilities::enums)
   {
-    uint64_t nblocks_low = blocks[priority - 1].first;
-    uint64_t nblocks_high = blocks[priority - 1].second;
+    if (priority == tools::fee_priority::Default)
+      continue;
+
+    const auto lower_priority = tools::fee_priority_utilities::decrease(priority);
+    const auto lower_priority_index = tools::fee_priority_utilities::as_integral(lower_priority);
+    const auto current_priority_index = tools::fee_priority_utilities::as_integral(priority);
+    uint64_t nblocks_low = blocks[lower_priority_index].first;
+    uint64_t nblocks_high = blocks[lower_priority_index].second;
     if (nblocks_low > 0)
     {
       std::string msg;
-      if (priority == m_wallet->get_default_priority() || (m_wallet->get_default_priority() == 0 && priority == 2))
+      if (priority == m_wallet->get_default_priority() || (m_wallet->get_default_priority() == fee_priority::Default && priority == fee_priority::Normal))
         msg = tr(" (current)");
       uint64_t minutes_low = nblocks_low * DIFFICULTY_TARGET_V2 / 60, minutes_high = nblocks_high * DIFFICULTY_TARGET_V2 / 60;
       if (nblocks_high == nblocks_low)
-        message_writer() << (boost::format(tr("%u block (%u minutes) backlog at priority %u%s")) % nblocks_low % minutes_low % priority % msg).str();
+        message_writer() << (boost::format(tr("%u block (%u minutes) backlog at priority %u%s")) % nblocks_low % minutes_low % current_priority_index % msg).str();
       else
-        message_writer() << (boost::format(tr("%u to %u block (%u to %u minutes) backlog at priority %u")) % nblocks_low % nblocks_high % minutes_low % minutes_high % priority).str();
+        message_writer() << (boost::format(tr("%u to %u block (%u to %u minutes) backlog at priority %u")) % nblocks_low % nblocks_high % minutes_low % minutes_high % current_priority_index).str();
     }
     else
-      message_writer() << tr("No backlog at priority ") << priority;
+      message_writer() << tr("No backlog at priority ") << current_priority_index;
   }
   return true;
 }
@@ -1633,12 +1640,7 @@ bool simple_wallet::submit_multisig_main(const std::vector<std::string> &args, b
     }
 
     // actually commit the transactions
-    for (auto &ptx: txs.m_ptx)
-    {
-      m_wallet->commit_tx(ptx);
-      success_msg_writer(true) << tr("Transaction successfully submitted, transaction ") << get_transaction_hash(ptx.tx) << ENDL
-          << tr("You can check its status by using the `show_transfers` command.");
-    }
+    commit_or_save(txs.m_ptx, /* do_not_relay */ false);
   }
   catch (const std::exception &e)
   {
@@ -2146,15 +2148,7 @@ bool simple_wallet::blackballed(const std::vector<std::string> &args)
 
 bool simple_wallet::save_known_rings(const std::vector<std::string> &args)
 {
-  try
-  {
-    LOCK_IDLE_SCOPE();
-    m_wallet->find_and_save_rings();
-  }
-  catch (const std::exception &e)
-  {
-    fail_msg_writer() << tr("Failed to save known rings: ") << e.what();
-  }
+  fail_msg_writer() << tr("save_known_rings is deprecated");
   return true;
 }
 
@@ -2272,22 +2266,14 @@ bool simple_wallet::public_nodes(const std::vector<std::string> &args)
 
 bool simple_wallet::welcome(const std::vector<std::string> &args)
 {
-  message_writer() << tr("Welcome to Lunexa — privacy, redefined.");
+  message_writer() << tr("Welcome to Lunexa — a decentralized and privacy-focused digital currency.");
   message_writer() << "";
-  message_writer() << tr("Lunexa is a next-generation cryptocurrency designed for true financial freedom.");
-  message_writer() << tr("Like Bitcoin, it’s decentralized digital money — but with privacy at its core.");
-  message_writer() << tr("With Lunexa, your transactions and balances are shielded by default, offering peace of mind in a transparent world.");
+  message_writer() << tr("Built on Monero’s trusted foundation, Lunexa refines its design to make mining fair and accessible for everyone while keeping your financial activity completely private.");
+  message_writer() << tr("Your transactions are protected by advanced cryptography — your money, your privacy, your control.");
   message_writer() << "";
-  message_writer() << tr("Only you control who sees your financial activity. Share details selectively, or not at all — the choice is yours.");
-  message_writer() << "";
-  message_writer() << tr("We believe privacy is a right, not a privilege. While no system is infallible, Lunexa is built with");
-  message_writer() << tr("layered privacy protections and ongoing innovation to stay ahead of threats.");
-  message_writer() << tr("Be aware that no technology can guarantee absolute security. Practice safe habits and stay informed.");
-  message_writer() << "";
-  message_writer() << tr("Welcome to Lunexa — secure, private, and empowering. Learn more at https://lunexa.cc");
+  message_writer() << tr("Thank you for being part of the Lunexa network. Together, we’re building a secure, fair, and truly decentralized future.");
   return true;
 }
-
 
 bool simple_wallet::version(const std::vector<std::string> &args)
 {
@@ -2464,7 +2450,7 @@ bool simple_wallet::set_default_priority(const std::vector<std::string> &args/* 
       if (!found)
       {
         priority = boost::lexical_cast<int>(args[1]);
-        if (priority < 1 || priority > 4)
+        if (priority < tools::fee_priority_utilities::as_integral(fee_priority::Unimportant) || priority > tools::fee_priority_utilities::as_integral(fee_priority::Priority))
         {
           fail_msg_writer() << tr("priority must be either 0, 1, 2, 3, or 4, or one of: ") << join_priority_strings(", ");
           return true;
@@ -2475,7 +2461,7 @@ bool simple_wallet::set_default_priority(const std::vector<std::string> &args/* 
     const auto pwd_container = get_and_verify_password();
     if (pwd_container)
     {
-      m_wallet->set_default_priority(priority);
+      m_wallet->set_default_priority(tools::fee_priority_utilities::from_integral(priority));
       m_wallet->rewrite(m_wallet_file, pwd_container->password());
     }
     return true;
@@ -3032,11 +3018,8 @@ bool simple_wallet::set_load_deprecated_formats(const std::vector<std::string> &
   if (pwd_container)
   {
     parse_bool_and_use(args[1], [&](bool r) {
-      m_wallet->load_deprecated_formats(r);
-      m_wallet->rewrite(m_wallet_file, pwd_container->password());
-
       if (r)
-        message_writer() << tr("Warning: deprecated formats use boost serialization, which has buffer overflows and crashers. Only load deprecated formats from sources you trust.");
+        fail_msg_writer() << tr("Warning: deprecated formats use boost serialization, which has buffer overflows and crashes. Support for them has been discontinued.");
     });
   }
   return true;
@@ -3242,7 +3225,7 @@ simple_wallet::simple_wallet()
   m_cmd_binder.set_handler("donate",
                            boost::bind(&simple_wallet::on_command, this, &simple_wallet::donate, _1),
                            tr(USAGE_DONATE),
-                           tr("Donate <amount> to the development team."));
+                           tr("Donate <amount> to the development team (donate.lunexa.co)."));
   m_cmd_binder.set_handler("sign_transfer",
                            boost::bind(&simple_wallet::on_command, this, &simple_wallet::sign_transfer, _1),
                            tr(USAGE_SIGN_TRANSFER),
@@ -3712,9 +3695,9 @@ bool simple_wallet::set_variable(const std::vector<std::string> &args)
     if (m_use_english_language_names)
       seed_language = crypto::ElectrumWords::get_english_name_for(seed_language);
     std::string priority_string = "invalid";
-    uint32_t priority = m_wallet->get_default_priority();
-    if (priority < allowed_priority_strings.size())
-      priority_string = allowed_priority_strings[priority];
+    const fee_priority priority = m_wallet->get_default_priority();
+    priority_string = tools::fee_priority_utilities::to_string(priority);
+    const auto priority_index = tools::fee_priority_utilities::as_integral(priority);
     std::string ask_password_string = "invalid";
     switch (m_wallet->ask_password())
     {
@@ -3736,7 +3719,7 @@ bool simple_wallet::set_variable(const std::vector<std::string> &args)
     success_msg_writer() << "default-ring-size = " << (m_wallet->default_mixin() ? m_wallet->default_mixin() + 1 : 0);
     success_msg_writer() << "auto-refresh = " << m_wallet->auto_refresh();
     success_msg_writer() << "refresh-type = " << get_refresh_type_name(m_wallet->get_refresh_type());
-    success_msg_writer() << "priority = " << priority<< " (" << priority_string << ")";
+    success_msg_writer() << "priority = " << priority_index << " (" << priority_string << ")";
     success_msg_writer() << "ask-password = " << m_wallet->ask_password() << " (" << ask_password_string << ")";
     success_msg_writer() << "unit = " << cryptonote::get_unit(cryptonote::get_default_decimal_point());
     success_msg_writer() << "max-reorg-depth = " << m_wallet->max_reorg_depth();
@@ -3767,7 +3750,6 @@ bool simple_wallet::set_variable(const std::vector<std::string> &args)
         << " (disabled on Windows)"
 #endif
         ;
-    success_msg_writer() << "load-deprecated-formats = " << m_wallet->load_deprecated_formats();
     success_msg_writer() << "enable-multisig-experimental = " << m_wallet->is_multisig_enabled();
     return true;
   }
@@ -5569,7 +5551,7 @@ void simple_wallet::on_money_received(uint64_t height, const crypto::hash &txid,
     print_money(amount - burnt) << burn.str() << ", " <<
     tr("idx ") << subaddr_index;
 
-  const uint64_t warn_height = m_wallet->nettype() == TESTNET ? 1000000 : m_wallet->nettype() == STAGENET ? 50000 : 1650000;
+    const uint64_t warn_height = m_wallet->nettype() == TESTNET ? 1000000 : m_wallet->nettype() == STAGENET ? 50000 : 1000;  // Changed from 1650000
   if (height >= warn_height && !is_change)
   {
     std::vector<tx_extra_field> tx_extra_fields;
@@ -6339,25 +6321,36 @@ void simple_wallet::check_for_inactivity_lock(bool user)
     tools::clear_screen();
     m_in_command = true;
     if (!user)
-    {
-      const std::string speech = tr("I locked your Lunexa wallet to protect you while you were away\nsee \"help set\" to configure/disable");
-      std::vector<std::pair<std::string, size_t>> lines = tools::split_string_by_width(speech, 45);
+{
+  const std::string speech = tr("I locked your Lunexa wallet to protect you while you were away\nsee \"help set\" to configure/disable");
+  std::vector<std::pair<std::string, size_t>> lines = tools::split_string_by_width(speech, 45);
 
-      size_t max_len = 0;
-      for (const auto &i: lines)
-        max_len = std::max(max_len, i.second);
-      const size_t n_u = max_len + 2;
-      tools::msg_writer() << " " << std::string(n_u, '_');
-      for (size_t i = 0; i < lines.size(); ++i)
-        tools::msg_writer() << (i == 0 ? "/" : i == lines.size() - 1 ? "\\" : "|") << " " << lines[i].first << std::string(max_len - lines[i].second, ' ') << " " << (i == 0 ? "\\" : i == lines.size() - 1 ? "/" : "|");
-      tools::msg_writer() << " " << std::string(n_u, '-') << std::endl <<
-          "        \\   (__)" << std::endl <<
-          "         \\  (oo)\\_______" << std::endl <<
-          "            (__)\\       )\\/\\" << std::endl <<
-          "                ||----w |" << std::endl <<
-          "                ||     ||" << std::endl <<
-          "" << std::endl;
-    }
+size_t max_len = 0;
+for (const auto &i : lines)
+  max_len = std::max(max_len, i.second);
+
+const size_t n_u = max_len + 2;
+
+// Top border
+tools::msg_writer() << " " << std::string(n_u, '_');
+
+
+  for (size_t i = 0; i < lines.size(); ++i)
+  {
+    tools::msg_writer() 
+      << (i == 0 ? "/" : i == lines.size() - 1 ? "\\" : "|")
+      << " " << lines[i].first
+      << std::string(max_len - lines[i].second, ' ')
+      << " " << (i == 0 ? "\\" : i == lines.size() - 1 ? "/" : "|");
+  }
+  tools::msg_writer() 
+    << " " << std::string(n_u, '-') << std::endl
+    << "          \\" << std::endl
+    << "           \\\\   /\\_/\\ " << std::endl
+    << "            \\\\ ( -.- )" << std::endl
+    << "             > ^  ^ <" << std::endl
+    << std::endl;
+  }
 
     bool started_background_sync = false;
     if (!m_wallet->is_background_wallet() &&
@@ -6441,7 +6434,7 @@ bool simple_wallet::transfer_main(const std::vector<std::string> &args_, bool ca
     local_args.erase(local_args.begin());
   }
 
-  uint32_t priority = m_wallet->get_default_priority();
+  fee_priority priority = m_wallet->get_default_priority();
   if (local_args.size() > 0 && parse_priority(local_args[0], priority))
     local_args.erase(local_args.begin());
 
@@ -7006,7 +6999,7 @@ bool simple_wallet::sweep_main(uint32_t account, uint64_t below, const std::vect
     local_args.erase(local_args.begin());
   }
 
-  uint32_t priority = 0;
+  fee_priority priority = fee_priority::Default;
   if (local_args.size() > 0 && parse_priority(local_args[0], priority))
     local_args.erase(local_args.begin());
 
@@ -7250,7 +7243,7 @@ bool simple_wallet::sweep_single(const std::vector<std::string> &args_)
 
   std::vector<std::string> local_args = args_;
 
-  uint32_t priority = 0;
+  fee_priority priority = fee_priority::Default;
   if (local_args.size() > 0 && parse_priority(local_args[0], priority))
     local_args.erase(local_args.begin());
 
@@ -7437,7 +7430,6 @@ bool simple_wallet::sweep_single(const std::vector<std::string> &args_)
         }
 
         commit_or_save(signed_tx.ptx, m_do_not_relay);
-        success_msg_writer(true) << tr("Money successfully sent, transaction: ") << get_transaction_hash(ptx_vector[0].tx);
       }
       catch (const std::exception& e)
       {
@@ -7463,8 +7455,7 @@ bool simple_wallet::sweep_single(const std::vector<std::string> &args_)
     }
     else
     {
-      m_wallet->commit_tx(ptx_vector[0]);
-      success_msg_writer(true) << tr("Money successfully sent, transaction: ") << get_transaction_hash(ptx_vector[0].tx);
+      commit_or_save(ptx_vector, m_do_not_relay);
     }
 
   }
@@ -7583,7 +7574,7 @@ bool simple_wallet::donate(const std::vector<std::string> &args_)
   if (!payment_id_str.empty())
     local_args.push_back(payment_id_str);
   if (m_wallet->nettype() == cryptonote::MAINNET)
-    message_writer() << (boost::format(tr("Donating %s %s to Lunexa Project.")) % amount_str % cryptonote::get_unit(cryptonote::get_default_decimal_point()) % LUNEXA_DONATION_ADDR).str();
+    message_writer() << (boost::format(tr("Donating %s %s to The Lunexa Project (donate.lunexa.co or %s).")) % amount_str % cryptonote::get_unit(cryptonote::get_default_decimal_point()) % LUNEXA_DONATION_ADDR).str();
   else
     message_writer() << (boost::format(tr("Donating %s %s to %s.")) % amount_str % cryptonote::get_unit(cryptonote::get_default_decimal_point()) % address_str).str();
   transfer(local_args);
@@ -8689,7 +8680,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
 
   PAUSE_READLINE();
 
-  auto formatter = boost::format("%8.8s %6.6s %8.8s %25.25s %20.20s %64.64s %15.15s %14.14s %s %s - %s");
+  auto formatter = boost::format("%8.8s %6.6s %8.8s %25.25s %20.20s %64.64s %16.16s %14.14s %s %s - %s");
   message_writer(console_color_default, false) << formatter
   % "Block"
   % "In/Out"
@@ -8703,7 +8694,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
   % "Index"
   % "Tx Note";
 
-  formatter = boost::format("%8.8llu %6.6s %8.8s %25.25s %20.20s %64.64s %15.15s %14.14s %s %s - %s");
+  formatter = boost::format("%8.8llu %6.6s %8.8s %25.25s %20.20s %64.64s %16.16s %14.14s %s %s - %s");
 
   for (const auto& transfer : all_transfers)
   {

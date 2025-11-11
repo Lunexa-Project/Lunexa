@@ -729,12 +729,6 @@ namespace cryptonote
         crypto::hash last_block_hash;
         m_core.get_blockchain_top(last_block_height, last_block_hash);
 
-        if (!req.high_height_ok && req.start_height > last_block_height)
-        {
-          res.status = "Failed";
-          return true;
-        }
-
         if (req.start_height > last_block_height ||
            (!req.block_ids.empty() && last_block_hash == req.block_ids.front()))
         {
@@ -1142,7 +1136,7 @@ namespace cryptonote
 
       if (req.split || req.prune || pruned)
       {
-        // use splitted form with pruned and prunable (filled only when prune=false and the daemon has it), leaving as_hex as empty
+        // use split form with pruned and prunable (filled only when prune=false and the daemon has it), leaving as_hex as empty
         e.pruned_as_hex = string_tools::buff_to_hex_nodelimer(std::get<1>(tx));
         if (!req.prune)
           e.prunable_as_hex = string_tools::buff_to_hex_nodelimer(std::get<3>(tx));
@@ -1287,8 +1281,10 @@ namespace cryptonote
       if(b.size() != sizeof(crypto::key_image))
       {
         res.status = "Failed, size of data mismatch";
+        return true;
       }
-      key_images.push_back(*reinterpret_cast<const crypto::key_image*>(b.data()));
+      crypto::key_image &ki = key_images.emplace_back();
+      memcpy(&ki, b.data(), sizeof(crypto::key_image));
     }
     std::vector<bool> spent_status;
     bool r = m_core.are_key_images_spent(key_images, spent_status);
@@ -1847,6 +1843,7 @@ namespace cryptonote
     {
       error_resp.code = CORE_RPC_ERROR_CODE_TOO_BIG_HEIGHT;
       error_resp.message = std::string("Requested block height: ") + std::to_string(h) + " greater than current top block height: " +  std::to_string(m_core.get_current_blockchain_height() - 1);
+      return false;
     }
     res = string_tools::pod_to_hex(m_core.get_block_id_by_height(h));
     return true;
@@ -3580,7 +3577,7 @@ namespace cryptonote
   {
     RPC_TRACKER(get_txids_loose);
 
-    // Maybe don't use bootstrap since this endpoint is meant to retreive TXIDs w/ k-anonymity,
+    // Maybe don't use bootstrap since this endpoint is meant to retrieve TXIDs w/ k-anonymity,
     // so shunting this request to a random node seems counterproductive.
 
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -3613,7 +3610,7 @@ namespace cryptonote
       error_resp.message = "Could not decode hex txid";
       return false;
     }
-    // Check that txid template is zeroed correctly for number of given matchign bits
+    // Check that txid template is zeroed correctly for number of given matching bits
     else if (search_hash != make_hash32_loose_template(req.num_matching_bits, search_hash))
     {
       error_resp.code = CORE_RPC_ERROR_CODE_WRONG_PARAM;
